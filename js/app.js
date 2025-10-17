@@ -96,7 +96,7 @@ if (typeof firebase === 'undefined') {
             });
         }
 
-        // Logout (for dashboard.html)
+        // Logout
         if (document.getElementById('logout')) {
             document.getElementById('logout').addEventListener('click', () => {
                 auth.signOut().then(() => {
@@ -106,7 +106,7 @@ if (typeof firebase === 'undefined') {
             });
         }
 
-        // Load Dashboard
+        // Load Dashboard (Admin)
         async function loadDashboard() {
             if (!document.getElementById('contributionTable')) return;
 
@@ -233,6 +233,115 @@ if (typeof firebase === 'undefined') {
                 });
             }
             loadTransactions();
+        }
+
+        // Load Profile (Member)
+        async function loadProfile() {
+            if (!document.getElementById('profileForm')) return;
+
+            const user = auth.currentUser;
+            if (!user) {
+                alert('Not logged in. Redirecting to login...');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Load Profile
+            const userDoc = await db.collection('users').doc(user.uid).get();
+            if (userDoc.exists) {
+                const userData = userDoc.data();
+                document.getElementById('memberNumber').value = userData.memberNumber;
+                document.getElementById('name').value = userData.name;
+                document.getElementById('homeName').value = userData.homeName;
+                document.getElementById('homeNumber').value = userData.homeNumber;
+                document.getElementById('familyMembers').value = userData.familyMembers;
+                document.getElementById('primaryMobile').value = userData.primaryMobile;
+                document.getElementById('secondaryMobile').value = userData.secondaryMobile || '';
+            } else {
+                alert('User data not found. Contact admin.');
+                window.location.href = 'login.html';
+            }
+
+            // Update Profile
+            document.getElementById('profileForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const updatedData = {
+                    homeName: document.getElementById('homeName').value,
+                    homeNumber: document.getElementById('homeNumber').value,
+                    familyMembers: parseInt(document.getElementById('familyMembers').value),
+                    primaryMobile: document.getElementById('primaryMobile').value,
+                    secondaryMobile: document.getElementById('secondaryMobile').value || null
+                };
+                try {
+                    await db.collection('users').doc(user.uid).update(updatedData);
+                    alert('Profile updated successfully!');
+                } catch (error) {
+                    alert('Profile Update Error: ' + error.message);
+                }
+            });
+
+            // Load Contributions
+            const monthSelect = document.getElementById('monthSelect');
+            const contributionTable = document.getElementById('contributionTable');
+
+            async function loadContributions(month) {
+                contributionTable.innerHTML = '';
+                const contributionDoc = await db.collection('contributions').doc(user.uid).collection('months').doc(month).get();
+                const contribution = contributionDoc.exists ? contributionDoc.data() : { paid: false, amount: 0, date: null };
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${month}</td>
+                    <td>${contribution.paid ? 'Paid' : 'Unpaid'}</td>
+                    <td>${contribution.amount || 0}</td>
+                    <td>${contribution.date || '-'}</td>
+                `;
+                contributionTable.appendChild(row);
+            }
+
+            loadContributions(monthSelect.value);
+
+            monthSelect.addEventListener('change', () => {
+                loadContributions(monthSelect.value);
+            });
+
+            // Load Balance Sheet
+            const balanceTable = document.getElementById('balanceTable');
+            async function loadBalanceSheet() {
+                let totalContributions = 0;
+                let totalExpenses = 0;
+
+                const contributionsSnapshot = await db.collection('contributions').doc(user.uid).collection('months').get();
+                contributionsSnapshot.forEach(doc => {
+                    if (doc.data().paid) {
+                        totalContributions += doc.data().amount || 0;
+                    }
+                });
+
+                const transactionsSnapshot = await db.collection('transactions').where('memberId', '==', user.uid).get();
+                transactionsSnapshot.forEach(doc => {
+                    const transaction = doc.data();
+                    if (transaction.type === 'expense') {
+                        totalExpenses += transaction.amount;
+                    }
+                });
+
+                const balance = totalContributions - totalExpenses;
+                balanceTable.innerHTML = `
+                    <tr>
+                        <td>${totalContributions}</td>
+                        <td>${totalExpenses}</td>
+                        <td>${balance}</td>
+                    </tr>
+                `;
+            }
+            loadBalanceSheet();
+        }
+
+        // Call appropriate function based on page
+        if (document.getElementById('contributionTable') && document.getElementById('transactionTable')) {
+            loadDashboard();
+        } else if (document.getElementById('profileForm')) {
+            loadProfile();
         }
     } catch (error) {
         alert('Firebase Initialization Error: ' + error.message);
