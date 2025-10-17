@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shipyard Nagar - Home</title>
+    <meta http-equiv="refresh" content="0;url=login.html">
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -11,51 +12,10 @@
         <h1>Shipyard Nagar Residential Association</h1>
     </header>
     <main>
-        <p>Checking authentication... Please wait.</p>
+        <p>Redirecting to login...</p>
     </main>
     <footer>
         <p>Powered by VTSoft 2025</p>
     </footer>
-
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js"></script>
-    <script>
-        // Firebase Config
-        const firebaseConfig = {
-            apiKey: "AIzaSyBWswawf9tpxNwVU0BaJ6FCwCvgcjUQXlA",
-            authDomain: "shipyard-nagar.firebaseapp.com",
-            projectId: "shipyard-nagar",
-            storageBucket: "shipyard-nagar.firebasestorage.app",
-            messagingSenderId: "552855824221",
-            appId: "1:552855824221:web:f709da953077475be9eab4",
-            measurementId: "G-V8CQ4YCCQ5"
-        };
-
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-
-        // Check Auth State
-        auth.onAuthStateChanged(async (user) => {
-            if (user) {
-                const userDoc = await db.collection('users').doc(user.uid).get();
-                if (userDoc.exists) {
-                    const userData = userDoc.data();
-                    if (userData.role === 'admin') {
-                        window.location.href = 'dashboard.html';
-                    } else {
-                        window.location.href = 'profile.html';
-                    }
-                } else {
-                    window.location.href = 'login.html'; // No user data
-                }
-            } else {
-                window.location.href = 'login.html'; // Not logged in
-            }
-        });
-    </script>
 </body>
 </html>
