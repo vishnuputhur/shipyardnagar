@@ -14,15 +14,6 @@ const app = firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// Check Auth State
-auth.onAuthStateChanged((user) => {
-    if (!user) {
-        window.location.href = 'login.html'; // Redirect to login if not authenticated
-    } else if (window.location.pathname.includes('dashboard.html')) {
-        loadDashboard();
-    }
-});
-
 // Login Form
 if (document.getElementById('loginForm')) {
     document.getElementById('loginForm').addEventListener('submit', (e) => {
@@ -38,10 +29,10 @@ if (document.getElementById('loginForm')) {
                 const userData = userDoc.data();
                 if (isAdmin && userData.role === 'admin') {
                     window.location.href = 'dashboard.html';
-                } else if (!isAdmin) {
+                } else if (!isAdmin && userData.role === 'member') {
                     window.location.href = 'profile.html';
                 } else {
-                    alert('Admin access denied!');
+                    alert('Access denied! Check admin status.');
                     auth.signOut();
                 }
             })
@@ -61,6 +52,15 @@ if (document.getElementById('loginForm')) {
             alert('Please enter your email first!');
         }
     });
+
+    // Remember Me
+    document.getElementById('rememberMe').addEventListener('change', (e) => {
+        if (e.target.checked) {
+            localStorage.setItem('email', document.getElementById('email').value);
+        } else {
+            localStorage.removeItem('email');
+        }
+    });
 }
 
 // Logout
@@ -74,6 +74,8 @@ if (document.getElementById('logout')) {
 
 // Load Dashboard
 async function loadDashboard() {
+    if (!document.getElementById('contributionTable')) return;
+
     // Load Members for Contribution and Transaction
     const membersSnapshot = await db.collection('users').get();
     const members = membersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -120,7 +122,7 @@ async function loadDashboard() {
         const isEditing = editMonthBtn.dataset.editing === 'true';
         editMonthBtn.dataset.editing = !isEditing;
         editMonthBtn.textContent = isEditing ? 'Edit Month' : 'Save Month';
-        loadContributions(monthSelect.value); // Reload table with updated disabled state
+        loadContributions(monthSelect.value);
     });
 
     // Save Contribution
@@ -136,7 +138,7 @@ async function loadDashboard() {
                         amount: 0
                     });
                 } else {
-                    e.target.checked = true; // Revert
+                    e.target.checked = true;
                 }
             } else {
                 await db.collection('contributions').doc(memberId).collection('months').doc(monthSelect.value).set({
@@ -169,7 +171,7 @@ async function loadDashboard() {
         await db.collection('users').add(memberData);
         alert('Member added!');
         document.getElementById('addMemberForm').reset();
-        loadDashboard(); // Refresh
+        loadDashboard();
     });
 
     // Add Transaction
