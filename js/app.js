@@ -68,12 +68,15 @@ if (typeof firebase === 'undefined') {
                         const user = userCredential.user;
                         try {
                             const userDoc = await db.collection('users').doc(user.uid).get();
-                            if (userDoc.exists && userDoc.data().role === 'admin') {
+                            if (!userDoc.exists) {
+                                alert('Error: User document not found in Firestore.');
+                                setTimeout(() => window.location.href = 'profile.html', 2000);
+                            } else if (userDoc.data().role !== 'admin') {
+                                alert(`Error: User role is "${userDoc.data().role || 'undefined'}", not "admin".`);
+                                setTimeout(() => window.location.href = 'profile.html', 2000);
+                            } else {
                                 alert('Admin login successful! Redirecting to dashboard...');
                                 window.location.href = 'dashboard.html';
-                            } else {
-                                alert('You are not admin, please use member login.');
-                                setTimeout(() => window.location.href = 'profile.html', 2000);
                             }
                         } catch (error) {
                             alert('Admin Login Error: ' + error.message);
