@@ -14,36 +14,25 @@ const app = firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// Login Form
-if (document.getElementById('loginForm')) {
-    document.getElementById('loginForm').addEventListener('submit', (e) => {
+// Member Login
+if (document.getElementById('memberLoginForm')) {
+    document.getElementById('memberLoginForm').addEventListener('submit', (e) => {
         e.preventDefault();
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        const isAdmin = document.getElementById('isAdmin').checked;
+        const email = document.getElementById('memberEmail').value;
+        const password = document.getElementById('memberPassword').value;
 
         auth.signInWithEmailAndPassword(email, password)
-            .then(async (userCredential) => {
-                const user = userCredential.user;
-                const userDoc = await db.collection('users').doc(user.uid).get();
-                const userData = userDoc.data();
-                if (isAdmin && userData.role === 'admin') {
-                    window.location.href = 'dashboard.html';
-                } else if (!isAdmin && userData.role === 'member') {
-                    window.location.href = 'profile.html';
-                } else {
-                    alert('Access denied! Check admin status.');
-                    auth.signOut();
-                }
+            .then((userCredential) => {
+                window.location.href = 'profile.html';
             })
             .catch((error) => {
                 alert('Error: ' + error.message);
             });
     });
 
-    // Forgot Password
-    document.getElementById('forgotPassword').addEventListener('click', () => {
-        const email = document.getElementById('email').value;
+    // Member Forgot Password
+    document.getElementById('memberForgotPassword').addEventListener('click', () => {
+        const email = document.getElementById('memberEmail').value;
         if (email) {
             auth.sendPasswordResetEmail(email)
                 .then(() => alert('Password reset email sent!'))
@@ -53,17 +42,53 @@ if (document.getElementById('loginForm')) {
         }
     });
 
-    // Remember Me
-    document.getElementById('rememberMe').addEventListener('change', (e) => {
+    // Member Remember Me
+    document.getElementById('memberRememberMe').addEventListener('change', (e) => {
         if (e.target.checked) {
-            localStorage.setItem('email', document.getElementById('email').value);
+            localStorage.setItem('email', document.getElementById('memberEmail').value);
         } else {
             localStorage.removeItem('email');
         }
     });
 }
 
-// Logout
+// Admin Login
+if (document.getElementById('adminLoginForm')) {
+    document.getElementById('adminLoginForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = document.getElementById('adminEmail').value;
+        const password = document.getElementById('adminPassword').value;
+
+        auth.signInWithEmailAndPassword(email, password)
+            .then(async (userCredential) => {
+                const user = userCredential.user;
+                const userDoc = await db.collection('users').doc(user.uid).get();
+                if (userDoc.exists && userDoc.data().role === 'admin') {
+                    window.location.href = 'dashboard.html';
+                } else {
+                    alert('You are not admin, please use member login.');
+                    setTimeout(() => window.location.href = 'profile.html', 2000);
+                }
+            })
+            .catch((error) => {
+                alert('Error: ' + error.message);
+            });
+    });
+
+    // Admin Forgot Password
+    document.getElementById('adminForgotPassword').addEventListener('click', () => {
+        const email = document.getElementById('adminEmail').value;
+        if (email) {
+            auth.sendPasswordResetEmail(email)
+                .then(() => alert('Password reset email sent!'))
+                .catch((error) => alert('Error: ' + error.message));
+        } else {
+            alert('Please enter your email first!');
+        }
+    });
+}
+
+// Logout (for dashboard.html)
 if (document.getElementById('logout')) {
     document.getElementById('logout').addEventListener('click', () => {
         auth.signOut().then(() => {
@@ -72,15 +97,13 @@ if (document.getElementById('logout')) {
     });
 }
 
-// Load Dashboard
+// Load Dashboard (unchanged from previous)
 async function loadDashboard() {
     if (!document.getElementById('contributionTable')) return;
 
-    // Load Members for Contribution and Transaction
     const membersSnapshot = await db.collection('users').get();
     const members = membersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-    // Populate Transaction Member Dropdown
     const transactionMember = document.getElementById('transactionMember');
     members.forEach(member => {
         const option = document.createElement('option');
@@ -89,17 +112,14 @@ async function loadDashboard() {
         transactionMember.appendChild(option);
     });
 
-    // Show/Hide External Name
     transactionMember.addEventListener('change', () => {
         document.getElementById('externalNameDiv').style.display = transactionMember.value === 'external' ? 'block' : 'none';
     });
 
-    // Load Contributions
     const monthSelect = document.getElementById('monthSelect');
     const contributionTable = document.getElementById('contributionTable');
     const editMonthBtn = document.getElementById('editMonth');
 
-    // Populate Contribution Table
     async function loadContributions(month) {
         contributionTable.innerHTML = '';
         for (const member of members) {
@@ -114,10 +134,8 @@ async function loadDashboard() {
         }
     }
 
-    // Load Initial Month
     loadContributions(monthSelect.value);
 
-    // Edit Month
     editMonthBtn.addEventListener('click', () => {
         const isEditing = editMonthBtn.dataset.editing === 'true';
         editMonthBtn.dataset.editing = !isEditing;
@@ -125,7 +143,6 @@ async function loadDashboard() {
         loadContributions(monthSelect.value);
     });
 
-    // Save Contribution
     contributionTable.addEventListener('change', async (e) => {
         if (e.target.classList.contains('contribution-check')) {
             const memberId = e.target.dataset.member;
@@ -150,12 +167,10 @@ async function loadDashboard() {
         }
     });
 
-    // Month Change
     monthSelect.addEventListener('change', () => {
         loadContributions(monthSelect.value);
     });
 
-    // Add Member
     document.getElementById('addMemberForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const memberData = {
@@ -174,7 +189,6 @@ async function loadDashboard() {
         loadDashboard();
     });
 
-    // Add Transaction
     document.getElementById('transactionForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const transactionData = {
@@ -191,7 +205,6 @@ async function loadDashboard() {
         loadTransactions();
     });
 
-    // Load Transactions
     async function loadTransactions() {
         const transactionTable = document.getElementById('transactionTable');
         transactionTable.innerHTML = '';
