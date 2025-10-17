@@ -106,7 +106,7 @@ if (typeof firebase === 'undefined') {
             });
         }
 
-        // Load Dashboard (unchanged)
+        // Load Dashboard
         async function loadDashboard() {
             if (!document.getElementById('contributionTable')) return;
 
