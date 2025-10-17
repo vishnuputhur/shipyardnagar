@@ -9,136 +9,125 @@
 </head>
 <body>
     <header class="bg-primary text-white text-center py-3">
-        <h1>Shipyard Nagar Residential Association</h1>
+        <h1>Shipyard Nagar - Admin Dashboard</h1>
     </header>
     <main class="container my-4">
-        <h2>Admin Dashboard</h2>
-        <button class="btn btn-danger mb-3" id="logout">Logout</button>
-
+        <button id="logout" class="btn btn-danger mb-3">Logout</button>
+        
         <!-- Add Member -->
-        <section class="mb-5">
-            <h3>Add Member</h3>
-            <form id="addMemberForm" class="border p-3">
-                <div class="mb-3">
+        <h2>Add Member</h2>
+        <form id="addMemberForm" class="border p-3 mb-4">
+            <div class="row">
+                <div class="col-md-6 mb-3">
                     <label for="memberNumber" class="form-label">Member Number:</label>
                     <input type="text" class="form-control" id="memberNumber" required>
                 </div>
-                <div class="mb-3">
-                    <label for="memberName" class="form-label">Member Name:</label>
+                <div class="col-md-6 mb-3">
+                    <label for="memberName" class="form-label">Name:</label>
                     <input type="text" class="form-control" id="memberName" required>
                 </div>
-                <div class="mb-3">
+                <div class="col-md-6 mb-3">
                     <label for="homeName" class="form-label">Home Name:</label>
                     <input type="text" class="form-control" id="homeName" required>
                 </div>
-                <div class="mb-3">
+                <div class="col-md-6 mb-3">
                     <label for="homeNumber" class="form-label">Home Number:</label>
                     <input type="text" class="form-control" id="homeNumber" required>
                 </div>
-                <div class="mb-3">
-                    <label for="familyMembers" class="form-label">Number of Family Members:</label>
+                <div class="col-md-6 mb-3">
+                    <label for="familyMembers" class="form-label">Family Members:</label>
                     <input type="number" class="form-control" id="familyMembers" required>
                 </div>
-                <div class="mb-3">
+                <div class="col-md-6 mb-3">
                     <label for="primaryMobile" class="form-label">Primary Mobile:</label>
-                    <input type="tel" class="form-control" id="primaryMobile" required>
+                    <input type="text" class="form-control" id="primaryMobile" required>
                 </div>
-                <div class="mb-3">
+                <div class="col-md-6 mb-3">
                     <label for="secondaryMobile" class="form-label">Secondary Mobile:</label>
-                    <input type="tel" class="form-control" id="secondaryMobile">
+                    <input type="text" class="form-control" id="secondaryMobile">
                 </div>
-                <button type="submit" class="btn btn-primary">Add Member</button>
-            </form>
-        </section>
+            </div>
+            <button type="submit" class="btn btn-primary">Add Member</button>
+        </form>
 
-        <!-- Monthly Contribution -->
-        <section class="mb-5">
-            <h3>Monthly Contribution</h3>
-            <select id="monthSelect" class="form-select mb-3">
-                <option value="2025-10">October 2025</option>
-                <!-- More months added dynamically -->
-            </select>
-            <button id="editMonth" class="btn btn-secondary mb-3">Edit Month</button>
-            <table class="table table-bordered">
-                <thead>
-                    <tr>
-                        <th>Member</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody id="contributionTable">
-                    <!-- Populated dynamically -->
-                </tbody>
-            </table>
-        </section>
+        <!-- Contributions -->
+        <h2>Contributions</h2>
+        <select id="monthSelect" class="form-select mb-3">
+            <option value="2025-10">October 2025</option>
+            <option value="2025-11">November 2025</option>
+            <!-- Add more months as needed -->
+        </select>
+        <button id="editMonth" class="btn btn-warning mb-3" data-editing="false">Edit Month</button>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Paid</th>
+                </tr>
+            </thead>
+            <tbody id="contributionTable"></tbody>
+        </table>
 
-        <!-- Income/Expense -->
-        <section class="mb-5">
-            <h3>Add Income/Expense</h3>
-            <form id="transactionForm" class="border p-3">
-                <div class="mb-3">
+        <!-- Transactions -->
+        <h2>Add Transaction</h2>
+        <form id="transactionForm" class="border p-3 mb-4">
+            <div class="row">
+                <div class="col-md-6 mb-3">
                     <label for="transactionType" class="form-label">Type:</label>
-                    <select id="transactionType" class="form-select">
+                    <select id="transactionType" class="form-select" required>
                         <option value="income">Income</option>
                         <option value="expense">Expense</option>
                     </select>
                 </div>
-                <div class="mb-3">
-                    <label for="transactionMember" class="form-label">Member/External:</label>
-                    <select id="transactionMember" class="form-select">
+                <div class="col-md-6 mb-3">
+                    <label for="transactionMember" class="form-label">Member:</label>
+                    <select id="transactionMember" class="form-select" required>
                         <option value="external">External</option>
-                        <!-- Members added dynamically -->
                     </select>
                 </div>
-                <div class="mb-3" id="externalNameDiv" style="display: none;">
+                <div class="col-md-6 mb-3" id="externalNameDiv" style="display: none;">
                     <label for="externalName" class="form-label">External Name:</label>
                     <input type="text" class="form-control" id="externalName">
                 </div>
-                <div class="mb-3">
+                <div class="col-md-6 mb-3">
                     <label for="transactionAmount" class="form-label">Amount:</label>
                     <input type="number" class="form-control" id="transactionAmount" required>
                 </div>
-                <div class="mb-3">
+                <div class="col-md-6 mb-3">
                     <label for="transactionHead" class="form-label">Head:</label>
                     <input type="text" class="form-control" id="transactionHead" required>
                 </div>
-                <div class="mb-3">
+                <div class="col-md-6 mb-3">
                     <label for="transactionDate" class="form-label">Date:</label>
                     <input type="date" class="form-control" id="transactionDate" required>
                 </div>
-                <button type="submit" class="btn btn-primary">Add Transaction</button>
-            </form>
-            <table class="table table-bordered mt-3">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Type</th>
-                        <th>Member/External</th>
-                        <th>Amount</th>
-                        <th>Head</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody id="transactionTable">
-                    <!-- Populated dynamically -->
-                </tbody>
-            </table>
-        </section>
+            </div>
+            <button type="submit" class="btn btn-primary">Add Transaction</button>
+        </form>
 
-        <!-- Loan Details -->
-        <section>
-            <h3>Loan Details</h3>
-            <p>Coming Soon</p>
-        </section>
+        <h2>Transaction History</h2>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Member/External</th>
+                    <th>Amount</th>
+                    <th>Head</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="transactionTable"></tbody>
+        </table>
     </main>
     <footer class="bg-light text-center py-2">
         <p>Powered by VTSoft 2025</p>
     </footer>
 
     <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>
