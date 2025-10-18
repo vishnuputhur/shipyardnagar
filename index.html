@@ -101,75 +101,81 @@
             const auth = firebase.auth();
             const db = firebase.firestore();
             console.log('Firebase initialized successfully');
-        } catch (error) {
-            alert('Firebase Initialization Error: ' + error.message);
-            console.error('Firebase Init Error:', error);
-        }
 
-        // Auth State Check
-        auth.onAuthStateChanged(async (user) => {
-            const greeting = document.getElementById('greeting');
-            const totalWealth = document.getElementById('totalWealth');
-            const monthlyDue = document.getElementById('monthlyDue');
-            const adminTab = document.getElementById('adminTab');
-            const chittiBtn = document.getElementById('chittiBtn');
-            const loanBtn = document.getElementById('loanBtn');
-            const memberListBtn = document.getElementById('memberListBtn');
-            const subscriptionBtn = document.getElementById('subscriptionBtn');
-            const profileBtn = document.getElementById('profileBtn');
-            const adminBtn = document.getElementById('adminBtn');
+            // Auth State Check
+            auth.onAuthStateChanged(async (user) => {
+                const greeting = document.getElementById('greeting');
+                const totalWealth = document.getElementById('totalWealth');
+                const monthlyDue = document.getElementById('monthlyDue');
+                const adminTab = document.getElementById('adminTab');
+                const chittiBtn = document.getElementById('chittiBtn');
+                const loanBtn = document.getElementById('loanBtn');
+                const memberListBtn = document.getElementById('memberListBtn');
+                const subscriptionBtn = document.getElementById('subscriptionBtn');
+                const profileBtn = document.getElementById('profileBtn');
+                const adminBtn = document.getElementById('adminBtn');
 
-            if (user) {
-                try {
-                    const userDoc = await db.collection('users').doc(user.uid).get();
-                    if (userDoc.exists) {
-                        const userData = userDoc.data();
-                        console.log('User Data:', userData);
+                if (user) {
+                    try {
+                        const userDoc = await db.collection('users').doc(user.uid).get();
+                        if (userDoc.exists) {
+                            const userData = userDoc.data();
+                            console.log('User Data:', userData);
 
-                        // Set memberName
-                        const memberName = userData.memberName || 'Guest';
-                        greeting.textContent = `Hi, ${memberName} & family!`;
+                            // Set memberName
+                            const memberName = userData.memberName || 'Guest';
+                            greeting.textContent = `Hi, ${memberName} & family!`;
 
-                        // Total Wealth
-                        let totalIncome = 0, totalExpense = 0;
-                        const transactionsSnapshot = await db.collection('transactions').get();
-                        transactionsSnapshot.forEach(doc => {
-                            const t = doc.data();
-                            if (t.type === 'income') totalIncome += t.amount || 0;
-                            if (t.type === 'expense') totalExpense += t.amount || 0;
-                        });
-                        const wealth = totalIncome - totalExpense;
-                        totalWealth.textContent = `Our Total Wealth: ₹${wealth}`;
+                            // Total Wealth
+                            let totalIncome = 0, totalExpense = 0;
+                            const transactionsSnapshot = await db.collection('transactions').get();
+                            transactionsSnapshot.forEach(doc => {
+                                const t = doc.data();
+                                if (t.type === 'income') totalIncome += t.amount || 0;
+                                if (t.type === 'expense') totalExpense += t.amount || 0;
+                            });
+                            const wealth = totalIncome - totalExpense;
+                            totalWealth.textContent = `Our Total Wealth: ₹${wealth}`;
 
-                        // Monthly Due
-                        const startMonth = new Date(2025, 9, 1); // Oct 2025
-                        const currentMonth = new Date(2025, 9, 18); // Oct 18, 2025
-                        const months = [];
-                        for (let d = new Date(startMonth); d <= currentMonth; d.setMonth(d.getMonth() + 1)) {
-                            months.push(d.toISOString().slice(0, 7));
+                            // Monthly Due
+                            const startMonth = new Date(2025, 9, 1); // Oct 2025
+                            const currentMonth = new Date(2025, 9, 18); // Oct 18, 2025
+                            const months = [];
+                            for (let d = new Date(startMonth); d <= currentMonth; d.setMonth(d.getMonth() + 1)) {
+                                months.push(d.toISOString().slice(0, 7));
+                            }
+                            let dueMonths = 0;
+                            for (const month of months) {
+                                const contributionDoc = await db.collection('contributions').doc(user.uid).collection('months').doc(month).get();
+                                if (!contributionDoc.exists || !contributionDoc.data()?.paid) dueMonths++;
+                            }
+                            monthlyDue.textContent = `Your Monthly Due: ${dueMonths} months (₹${dueMonths * 200})`;
+
+                            // Button Functionality (FIXED VARIABLE NAME)
+                            if (chittiBtn) chittiBtn.addEventListener('click', () => window.location.href = 'chitty.html');
+                            if (loanBtn) loanBtn.addEventListener('click', () => window.location.href = 'loan.html');
+                            if (memberListBtn) memberListBtn.addEventListener('click', () => window.location.href = 'members.html');
+                            if (subscriptionBtn) subscriptionBtn.addEventListener('click', () => window.location.href = 'subscription.html');
+                            if (profileBtn) profileBtn.addEventListener('click', () => window.location.href = 'profile.html');
+                            if (adminBtn) adminBtn.addEventListener('click', () => window.location.href = 'dashboard.html');
+
+                            // Admin Tab Visibility (FIXED)
+                            if (adminTab) {
+                                adminTab.style.display = (userData.role && userData.role.toLowerCase() === 'admin') ? 'block' : 'none';
+                                console.log('Admin Role:', userData.role);
+                            }
+                        } else {
+                            console.error(`User data not found for UID: ${user.uid}`);
+                            greeting.textContent = 'Hi, Guest & family!';
+                            if (chittiBtn) chittiBtn.style.display = 'none';
+                            if (loanBtn) loanBtn.style.display = 'none';
+                            if (memberListBtn) memberListBtn.style.display = 'none';
+                            if (subscriptionBtn) subscriptionBtn.style.display = 'none';
+                            if (profileBtn) profileBtn.style.display = 'none';
+                            if (adminTab) adminTab.style.display = 'none';
                         }
-                        let dueMonths = 0;
-                        for (const month of months) {
-                            const contributionDoc = await db.collection('contributions').doc(user.uid).collection('months').doc(month).get();
-                            if (!contributionDoc.exists || !contributionDoc.data()?.paid) dueMonths++;
-                        }
-                        monthlyDue.textContent = `Your Monthly Due: ${dueMonths} months (₹${dueMonths * 200})`;
-
-                        // Button Functionality
-                        if (chittiBtn) chittiBtn.addEventListener('click', () => window.location.href = 'chitty.html');
-                        if (loanBtn) loanBtn.addEventListener('click', () => window.location.href = 'loan.html');
-                        if (memberListBtn) memberBtn.addEventListener('click', () => window.location.href = 'members.html');
-                        if (subscriptionBtn) subscriptionBtn.addEventListener('click', () => window.location.href = 'subscription.html');
-                        if (profileBtn) profileBtn.addEventListener('click', () => window.location.href = 'profile.html');
-                        if (adminBtn) adminBtn.addEventListener('click', () => window.location.href = 'dashboard.html');
-
-                        // Admin Tab Visibility
-                        if (adminTab) {
-                            adminTab.style.display = userData.role === 'admin' ? 'block' : 'none';
-                            console.log('Admin Role:', userData.role);
-                        }
-                    } else {
-                        console.error(`User data not found for UID: ${user.uid}`);
+                    } catch (error) {
+                        console.error('Error fetching user data:', error);
                         greeting.textContent = 'Hi, Guest & family!';
                         if (chittiBtn) chittiBtn.style.display = 'none';
                         if (loanBtn) loanBtn.style.display = 'none';
@@ -178,20 +184,14 @@
                         if (profileBtn) profileBtn.style.display = 'none';
                         if (adminTab) adminTab.style.display = 'none';
                     }
-                } catch (error) {
-                    console.error('Error fetching user data:', error);
-                    greeting.textContent = 'Hi, Guest & family!';
-                    if (chittiBtn) chittiBtn.style.display = 'none';
-                    if (loanBtn) loanBtn.style.display = 'none';
-                    if (memberListBtn) memberListBtn.style.display = 'none';
-                    if (subscriptionBtn) subscriptionBtn.style.display = 'none';
-                    if (profileBtn) profileBtn.style.display = 'none';
-                    if (adminTab) adminTab.style.display = 'none';
+                } else {
+                    window.location.href = 'login.html';
                 }
-            } else {
-                window.location.href = 'login.html';
-            }
-        });
+            });
+        } catch (error) {
+            alert('Firebase Initialization Error: ' + error.message);
+            console.error('Firebase Init Error:', error);
+        }
 
         // Theme Toggle
         const themeToggle = document.getElementById('themeToggle');
