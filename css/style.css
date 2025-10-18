@@ -35,6 +35,9 @@ body {
     color: var(--text-color);
     min-height: 100vh;
     transition: var(--transition);
+    margin: 0; /* ✅ Prevent space at top */
+    padding: 0; /* ✅ Prevent unwanted padding */
+    overflow-x: hidden; /* ✅ Avoid horizontal scroll line */
 }
 
 /* Header with Letterhead */
@@ -48,23 +51,24 @@ header {
     align-items: center;
     justify-content: center;
     text-align: center;
-    padding: 10px;
+    padding: 0; /* ✅ Remove extra space */
     box-shadow: var(--shadow);
     position: relative;
     z-index: 1;
     overflow: hidden;
+    margin-top: 0; /* ✅ Ensure no gap above */
 }
 
 header h1 {
     font-size: 1.1rem;
     color: var(--header-text);
     text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.5);
-    background: rgba(0, 0, 0, 0.7); /* Increased opacity to avoid overlap */
+    background: rgba(0, 0, 0, 0.7);
     padding: 8px 15px;
     border-radius: 10px;
     transition: var(--transition);
     position: relative;
-    z-index: 2; /* Ensure text above image */
+    z-index: 2;
 }
 
 /* Theme Toggle */
@@ -142,7 +146,7 @@ form {
     border: 1px solid #ddd;
     padding: 8px;
     font-size: 0.9rem;
-    max-width: 100%; /* Compact width */
+    max-width: 100%;
 }
 
 .form-control:focus {
@@ -235,6 +239,7 @@ form {
 
     header {
         height: 60px;
+        padding: 0;
     }
 
     header h1 {
