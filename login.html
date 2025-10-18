@@ -7,6 +7,31 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Footer Fixed at Bottom */
+        footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+            padding: 10px;
+            background: #f8f8f8;
+            color: #333;
+            z-index: 1000;
+        }
+
+        /* Center Login */
+        .card h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* Show Password Checkbox */
+        .mb-3 label {
+            display: block;
+            font-size: 0.9rem;
+        }
+    </style>
 </head>
 <body>
     <div class="theme-toggle">
@@ -17,12 +42,12 @@
     </header>
     <main class="container my-4">
         <div class="logo-container">
-            <img src="assets/logo.jpg" alt="Shipyard Nagar Logo" class="img-fluid">
+            <img src="assets/logo.jpg" alt="Shipyard Nagar Logo">
         </div>
         <div class="row">
             <div class="col-12">
                 <div class="card">
-                    <h2>User Login</h2>
+                    <h2>Login</h2>
                     <form id="memberLoginForm" class="p-3">
                         <div class="mb-3">
                             <label for="memberEmail" class="form-label">Email:</label>
@@ -31,6 +56,11 @@
                         <div class="mb-3">
                             <label for="memberPassword" class="form-label">Password:</label>
                             <input type="password" class="form-control" id="memberPassword" required>
+                        </div>
+                        <div class="mb-3">
+                            <label>
+                                <input type="checkbox" id="showPassword"> Show Password
+                            </label>
                         </div>
                         <div class="mb-3">
                             <label>
@@ -44,12 +74,115 @@
             </div>
         </div>
     </main>
-    <footer class="bg-light text-center py-2">
+    <footer>
         <p>Powered by VTSoft 2025</p>
     </footer>
+
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-    <script src="js/app.js"></script>
+
+    <script>
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyBWswawf9tpxNwVU0BaJ6FCwCvgcjUQXlA",
+            authDomain: "shipyard-nagar.firebaseapp.com",
+            projectId: "shipyard-nagar",
+            storageBucket: "shipyard-nagar.firebasestorage.app",
+            messagingSenderId: "552855824221",
+            appId: "1:552855824221:web:f709da953077475be9eab4",
+            measurementId: "G-V8CQ4YCCQ5"
+        };
+
+        // Initialize Firebase
+        try {
+            firebase.initializeApp(firebaseConfig);
+            const auth = firebase.auth();
+            const db = firebase.firestore();
+
+            // Member Login
+            const loginForm = document.getElementById('memberLoginForm');
+            if (loginForm) {
+                loginForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const email = document.getElementById('memberEmail').value.trim();
+                    const password = document.getElementById('memberPassword').value;
+
+                    // Email validation
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(email)) {
+                        alert('Please enter a valid email address.');
+                        return;
+                    }
+
+                    auth.signInWithEmailAndPassword(email, password)
+                        .then(() => {
+                            alert('Login successful! Redirecting to home...');
+                            window.location.href = 'index.html';
+                        })
+                        .catch((error) => {
+                            alert('Login Error: ' + error.message);
+                        });
+                });
+            }
+
+            // Forgot Password
+            const forgotPassword = document.getElementById('memberForgotPassword');
+            if (forgotPassword) {
+                forgotPassword.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const email = document.getElementById('memberEmail').value.trim();
+                    if (email) {
+                        auth.sendPasswordResetEmail(email)
+                            .then(() => alert('Password reset email sent!'))
+                            .catch((error) => alert('Forgot Password Error: ' + error.message));
+                    } else {
+                        alert('Please enter your email first!');
+                    }
+                });
+            }
+
+            // Remember Me
+            const rememberMe = document.getElementById('memberRememberMe');
+            if (rememberMe) {
+                rememberMe.addEventListener('change', (e) => {
+                    if (e.target.checked) {
+                        localStorage.setItem('email', document.getElementById('memberEmail').value);
+                    } else {
+                        localStorage.removeItem('email');
+                    }
+                });
+            }
+
+            // Show Password
+            const showPassword = document.getElementById('showPassword');
+            if (showPassword) {
+                showPassword.addEventListener('change', (e) => {
+                    const passwordField = document.getElementById('memberPassword');
+                    passwordField.type = e.target.checked ? 'text' : 'password';
+                });
+            }
+
+            // Theme Toggle
+            const themeToggle = document.getElementById('themeToggle');
+            if (themeToggle) {
+                themeToggle.addEventListener('click', () => {
+                    const html = document.documentElement;
+                    const currentTheme = html.getAttribute('data-theme');
+                    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+                    html.setAttribute('data-theme', newTheme);
+                    localStorage.setItem('theme', newTheme);
+                });
+
+                const savedTheme = localStorage.getItem('theme');
+                if (savedTheme) {
+                    document.documentElement.setAttribute('data-theme', savedTheme);
+                }
+            }
+        } catch (error) {
+            alert('Firebase Initialization Error: ' + error.message);
+        }
+    </script>
 </body>
 </html>
