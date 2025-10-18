@@ -32,17 +32,17 @@ if (typeof firebase === 'undefined') {
                     if (user && window.location.pathname === '/index.html') {
                         // Load Cached Data
                         const cachedData = JSON.parse(localStorage.getItem('userData') || '{}');
-                        if (cachedData.name) {
-                            document.getElementById('greeting').textContent = `Hi, ${cachedData.name} & family!`;
-                            document.getElementById('totalWealth').textContent = `Our Total Wealth: ₹${cachedData.totalWealth || 0}`;
-                            document.getElementById('monthlyDue').textContent = `Your Monthly Due: ${cachedData.dueMonths || 0} months (₹${(cachedData.dueMonths || 0) * 200})`;
-                        }
+                        let name = cachedData.name || 'Guest';
+                        document.getElementById('greeting').textContent = `Hi, ${name} & family!`;
+                        document.getElementById('totalWealth').textContent = `Our Total Wealth: ₹${cachedData.totalWealth || 0}`;
+                        document.getElementById('monthlyDue').textContent = `Your Monthly Due: ${cachedData.dueMonths || 0} months (₹${(cachedData.dueMonths || 0) * 200})`;
 
                         // Refresh from Firebase
                         const userDoc = await db.collection('users').doc(user.uid).get();
                         if (userDoc.exists) {
                             const userData = userDoc.data();
-                            document.getElementById('greeting').textContent = `Hi, ${userData.name} & family!`;
+                            name = userData.name || 'Guest'; // Fallback to Guest if name missing
+                            document.getElementById('greeting').textContent = `Hi, ${name} & family!`;
 
                             // Profile Incomplete Check
                             if (!userData.homeName || !userData.homeNumber || !userData.familyMembers) {
@@ -79,7 +79,7 @@ if (typeof firebase === 'undefined') {
 
                             // Cache Data
                             localStorage.setItem('userData', JSON.stringify({
-                                name: userData.name,
+                                name: name,
                                 totalWealth,
                                 dueMonths
                             }));
@@ -91,6 +91,8 @@ if (typeof firebase === 'undefined') {
                             } else {
                                 console.error('adminTab element not found in index.html');
                             }
+                        } else {
+                            console.error(`User data not found for UID: ${user.uid}`);
                         }
                     }
                 });
@@ -129,7 +131,7 @@ if (typeof firebase === 'undefined') {
                             })
                             .catch((error) => {
                                 alert('Login Error: ' + error.message);
-                                console.error('Firebase Error:', error); // For debugging
+                                console.error('Firebase Error:', error);
                             });
                     });
 
@@ -196,7 +198,7 @@ if (typeof firebase === 'undefined') {
                     members.forEach(member => {
                         const option = document.createElement('option');
                         option.value = member.id;
-                        option.textContent = member.name;
+                        option.textContent = member.name || 'Unknown';
                         transactionMember.appendChild(option);
                     });
 
@@ -215,7 +217,7 @@ if (typeof firebase === 'undefined') {
                             const contribution = contributionDoc.exists ? contributionDoc.data() : { paid: false };
                             const row = document.createElement('tr');
                             row.innerHTML = `
-                                <td>${member.name}</td>
+                                <td>${member.name || 'Unknown'}</td>
                                 <td><input type="checkbox" class="contribution-check" data-member="${member.id}" ${contribution.paid ? 'checked' : ''} ${editMonthBtn.dataset.editing === 'true' ? '' : 'disabled'}></td>
                             `;
                             contributionTable.appendChild(row);
@@ -254,7 +256,7 @@ if (typeof firebase === 'undefined') {
                                         paid: false,
                                         date: null,
                                         amount: 0
-                                    });
+                                    }, { merge: true });
                                 } else {
                                     e.target.checked = true;
                                 }
@@ -263,7 +265,7 @@ if (typeof firebase === 'undefined') {
                                     paid: true,
                                     date: new Date().toISOString().split('T')[0],
                                     amount: 200
-                                });
+                                }, { merge: true });
                                 await db.collection('transactions').add({
                                     type: 'income',
                                     memberId: memberId,
@@ -295,9 +297,10 @@ if (typeof firebase === 'undefined') {
                                 memberData.email,
                                 document.getElementById('password').value
                             );
-                            await db.collection('users').doc(userCredential.user.uid).set(memberData);
+                            await db.collection('users').doc(userCredential.user.uid).set(memberData, { merge: true });
                             alert('User added successfully!');
                             document.getElementById('addUserForm').reset();
+                            loadSubscriptionTable(); // Refresh members list
                         } catch (error) {
                             alert('Error adding user: ' + error.message);
                         }
@@ -324,6 +327,7 @@ if (typeof firebase === 'undefined') {
                         alert('Member updated successfully!');
                         document.getElementById('editMemberForm').reset();
                         document.getElementById('editMemberForm').style.display = 'none';
+                        loadSubscriptionTable(); // Refresh members list
                     });
 
                     // Load Edit Member Form
@@ -341,9 +345,6 @@ if (typeof firebase === 'undefined') {
                         document.getElementById('editIsAdmin').checked = memberData.role === 'admin';
                         document.getElementById('editMemberForm').style.display = 'block';
                     });
-
-                    // Transaction Form and Table (unchanged)
-                    // ...
                 }
 
                 // Load Profile (Member)
