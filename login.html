@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,55 +8,63 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <header class="bg-primary text-white text-center py-3">
+    <div class="theme-toggle">
+        <button id="themeToggle">🌞</button>
+    </div>
+    <header>
         <h1>Shipyard Nagar Residential Association</h1>
     </header>
     <main class="container my-4">
+        <div class="logo-container">
+            <img src="assets/logo.jpg" alt="Shipyard Nagar Logo">
+        </div>
         <div class="row">
             <!-- Member Login -->
-            <div class="col-md-6">
-                <h2>Member Login</h2>
-                <form id="memberLoginForm" class="border p-3">
-                    <div class="mb-3">
-                        <label for="memberEmail" class="form-label">Email:</label>
-                        <input type="email" class="form-control" id="memberEmail" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="memberPassword" class="form-label">Password:</label>
-                        <input type="password" class="form-control" id="memberPassword" required>
-                    </div>
-                    <div class="mb-3">
-                        <label>
-                            <input type="checkbox" id="memberRememberMe"> Remember Me
-                        </label>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Login</button>
-                    <a href="#" id="memberForgotPassword" class="d-block mt-2">Forgot Password?</a>
-                </form>
+            <div class="col-12 mb-4">
+                <div class="card">
+                    <h2>Member Login</h2>
+                    <form id="memberLoginForm" class="p-3">
+                        <div class="mb-3">
+                            <label for="memberEmail" class="form-label">Email:</label>
+                            <input type="email" class="form-control" id="memberEmail" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="memberPassword" class="form-label">Password:</label>
+                            <input type="password" class="form-control" id="memberPassword" required>
+                        </div>
+                        <div class="mb-3">
+                            <label>
+                                <input type="checkbox" id="memberRememberMe"> Remember Me
+                            </label>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Login</button>
+                        <a href="#" id="memberForgotPassword" class="d-block mt-2">Forgot Password?</a>
+                    </form>
+                </div>
             </div>
             <!-- Admin Login -->
-            <div class="col-md-6">
-                <h2>Admin Login</h2>
-                <form id="adminLoginForm" class="border p-3">
-                    <div class="mb-3">
-                        <label for="adminEmail" class="form-label">Email:</label>
-                        <input type="email" class="form-control" id="adminEmail" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="adminPassword" class="form-label">Password:</label>
-                        <input type="password" class="form-control" id="adminPassword" required>
-                    </div>
-                    <button type="submit" class="btn btn-warning">Admin Login</button>
-                    <a href="#" id="adminForgotPassword" class="d-block mt-2">Forgot Password?</a>
-                </form>
+            <div class="col-12">
+                <div class="card">
+                    <h2>Admin Login</h2>
+                    <form id="adminLoginForm" class="p-3">
+                        <div class="mb-3">
+                            <label for="adminEmail" class="form-label">Email:</label>
+                            <input type="email" class="form-control" id="adminEmail" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="adminPassword" class="form-label">Password:</label>
+                            <input type="password" class="form-control" id="adminPassword" required>
+                        </div>
+                        <button type="submit" class="btn btn-warning">Admin Login</button>
+                        <a href="#" id="adminForgotPassword" class="d-block mt-2">Forgot Password?</a>
+                    </form>
+                </div>
             </div>
         </div>
     </main>
     <footer class="bg-light text-center py-2">
         <p>Powered by VTSoft 2025</p>
     </footer>
-
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
