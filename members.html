@@ -3,40 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shipyard Nagar - All Members</title>
+    <title>Shipyard Nagar - Members</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
+    <style>
+        footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+            padding: 10px;
+            background: #f8f8f8;
+            color: #333;
+            z-index: 1000;
+        }
+        .theme-toggle {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+    </style>
 </head>
 <body>
     <div class="theme-toggle">
         <button id="themeToggle">🌞</button>
     </div>
     <header>
-        <h1>Shipyard Nagar - All Members</h1>
+        <h1>Shipyard Nagar - Members</h1>
     </header>
     <main class="container my-4">
-        <button class="btn btn-danger mb-3" id="logout">Logout</button>
-        <div class="card">
-            <h2>Members</h2>
-            <table class="table table-bordered">
-                <thead>
-                    <tr>
-                        <th>Member Number</th>
-                        <th>Name</th>
-                        <th>Primary Mobile</th>
-                    </tr>
-                </thead>
-                <tbody id="memberTable"></tbody>
-            </table>
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <h2>Member List</h2>
+                    <p>Member list will be added soon!</p>
+                    <button id="logoutBtn" class="btn btn-danger mt-3">Logout</button>
+                </div>
+            </div>
         </div>
     </main>
     <footer class="bg-light text-center py-2">
         <p>Powered by VTSoft 2025</p>
     </footer>
+
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-    <script src="js/app.js"></script>
+
+    <script>
+        // Firebase Config (same as above)
+        const firebaseConfig = {
+            apiKey: "AIzaSyBWswawf9tpxNwVU0BaJ6FCwCvgcjUQXlA",
+            authDomain: "shipyard-nagar.firebaseapp.com",
+            projectId: "shipyard-nagar",
+            storageBucket: "shipyard-nagar.firebasestorage.app",
+            messagingSenderId: "552855824221",
+            appId: "1:552855824221:web:f709da953077475be9eab4",
+            measurementId: "G-V8CQ4YCCQ5"
+        };
+
+        try {
+            firebase.initializeApp(firebaseConfig);
+            const auth = firebase.auth();
+        } catch (error) {
+            alert('Firebase Initialization Error: ' + error.message);
+        }
+
+        auth.onAuthStateChanged((user) => {
+            const logoutBtn = document.getElementById('logoutBtn');
+            if (!user) {
+                window.location.href = 'login.html';
+            }
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', () => {
+                    auth.signOut().then(() => {
+                        localStorage.removeItem('userData');
+                        alert('Logged out successfully!');
+                        window.location.href = 'login.html';
+                    }).catch((error) => {
+                        alert('Logout Error: ' + error.message);
+                    });
+                });
+            }
+        });
+
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        if (themeToggle) {
+            themeToggle.addEventListener('click', () => {
+                const html = document.documentElement;
+                const currentTheme = html.getAttribute('data-theme');
+                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+                html.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+            });
+
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                document.documentElement.setAttribute('data-theme', savedTheme);
+            }
+        }
+    </script>
 </body>
 </html>
