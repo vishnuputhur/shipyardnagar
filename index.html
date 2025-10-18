@@ -7,37 +7,194 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Footer Fixed at Bottom */
+        footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+            padding: 10px;
+            background: #f8f8f8;
+            color: #333;
+            z-index: 1000;
+        }
+
+        /* Admin Tab Styling */
+        #adminTab {
+            display: none;
+            margin-top: 20px;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+    </style>
 </head>
 <body>
     <div class="theme-toggle">
         <button id="themeToggle">🌞</button>
     </div>
     <header>
-        <h1>Shipyard Nagar - Home</h1>
+        <h1>Shipyard Nagar Residential Association</h1>
     </header>
     <main class="container my-4">
-        <button class="btn btn-danger mb-3" id="logout">Logout</button>
-        <div class="card">
-            <h2>Welcome</h2>
-            <p id="greeting">Hi, Guest & family!</p>
-            <p id="totalWealth">Our Total Wealth: ₹0</p>
-            <p id="monthlyDue">Your Monthly Due: 0 months (₹0)</p>
-            <div class="button-grid">
-                <button class="btn btn-primary" onclick="window.location.href='profile.html'">Profile</button>
-                <button class="btn btn-primary" onclick="window.location.href='loan.html'">Loans</button>
-                <button class="btn btn-primary" onclick="window.location.href='subscription.html'">Monthly Subscription</button>
-                <button class="btn btn-primary" onclick="window.location.href='members.html'">All Members</button>
-                <button class="btn btn-primary" onclick="window.location.href='chitty.html'">Chitt Fund</button>
-                <button class="btn btn-warning" id="adminTab" style="display: none;" onclick="checkAdmin()">Admin</button>
+        <div class="logo-container">
+            <img src="assets/logo.jpg" alt="Shipyard Nagar Logo" class="img-fluid">
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <h2>Welcome</h2>
+                    <p id="greeting">Hi, Guest & family!</p>
+                    <p id="totalWealth">Our Total Wealth: ₹0</p>
+                    <p id="monthlyDue">Your Monthly Due: 0 months (₹0)</p>
+                    <button id="logout" class="btn btn-danger mt-3">Logout</button>
+                    <div id="adminTab">
+                        <button id="adminDashboard" class="btn btn-primary mt-2">Admin Dashboard</button>
+                    </div>
+                </div>
             </div>
         </div>
     </main>
-    <footer class="bg-light text-center py-2">
+    <footer>
         <p>Powered by VTSoft 2025</p>
     </footer>
+
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-    <script src="js/app.js"></script>
+
+    <script>
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyBWswawf9tpxNwVU0BaJ6FCwCvgcjUQXlA",
+            authDomain: "shipyard-nagar.firebaseapp.com",
+            projectId: "shipyard-nagar",
+            storageBucket: "shipyard-nagar.firebasestorage.app",
+            messagingSenderId: "552855824221",
+            appId: "1:552855824221:web:f709da953077475be9eab4",
+            measurementId: "G-V8CQ4YCCQ5"
+        };
+
+        // Initialize Firebase
+        try {
+            firebase.initializeApp(firebaseConfig);
+            const auth = firebase.auth();
+            const db = firebase.firestore();
+            console.log('Firebase initialized successfully');
+        } catch (error) {
+            alert('Firebase Initialization Error: ' + error.message);
+            console.error('Firebase Init Error:', error);
+        }
+
+        // Auth State Check
+        auth.onAuthStateChanged(async (user) => {
+            const greeting = document.getElementById('greeting');
+            const totalWealth = document.getElementById('totalWealth');
+            const monthlyDue = document.getElementById('monthlyDue');
+            const adminTab = document.getElementById('adminTab');
+
+            if (user) {
+                try {
+                    const userDoc = await db.collection('users').doc(user.uid).get();
+                    if (userDoc.exists) {
+                        const userData = userDoc.data();
+                        console.log('User Data:', userData);
+
+                        // Set memberName
+                        const memberName = userData.memberName || 'Guest';
+                        greeting.textContent = `Hi, ${memberName} & family!`;
+
+                        // Total Wealth
+                        let totalIncome = 0, totalExpense = 0;
+                        const transactions = await db.collection('transactions').get();
+                        transactions.forEach(doc => {
+                            const t = doc.data();
+                            if (t.type === 'income') totalIncome += t.amount;
+                            if (t.type === 'expense') totalExpense += t.amount;
+                        });
+                        const wealth = totalIncome - totalExpense;
+                        totalWealth.textContent = `Our Total Wealth: ₹${wealth}`;
+
+                        // Monthly Due
+                        const startMonth = new Date(2025, 9, 1); // Oct 2025
+                        const currentMonth = new Date(2025, 9, 18); // Oct 18, 2025
+                        const months = [];
+                        for (let d = new Date(startMonth); d <= currentMonth; d.setMonth(d.getMonth() + 1)) {
+                            months.push(d.toISOString().slice(0, 7));
+                        }
+                        let dueMonths = 0;
+                        for (const month of months) {
+                            const contribution = await db.collection('contributions').doc(user.uid).collection('months').doc(month).get();
+                            if (!contribution.exists || !contribution.data().paid) dueMonths++;
+                        }
+                        monthlyDue.textContent = `Your Monthly Due: ${dueMonths} months (₹${dueMonths * 200})`;
+
+                        // Admin Tab Visibility
+                        if (adminTab) {
+                            adminTab.style.display = userData.role === 'admin' ? 'block' : 'none';
+                            console.log('Admin Role:', userData.role);
+                        }
+                    } else {
+                        console.error(`User data not found for UID: ${user.uid}`);
+                        greeting.textContent = 'Hi, Guest & family!'; // Fallback
+                    }
+                } catch (error) {
+                    console.error('Error fetching user data:', error);
+                    greeting.textContent = 'Hi, Guest & family!'; // Fallback
+                }
+            } else {
+                // Redirect to login if not authenticated
+                window.location.href = 'login.html';
+            }
+        });
+
+        // Logout
+        const logoutBtn = document.getElementById('logout');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', () => {
+                auth.signOut()
+                    .then(() => {
+                        localStorage.removeItem('userData'); // Clear cached data
+                        alert('Logged out successfully!');
+                        window.location.href = 'login.html';
+                    })
+                    .catch((error) => {
+                        alert('Logout Error: ' + error.message);
+                        console.error('Logout Error:', error);
+                    });
+            });
+        }
+
+        // Admin Dashboard
+        const adminDashboardBtn = document.getElementById('adminDashboard');
+        if (adminDashboardBtn) {
+            adminDashboardBtn.addEventListener('click', () => {
+                window.location.href = 'dashboard.html';
+            });
+        }
+
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        if (themeToggle) {
+            themeToggle.addEventListener('click', () => {
+                const html = document.documentElement;
+                const currentTheme = html.getAttribute('data-theme');
+                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+                html.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+            });
+
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                document.documentElement.setAttribute('data-theme', savedTheme);
+            }
+        }
+    </script>
 </body>
 </html>
