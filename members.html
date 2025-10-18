@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shipyard Nagar - Members</title>
+    <title>Shipyard Nagar - Members List</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <style>
+        /* Footer Fixed at Bottom */
         footer {
             position: fixed;
             bottom: 0;
@@ -18,10 +19,81 @@
             color: #333;
             z-index: 1000;
         }
+
+        /* Member Card Style */
+        .member-card {
+            background-color: #ffffff;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .member-card:hover {
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+            transform: translateY(-5px);
+        }
+
+        .member-card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: #0288d1;
+        }
+
+        .member-card p {
+            margin: 5px 0;
+            font-size: 0.9rem;
+            color: #333;
+        }
+
+        /* Dark Theme Overrides */
+        [data-theme="dark"] .member-card {
+            background-color: #1e1e1e;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        [data-theme="dark"] .member-card h3 {
+            color: #4fc3f7;
+        }
+
+        [data-theme="dark"] .member-card p {
+            color: #e0e0e0;
+        }
+
+        /* Theme Toggle */
         .theme-toggle {
-            position: absolute;
+            position: fixed;
             top: 10px;
             right: 10px;
+            z-index: 1000;
+        }
+
+        .theme-toggle button {
+            background: #0288d1;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+            transition: transform 0.1s ease;
+        }
+
+        .theme-toggle button:hover {
+            transform: scale(1.05);
+        }
+
+        /* Loading Spinner */
+        #loadingSpinner {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2rem;
+            color: #0288d1;
         }
     </style>
 </head>
@@ -30,29 +102,26 @@
         <button id="themeToggle">🌞</button>
     </div>
     <header>
-        <h1>Shipyard Nagar - Members</h1>
+        <h1>Shipyard Nagar Residential Association</h1>
     </header>
     <main class="container my-4">
-        <div class="row">
-            <div class="col-12">
-                <div class="card">
-                    <h2>Member List</h2>
-                    <p>Member list will be added soon!</p>
-                    <button id="logoutBtn" class="btn btn-danger mt-3">Logout</button>
-                </div>
-            </div>
+        <div class="logo-container">
+            <img src="assets/logo.jpg" alt="Shipyard Nagar Logo" class="img-fluid">
         </div>
+        <div class="row" id="membersList"></div> <!-- Members cards will be added here -->
+        <div id="loadingSpinner">⏳ Loading...</div>
     </main>
-    <footer class="bg-light text-center py-2">
+    <footer>
         <p>Powered by VTSoft 2025</p>
     </footer>
 
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 
     <script>
-        // Firebase Config (same as above)
+        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyBWswawf9tpxNwVU0BaJ6FCwCvgcjUQXlA",
             authDomain: "shipyard-nagar.firebaseapp.com",
@@ -63,30 +132,17 @@
             measurementId: "G-V8CQ4YCCQ5"
         };
 
+        // Initialize Firebase
+        let auth, db;
         try {
             firebase.initializeApp(firebaseConfig);
-            const auth = firebase.auth();
+            auth = firebase.auth();
+            db = firebase.firestore();
+            console.log('Firebase initialized successfully');
         } catch (error) {
             alert('Firebase Initialization Error: ' + error.message);
+            console.error('Firebase Init Error:', error);
         }
-
-        auth.onAuthStateChanged((user) => {
-            const logoutBtn = document.getElementById('logoutBtn');
-            if (!user) {
-                window.location.href = 'login.html';
-            }
-            if (logoutBtn) {
-                logoutBtn.addEventListener('click', () => {
-                    auth.signOut().then(() => {
-                        localStorage.removeItem('userData');
-                        alert('Logged out successfully!');
-                        window.location.href = 'login.html';
-                    }).catch((error) => {
-                        alert('Logout Error: ' + error.message);
-                    });
-                });
-            }
-        });
 
         // Theme Toggle
         const themeToggle = document.getElementById('themeToggle');
@@ -104,6 +160,75 @@
                 document.documentElement.setAttribute('data-theme', savedTheme);
             }
         }
+
+        // Load Members
+        const loadMembers = async () => {
+            const membersList = document.getElementById('membersList');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            if (!membersList || !loadingSpinner) return;
+
+            // Show loading spinner
+            loadingSpinner.style.display = 'block';
+
+            // Load Cached Data
+            const cachedMembers = JSON.parse(localStorage.getItem('membersCache') || '[]');
+            if (cachedMembers.length > 0) {
+                renderMembers(cachedMembers);
+            }
+
+            // Refresh from Firebase
+            try {
+                const membersSnapshot = await db.collection('users').get();
+                const members = membersSnapshot.docs.map(doc => ({
+                    memberName: doc.data().memberName || 'Unknown',
+                    homeName: doc.data().homeName || 'N/A',
+                    primaryMobile: doc.data().primaryMobile || 'N/A',
+                    email: doc.data().email || 'N/A'
+                }));
+                localStorage.setItem('membersCache', JSON.stringify(members));
+                renderMembers(members);
+            } catch (error) {
+                console.error('Error fetching members:', error);
+                if (cachedMembers.length === 0) {
+                    alert('Error loading members. Showing cached data or none available.');
+                    membersList.innerHTML = '<p class="text-center">No members data available.</p>';
+                }
+            } finally {
+                // Hide loading spinner
+                loadingSpinner.style.display = 'none';
+            }
+        };
+
+        // Render Members in Cards
+        const renderMembers = (members) => {
+            const membersList = document.getElementById('membersList');
+            membersList.innerHTML = '';
+            members.forEach(member => {
+                const card = document.createElement('div');
+                card.className = 'col-12 col-md-6 col-lg-4 member-card';
+                card.innerHTML = `
+                    <div class="card-body">
+                        <h3>${member.memberName}</h3>
+                        <p><strong>House Name:</strong> ${member.homeName}</p>
+                        <p><strong>Primary Phone:</strong> ${member.primaryMobile}</p>
+                        <p><strong>Email:</strong> ${member.email}</p>
+                    </div>
+                `;
+                membersList.appendChild(card);
+            });
+        };
+
+        // Call loadMembers on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            // Auth Check
+            auth.onAuthStateChanged((user) => {
+                if (!user) {
+                    window.location.href = 'login.html';
+                } else {
+                    loadMembers();
+                }
+            });
+        });
     </script>
 </body>
 </html>
