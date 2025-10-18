@@ -43,6 +43,17 @@
             top: 10px;
             right: 10px;
         }
+
+        /* Loading Spinner */
+        #loadingSpinner {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2rem;
+            color: #0288d1;
+        }
     </style>
 </head>
 <body>
@@ -53,7 +64,7 @@
         <h1>Shipyard Nagar - Admin Dashboard</h1>
     </header>
     <main class="container my-4">
-        <button class="btn btn-danger mb-3" id="logout">Logout</button>
+        <div id="loadingSpinner">⏳ Loading...</div>
         <div class="button-grid">
             <button class="btn btn-primary" id="addUserBtn">Add Member</button>
             <button class="btn btn-primary" id="editMemberBtn">Edit Member</button>
@@ -73,6 +84,10 @@
                     <div class="col-12 mb-3">
                         <label for="memberName" class="form-label">Name:</label>
                         <input type="text" class="form-control" id="memberName" required>
+                    </div>
+                    <div class="col-12 mb-3">
+                        <label for="homeName" class="form-label">House Name:</label>
+                        <input type="text" class="form-control" id="homeName" required>
                     </div>
                     <div class="col-12 mb-3">
                         <label for="email" class="form-label">Email:</label>
@@ -109,6 +124,10 @@
                     <div class="col-12 mb-3">
                         <label for="editName" class="form-label">Name:</label>
                         <input type="text" class="form-control" id="editName" required>
+                    </div>
+                    <div class="col-12 mb-3">
+                        <label for="editHomeName" class="form-label">House Name:</label>
+                        <input type="text" class="form-control" id="editHomeName" required>
                     </div>
                     <div class="col-12 mb-3">
                         <label for="editEmail" class="form-label">Email:</label>
@@ -167,260 +186,244 @@
         };
 
         // Initialize Firebase
+        let auth, db;
         try {
             firebase.initializeApp(firebaseConfig);
-            const auth = firebase.auth();
-            const db = firebase.firestore();
+            auth = firebase.auth();
+            db = firebase.firestore();
             console.log('Firebase initialized successfully');
         } catch (error) {
             alert('Firebase Initialization Error: ' + error.message);
             console.error('Firebase Init Error:', error);
         }
 
-        // Load Dashboard
-        const loadDashboard = async () => {
-            const addUserSection = document.getElementById('addUserSection');
-            const editMemberSection = document.getElementById('editMemberSection');
-            const subscriptionSection = document.getElementById('subscriptionSection');
-            const totalWealthDisplay = document.getElementById('totalWealthDisplay');
+        // DOM Content Loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            loadingSpinner.style.display = 'block';
 
-            // Auth Check
-            auth.onAuthStateChanged((user) => {
-                if (!user || (user && !(await db.collection('users').doc(user.uid).get()).data()?.role === 'admin')) {
+            // Auth State Check
+            auth.onAuthStateChanged(async (user) => {
+                if (!user || !(await db.collection('users').doc(user.uid).get()).data()?.role === 'admin') {
                     alert('Unauthorized access. Redirecting to login...');
                     window.location.href = 'login.html';
+                    return;
                 }
-            });
 
-            // Button Event Listeners
-            document.getElementById('addUserBtn').addEventListener('click', () => {
-                addUserSection.style.display = 'block';
-                editMemberSection.style.display = 'none';
-                subscriptionSection.style.display = 'none';
-            });
+                // Hide loading spinner
+                loadingSpinner.style.display = 'none';
 
-            document.getElementById('editMemberBtn').addEventListener('click', () => {
-                addUserSection.style.display = 'none';
-                editMemberSection.style.display = 'block';
-                subscriptionSection.style.display = 'none';
-            });
+                // UI Elements
+                const addUserSection = document.getElementById('addUserSection');
+                const editMemberSection = document.getElementById('editMemberSection');
+                const subscriptionSection = document.getElementById('subscriptionSection');
+                const totalWealthDisplay = document.getElementById('totalWealthDisplay');
+                const addUserBtn = document.getElementById('addUserBtn');
+                const editMemberBtn = document.getElementById('editMemberBtn');
+                const subscriptionBtn = document.getElementById('subscriptionBtn');
+                const refreshTotalBtn = document.getElementById('refreshTotal');
 
-            document.getElementById('subscriptionBtn').addEventListener('click', () => {
-                addUserSection.style.display = 'none';
-                editMemberSection.style.display = 'none';
-                subscriptionSection.style.display = 'block';
-                loadSubscriptions();
-            });
+                // Button Event Listeners
+                if (addUserBtn) {
+                    addUserBtn.addEventListener('click', () => {
+                        addUserSection.style.display = 'block';
+                        editMemberSection.style.display = 'none';
+                        subscriptionSection.style.display = 'none';
+                    });
+                }
 
-            // Add Member
-            const addUserForm = document.getElementById('addUserForm');
-            if (addUserForm) {
-                addUserForm.addEventListener('submit', async (e) => {
-                    e.preventDefault();
-                    const memberData = {
-                        memberNumber: document.getElementById('memberNumber').value,
-                        memberName: document.getElementById('memberName').value,
-                        email: document.getElementById('email').value,
-                        primaryMobile: document.getElementById('primaryMobile').value,
-                        role: document.getElementById('isAdmin').checked ? 'admin' : 'member'
-                    };
-                    try {
-                        const userCredential = await auth.createUserWithEmailAndPassword(
-                            memberData.email,
-                            document.getElementById('password').value
-                        );
-                        await db.collection('users').doc(userCredential.user.uid).set(memberData);
-                        alert('Member added successfully!');
-                        addUserForm.reset();
+                if (editMemberBtn) {
+                    editMemberBtn.addEventListener('click', () => {
+                        addUserSection.style.display = 'none';
+                        editMemberSection.style.display = 'block';
+                        subscriptionSection.style.display = 'none';
+                    });
+                }
+
+                if (subscriptionBtn) {
+                    subscriptionBtn.addEventListener('click', () => {
+                        addUserSection.style.display = 'none';
+                        editMemberSection.style.display = 'none';
+                        subscriptionSection.style.display = 'block';
+                        loadSubscriptions();
+                    });
+                }
+
+                if (refreshTotalBtn) {
+                    refreshTotalBtn.addEventListener('click', () => {
                         refreshTotal();
-                    } catch (error) {
-                        alert('Error adding member: ' + error.message);
-                    }
-                });
-            }
-
-            // Edit Member
-            const loadEditMember = document.getElementById('loadEditMember');
-            if (loadEditMember) {
-                loadEditMember.addEventListener('click', async () => {
-                    const memberNumber = document.getElementById('editMemberNumber').value;
-                    const membersSnapshot = await db.collection('users').where('memberNumber', '==', memberNumber).get();
-                    if (membersSnapshot.empty) {
-                        alert('Member not found!');
-                        return;
-                    }
-                    const memberData = membersSnapshot.docs[0].data();
-                    document.getElementById('editName').value = memberData.memberName || '';
-                    document.getElementById('editEmail').value = memberData.email || '';
-                    document.getElementById('editPrimaryMobile').value = memberData.primaryMobile || '';
-                    document.getElementById('editIsAdmin').checked = memberData.role === 'admin';
-                    document.getElementById('editMemberForm').style.display = 'block';
-                });
-            }
-
-            const editMemberForm = document.getElementById('editMemberForm');
-            if (editMemberForm) {
-                editMemberForm.addEventListener('submit', async (e) => {
-                    e.preventDefault();
-                    const memberNumber = document.getElementById('editMemberNumber').value;
-                    const membersSnapshot = await db.collection('users').where('memberNumber', '==', memberNumber).get();
-                    if (membersSnapshot.empty) {
-                        alert('Member not found!');
-                        return;
-                    }
-                    const memberDoc = membersSnapshot.docs[0];
-                    const memberId = memberDoc.id;
-                    const updatedData = {
-                        memberName: document.getElementById('editName').value,
-                        email: document.getElementById('editEmail').value,
-                        primaryMobile: document.getElementById('editPrimaryMobile').value,
-                        role: document.getElementById('editIsAdmin').checked ? 'admin' : 'member'
-                    };
-                    await db.collection('users').doc(memberId).update(updatedData);
-                    alert('Member updated successfully!');
-                    editMemberForm.reset();
-                    editMemberForm.style.display = 'none';
-                    refreshTotal();
-                });
-            }
-
-            // Subscriptions
-            const monthSelect = document.getElementById('monthSelect');
-            const subscriptionTable = document.getElementById('subscriptionTable');
-            const editMonthBtn = document.getElementById('editMonth');
-
-            const loadSubscriptions = async () => {
-                const membersSnapshot = await db.collection('users').get();
-                const members = membersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-                const startMonth = new Date(2025, 9, 1); // Oct 2025
-                const currentMonth = new Date(2025, 9, 18); // Oct 18, 2025
-                const months = [];
-                for (let d = new Date(startMonth); d <= currentMonth; d.setMonth(d.getMonth() + 1)) {
-                    months.push(d.toISOString().slice(0, 7));
+                    });
                 }
-                monthSelect.innerHTML = months.map(m => `<option value="${m}">${m.split('-')[1]} ${m.split('-')[0]}</option>`).join('');
-                monthSelect.value = currentMonth.toISOString().slice(0, 7);
 
-                subscriptionTable.innerHTML = '';
-                for (const member of members) {
-                    const contributionDoc = await db.collection('contributions').doc(member.id).collection('months').doc(monthSelect.value).get();
-                    const contribution = contributionDoc.exists ? contributionDoc.data() : { paid: false };
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${member.memberName || 'Unknown'}</td>
-                        <td><input type="checkbox" class="contribution-check" data-member="${member.id}" ${contribution.paid ? 'checked' : ''} ${editMonthBtn.dataset.editing === 'true' ? '' : 'disabled'}></td>
-                    `;
-                    subscriptionTable.appendChild(row);
-                }
-            };
-
-            editMonthBtn.addEventListener('click', () => {
-                const isEditing = editMonthBtn.dataset.editing === 'true';
-                editMonthBtn.dataset.editing = !isEditing;
-                editMonthBtn.textContent = isEditing ? 'Edit Month' : 'Save Month';
-                loadSubscriptions();
-            });
-
-            subscriptionTable.addEventListener('change', async (e) => {
-                if (e.target.classList.contains('contribution-check')) {
-                    const memberId = e.target.dataset.member;
-                    const paid = e.target.checked;
-                    const month = monthSelect.value;
-                    if (!paid) {
-                        if (confirm('Are you sure you want to remove this payment?')) {
-                            await db.collection('contributions').doc(memberId).collection('months').doc(month).set({
-                                paid: false,
-                                date: null,
-                                amount: 0
-                            });
-                        } else {
-                            e.target.checked = true;
+                // Add Member Form Submission
+                const addUserForm = document.getElementById('addUserForm');
+                if (addUserForm) {
+                    addUserForm.addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        const memberData = {
+                            memberNumber: document.getElementById('memberNumber').value,
+                            memberName: document.getElementById('memberName').value,
+                            homeName: document.getElementById('homeName').value,
+                            email: document.getElementById('email').value,
+                            primaryMobile: document.getElementById('primaryMobile').value,
+                            role: document.getElementById('isAdmin').checked ? 'admin' : 'member'
+                        };
+                        try {
+                            const userCredential = await auth.createUserWithEmailAndPassword(
+                                memberData.email,
+                                document.getElementById('password').value
+                            );
+                            await db.collection('users').doc(userCredential.user.uid).set(memberData);
+                            alert('Member added successfully!');
+                            addUserForm.reset();
+                            refreshTotal();
+                        } catch (error) {
+                            alert('Error adding member: ' + error.message);
                         }
-                    } else {
-                        await db.collection('contributions').doc(memberId).collection('months').doc(month).set({
-                            paid: true,
-                            date: new Date().toISOString().split('T')[0],
-                            amount: 200
-                        });
-                        await db.collection('transactions').add({
-                            type: 'income',
-                            memberId: memberId,
-                            amount: 200,
-                            head: `Monthly Subscription - ${month}`,
-                            date: new Date().toISOString().split('T')[0]
-                        });
-                    }
-                    loadSubscriptions();
-                    refreshTotal();
+                    });
                 }
-            });
 
-            monthSelect.addEventListener('change', () => {
-                loadSubscriptions();
-            });
+                // Edit Member Functionality
+                const loadEditMember = document.getElementById('loadEditMember');
+                if (loadEditMember) {
+                    loadEditMember.addEventListener('click', async () => {
+                        const memberNumber = document.getElementById('editMemberNumber').value;
+                        const membersSnapshot = await db.collection('users').where('memberNumber', '==', memberNumber).get();
+                        if (!membersSnapshot.empty) {
+                            const memberData = membersSnapshot.docs[0].data();
+                            document.getElementById('editName').value = memberData.memberName || '';
+                            document.getElementById('editHomeName').value = memberData.homeName || '';
+                            document.getElementById('editEmail').value = memberData.email || '';
+                            document.getElementById('editPrimaryMobile').value = memberData.primaryMobile || '';
+                            document.getElementById('editIsAdmin').checked = memberData.role === 'admin';
+                            document.getElementById('editMemberForm').style.display = 'block';
+                        } else {
+                            alert('Member not found!');
+                        }
+                    });
+                }
 
-            // Total Refresh
-            const refreshTotal = async () => {
-                let totalIncome = 0, totalExpense = 0;
-                const transactions = await db.collection('transactions').get();
-                transactions.forEach(doc => {
-                    const t = doc.data();
-                    if (t.type === 'income') totalIncome += t.amount;
-                    if (t.type === 'expense') totalExpense += t.amount;
-                });
-                const totalWealth = totalIncome - totalExpense;
-                totalWealthDisplay.textContent = `Total Wealth: ₹${totalWealth}`;
-                console.log('Total Wealth refreshed: ' + totalWealth);
-            };
+                const editMemberForm = document.getElementById('editMemberForm');
+                if (editMemberForm) {
+                    editMemberForm.addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        const memberNumber = document.getElementById('editMemberNumber').value;
+                        const membersSnapshot = await db.collection('users').where('memberNumber', '==', memberNumber).get();
+                        if (!membersSnapshot.empty) {
+                            const memberDoc = membersSnapshot.docs[0];
+                            const updatedData = {
+                                memberName: document.getElementById('editName').value,
+                                homeName: document.getElementById('editHomeName').value,
+                                email: document.getElementById('editEmail').value,
+                                primaryMobile: document.getElementById('editPrimaryMobile').value,
+                                role: document.getElementById('editIsAdmin').checked ? 'admin' : 'member'
+                            };
+                            await db.collection('users').doc(memberDoc.id).update(updatedData);
+                            alert('Member updated successfully!');
+                            editMemberForm.reset();
+                            editMemberForm.style.display = 'none';
+                            refreshTotal();
+                        } else {
+                            alert('Member not found!');
+                        }
+                    });
+                }
 
-            document.getElementById('refreshTotal').addEventListener('click', () => {
+                // Subscriptions Functionality
+                const loadSubscriptions = async () => {
+                    const monthSelect = document.getElementById('monthSelect');
+                    const subscriptionTable = document.getElementById('subscriptionTable');
+                    const editMonthBtn = document.getElementById('editMonth');
+
+                    const startMonth = new Date(2025, 9, 1); // Oct 2025
+                    const currentMonth = new Date(2025, 9, 18); // Oct 18, 2025
+                    const months = [];
+                    for (let d = new Date(startMonth); d <= currentMonth; d.setMonth(d.getMonth() + 1)) {
+                        months.push(d.toISOString().slice(0, 7));
+                    }
+                    monthSelect.innerHTML = months.map(m => `<option value="${m}">${m.split('-')[1]} ${m.split('-')[0]}</option>`).join('');
+                    monthSelect.value = currentMonth.toISOString().slice(0, 7);
+
+                    subscriptionTable.innerHTML = '';
+                    const membersSnapshot = await db.collection('users').get();
+                    membersSnapshot.forEach(doc => {
+                        const memberData = doc.data();
+                        const contributionDoc = db.collection('contributions').doc(doc.id).collection('months').doc(monthSelect.value).get();
+                        contributionDoc.then(contribution => {
+                            const paid = contribution.exists ? contribution.data().paid : false;
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                                <td>${memberData.memberName || 'Unknown'}</td>
+                                <td><input type="checkbox" class="contribution-check" data-member="${doc.id}" ${paid ? 'checked' : ''} ${editMonthBtn.dataset.editing === 'true' ? '' : 'disabled'}></td>
+                            `;
+                            subscriptionTable.appendChild(row);
+                        });
+                    });
+
+                    editMonthBtn.addEventListener('click', () => {
+                        const isEditing = editMonthBtn.dataset.editing === 'true';
+                        editMonthBtn.dataset.editing = !isEditing;
+                        editMonthBtn.textContent = isEditing ? 'Edit Month' : 'Save Month';
+                        loadSubscriptions();
+                    });
+
+                    subscriptionTable.addEventListener('change', async (e) => {
+                        if (e.target.classList.contains('contribution-check')) {
+                            const memberId = e.target.dataset.member;
+                            const paid = e.target.checked;
+                            const month = monthSelect.value;
+                            if (paid) {
+                                await db.collection('contributions').doc(memberId).collection('months').doc(month).set({
+                                    paid: true,
+                                    date: new Date().toISOString().split('T')[0],
+                                    amount: 200
+                                });
+                                await db.collection('transactions').add({
+                                    type: 'income',
+                                    memberId: memberId,
+                                    amount: 200,
+                                    head: `Monthly Subscription - ${month}`,
+                                    date: new Date().toISOString().split('T')[0]
+                                });
+                            } else {
+                                if (confirm('Are you sure you want to remove this payment?')) {
+                                    await db.collection('contributions').doc(memberId).collection('months').doc(month).set({
+                                        paid: false,
+                                        date: null,
+                                        amount: 0
+                                    });
+                                } else {
+                                    e.target.checked = true;
+                                }
+                            }
+                            loadSubscriptions();
+                            refreshTotal();
+                        }
+                    });
+
+                    monthSelect.addEventListener('change', () => {
+                        loadSubscriptions();
+                    });
+                };
+
+                // Refresh Total
+                const refreshTotal = async () => {
+                    let totalIncome = 0, totalExpense = 0;
+                    const transactions = await db.collection('transactions').get();
+                    transactions.forEach(doc => {
+                        const t = doc.data();
+                        if (t.type === 'income') totalIncome += t.amount || 0;
+                        if (t.type === 'expense') totalExpense += t.amount || 0;
+                    });
+                    const totalWealth = totalIncome - totalExpense;
+                    totalWealthDisplay.textContent = `Total Wealth: ₹${totalWealth}`;
+                    console.log('Total Wealth refreshed: ' + totalWealth);
+                };
+
+                // Initial Load
                 refreshTotal();
             });
-
-            // Initial Load
-            loadSubscriptions();
-            refreshTotal();
-        };
-
-        // Call loadDashboard if on dashboard page
-        if (window.location.pathname.includes('dashboard.html')) {
-            loadDashboard();
-        }
-
-        // Logout
-        const logoutBtn = document.getElementById('logout');
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', () => {
-                auth.signOut()
-                    .then(() => {
-                        localStorage.removeItem('userData'); // Clear cached data
-                        alert('Logged out successfully!');
-                        window.location.href = 'login.html';
-                    })
-                    .catch((error) => {
-                        alert('Logout Error: ' + error.message);
-                        console.error('Logout Error:', error);
-                    });
-            });
-        }
-
-        // Theme Toggle
-        const themeToggle = document.getElementById('themeToggle');
-        if (themeToggle) {
-            themeToggle.addEventListener('click', () => {
-                const html = document.documentElement;
-                const currentTheme = html.getAttribute('data-theme');
-                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-                html.setAttribute('data-theme', newTheme);
-                localStorage.setItem('theme', newTheme);
-            });
-
-            const savedTheme = localStorage.getItem('theme');
-            if (savedTheme) {
-                document.documentElement.setAttribute('data-theme', savedTheme);
-            }
-        }
+        });
     </script>
 </body>
 </html>
