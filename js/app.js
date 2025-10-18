@@ -70,7 +70,7 @@ if (typeof firebase === 'undefined') {
                             .then(async (userCredential) => {
                                 const user = userCredential.user;
                                 try {
-                                    const userDoc = await db.collection('users').doc(user.uid).get();
+                                    const userDoc = await db.collection('user').doc(user.uid).get();
                                     if (!userDoc.exists) {
                                         alert('Error: User document not found in Firestore.');
                                         setTimeout(() => window.location.href = 'profile.html', 2000);
@@ -116,7 +116,7 @@ if (typeof firebase === 'undefined') {
                 async function loadDashboard() {
                     if (!document.getElementById('contributionTable')) return;
 
-                    const membersSnapshot = await db.collection('users').get();
+                    const membersSnapshot = await db.collection('user').get();
                     const members = membersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
                     const transactionMember = document.getElementById('transactionMember');
@@ -198,7 +198,7 @@ if (typeof firebase === 'undefined') {
                             secondaryMobile: document.getElementById('secondaryMobile').value,
                             role: 'member'
                         };
-                        await db.collection('users').add(memberData);
+                        await db.collection('user').add(memberData);
                         alert('Member added!');
                         document.getElementById('addMemberForm').reset();
                         loadDashboard();
@@ -254,7 +254,7 @@ if (typeof firebase === 'undefined') {
                         }
 
                         // Load Profile
-                        const userDoc = await db.collection('users').doc(user.uid).get();
+                        const userDoc = await db.collection('user').doc(user.uid).get();
                         if (userDoc.exists) {
                             const userData = userDoc.data();
                             document.getElementById('memberNumber').value = userData.memberNumber;
@@ -280,7 +280,7 @@ if (typeof firebase === 'undefined') {
                                 secondaryMobile: document.getElementById('secondaryMobile').value || null
                             };
                             try {
-                                await db.collection('users').doc(user.uid).update(updatedData);
+                                await db.collection('user').doc(user.uid).update(updatedData);
                                 alert('Profile updated successfully!');
                             } catch (error) {
                                 alert('Profile Update Error: ' + error.message);
@@ -357,5 +357,23 @@ if (typeof firebase === 'undefined') {
             });
     } catch (error) {
         alert('Firebase Initialization Error: ' + error.message);
+    }
+}
+
+// Theme Toggle
+const themeToggle = document.getElementById('themeToggle');
+if (themeToggle) {
+    themeToggle.addEventListener('click', () => {
+        const html = document.documentElement;
+        const currentTheme = html.getAttribute('data-theme');
+        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+        html.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+    });
+
+    // Load saved theme
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+        document.documentElement.setAttribute('data-theme', savedTheme);
     }
 }
