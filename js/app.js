@@ -70,12 +70,12 @@ if (typeof firebase === 'undefined') {
                             .then(async (userCredential) => {
                                 const user = userCredential.user;
                                 try {
-                                    const userDoc = await db.collection('user').doc(user.uid).get();
+                                    const userDoc = await db.collection('users').doc(user.uid).get();
                                     if (!userDoc.exists) {
-                                        alert('Error: User document not found in Firestore.');
+                                        alert(`Error: User document for UID ${user.uid} not found in Firestore 'users' collection.`);
                                         setTimeout(() => window.location.href = 'profile.html', 2000);
                                     } else if (userDoc.data().role !== 'admin') {
-                                        alert(`Error: User role is "${userDoc.data().role || 'undefined'}", not "admin".`);
+                                        alert(`Error: User role is "${userDoc.data().role || 'undefined'}", not "admin". UID: ${user.uid}`);
                                         setTimeout(() => window.location.href = 'profile.html', 2000);
                                     } else {
                                         alert('Admin login successful! Redirecting to dashboard...');
@@ -116,7 +116,7 @@ if (typeof firebase === 'undefined') {
                 async function loadDashboard() {
                     if (!document.getElementById('contributionTable')) return;
 
-                    const membersSnapshot = await db.collection('user').get();
+                    const membersSnapshot = await db.collection('users').get();
                     const members = membersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
                     const transactionMember = document.getElementById('transactionMember');
@@ -198,7 +198,7 @@ if (typeof firebase === 'undefined') {
                             secondaryMobile: document.getElementById('secondaryMobile').value,
                             role: 'member'
                         };
-                        await db.collection('user').add(memberData);
+                        await db.collection('users').add(memberData);
                         alert('Member added!');
                         document.getElementById('addMemberForm').reset();
                         loadDashboard();
@@ -254,7 +254,7 @@ if (typeof firebase === 'undefined') {
                         }
 
                         // Load Profile
-                        const userDoc = await db.collection('user').doc(user.uid).get();
+                        const userDoc = await db.collection('users').doc(user.uid).get();
                         if (userDoc.exists) {
                             const userData = userDoc.data();
                             document.getElementById('memberNumber').value = userData.memberNumber;
@@ -265,7 +265,7 @@ if (typeof firebase === 'undefined') {
                             document.getElementById('primaryMobile').value = userData.primaryMobile;
                             document.getElementById('secondaryMobile').value = userData.secondaryMobile || '';
                         } else {
-                            alert('User data not found. Contact admin.');
+                            alert(`User data not found for UID ${user.uid}. Contact admin.`);
                             window.location.href = 'login.html';
                         }
 
@@ -280,7 +280,7 @@ if (typeof firebase === 'undefined') {
                                 secondaryMobile: document.getElementById('secondaryMobile').value || null
                             };
                             try {
-                                await db.collection('user').doc(user.uid).update(updatedData);
+                                await db.collection('users').doc(user.uid).update(updatedData);
                                 alert('Profile updated successfully!');
                             } catch (error) {
                                 alert('Profile Update Error: ' + error.message);
