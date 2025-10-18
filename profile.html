@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,6 +8,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <style>
+        /* Footer Fixed at Bottom */
         footer {
             position: fixed;
             bottom: 0;
@@ -18,27 +19,80 @@
             color: #333;
             z-index: 1000;
         }
-        .theme-toggle {
-            position: absolute;
-            top: 10px;
-            right: 10px;
+
+        /* Profile Card Style */
+        .profile-card {
+            background-color: #ffffff;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .profile-card h2 {
+            font-size: 1.5rem;
+            color: #0288d1;
+            margin-bottom: 15px;
+        }
+
+        .profile-card .form-label {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .profile-card .form-control {
+            margin-bottom: 10px;
+        }
+
+        .profile-card button {
+            background-color: #0288d1;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .profile-card button:hover {
+            background-color: #01579b;
         }
     </style>
 </head>
 <body>
-    <div class="theme-toggle">
-        <button id="themeToggle">🌞</button>
-    </div>
     <header>
-        <h1>Shipyard Nagar - Profile</h1>
+        <h1>Shipyard Nagar Residential Association</h1>
     </header>
     <main class="container my-4">
+        <div class="logo-container">
+            <img src="assets/logo.jpg" alt="Shipyard Nagar Logo" class="img-fluid">
+        </div>
         <div class="row">
             <div class="col-12">
-                <div class="card">
+                <div class="profile-card">
                     <h2>My Profile</h2>
-                    <p id="profileGreeting">Welcome, Guest!</p>
-                    <button id="logoutBtn" class="btn btn-danger mt-3">Logout</button>
+                    <form id="profileForm">
+                        <div class="mb-3">
+                            <label for="memberName" class="form-label">Name:</label>
+                            <input type="text" class="form-control" id="memberName" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="memberNumber" class="form-label">Member Number:</label>
+                            <input type="text" class="form-control" id="memberNumber" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="homeName" class="form-label">House Name:</label>
+                            <input type="text" class="form-control" id="homeName">
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email:</label>
+                            <input type="email" class="form-control" id="email">
+                        </div>
+                        <div class="mb-3">
+                            <label for="primaryMobile" class="form-label">Primary Mobile:</label>
+                            <input type="text" class="form-control" id="primaryMobile">
+                        </div>
+                        <button type="submit" class="btn">Save Changes</button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -53,7 +107,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 
     <script>
-        // Firebase Config (same as above)
+        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyBWswawf9tpxNwVU0BaJ6FCwCvgcjUQXlA",
             authDomain: "shipyard-nagar.firebaseapp.com",
@@ -64,62 +118,76 @@
             measurementId: "G-V8CQ4YCCQ5"
         };
 
+        // Initialize Firebase
+        let auth, db;
         try {
             firebase.initializeApp(firebaseConfig);
-            const auth = firebase.auth();
-            const db = firebase.firestore();
+            auth = firebase.auth();
+            db = firebase.firestore();
+            console.log('Firebase initialized successfully');
         } catch (error) {
             alert('Firebase Initialization Error: ' + error.message);
+            console.error('Firebase Init Error:', error);
         }
 
-        auth.onAuthStateChanged(async (user) => {
-            const profileGreeting = document.getElementById('profileGreeting');
-            const logoutBtn = document.getElementById('logoutBtn');
+        // DOM Content Loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            const profileForm = document.getElementById('profileForm');
+            const memberName = document.getElementById('memberName');
+            const memberNumber = document.getElementById('memberNumber');
+            const homeName = document.getElementById('homeName');
+            const email = document.getElementById('email');
+            const primaryMobile = document.getElementById('primaryMobile');
 
-            if (user) {
+            // Auth State Check
+            auth.onAuthStateChanged(async (user) => {
+                if (!user) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
                 try {
                     const userDoc = await db.collection('users').doc(user.uid).get();
                     if (userDoc.exists) {
                         const userData = userDoc.data();
-                        profileGreeting.textContent = `Welcome, ${userData.memberName || 'Guest'}!`;
+                        memberName.value = userData.memberName || 'Unknown';
+                        memberNumber.value = userData.memberNumber || 'N/A';
+                        homeName.value = userData.homeName || '';
+                        email.value = userData.email || '';
+                        primaryMobile.value = userData.primaryMobile || '';
+                    } else {
+                        console.error(`User data not found for UID: ${user.uid}`);
+                        memberName.value = 'Unknown';
+                        memberNumber.value = 'N/A';
                     }
                 } catch (error) {
-                    console.error('Error fetching profile data:', error);
-                    profileGreeting.textContent = 'Welcome, Guest!';
+                    console.error('Error fetching user data:', error);
+                    memberName.value = 'Unknown';
+                    memberNumber.value = 'N/A';
                 }
-            } else {
-                window.location.href = 'login.html';
-            }
+            });
 
-            if (logoutBtn) {
-                logoutBtn.addEventListener('click', () => {
-                    auth.signOut().then(() => {
-                        localStorage.removeItem('userData');
-                        alert('Logged out successfully!');
-                        window.location.href = 'login.html';
-                    }).catch((error) => {
-                        alert('Logout Error: ' + error.message);
-                    });
+            // Form Submission
+            if (profileForm) {
+                profileForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const user = auth.currentUser;
+                    if (user) {
+                        try {
+                            await db.collection('users').doc(user.uid).update({
+                                homeName: homeName.value,
+                                email: email.value,
+                                primaryMobile: primaryMobile.value
+                            });
+                            alert('Profile updated successfully!');
+                        } catch (error) {
+                            alert('Error updating profile: ' + error.message);
+                            console.error('Update Error:', error);
+                        }
+                    }
                 });
             }
         });
-
-        // Theme Toggle
-        const themeToggle = document.getElementById('themeToggle');
-        if (themeToggle) {
-            themeToggle.addEventListener('click', () => {
-                const html = document.documentElement;
-                const currentTheme = html.getAttribute('data-theme');
-                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-                html.setAttribute('data-theme', newTheme);
-                localStorage.setItem('theme', newTheme);
-            });
-
-            const savedTheme = localStorage.getItem('theme');
-            if (savedTheme) {
-                document.documentElement.setAttribute('data-theme', savedTheme);
-            }
-        }
     </script>
 </body>
 </html>
