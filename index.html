@@ -19,17 +19,17 @@
         <button class="btn btn-danger mb-3" id="logout">Logout</button>
         <div class="card">
             <h2>Welcome</h2>
-            <p id="greeting">Hi, Guest!</p>
+            <p id="greeting">Hi, Guest & family!</p>
             <p id="totalWealth">Our Total Wealth: ₹0</p>
             <p id="monthlyDue">Your Monthly Due: 0 months (₹0)</p>
             <div class="button-grid">
                 <button class="btn btn-primary" onclick="window.location.href='profile.html'">Profile</button>
-                <button class="btn btn-primary" onclick="checkAdmin()">Admin</button>
+                <button class="btn btn-primary" onclick="window.location.href='loan.html'">Loans</button>
+                <button class="btn btn-primary" onclick="window.location.href='subscription.html'">Monthly Subscription</button>
+                <button class="btn btn-primary" onclick="window.location.href='members.html'">All Members</button>
+                <button class="btn btn-primary" onclick="window.location.href='chitty.html'">Chitt Fund</button>
+                <button class="btn btn-warning" id="adminTab" style="display: none;" onclick="checkAdmin()">Admin</button>
             </div>
-        </div>
-        <div class="card" id="adminTab" style="display: none;">
-            <h2>Admin Panel</h2>
-            <button class="btn btn-primary" onclick="window.location.href='dashboard.html'">Go to Dashboard</button>
         </div>
     </main>
     <footer class="bg-light text-center py-2">
