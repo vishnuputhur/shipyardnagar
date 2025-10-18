@@ -66,7 +66,6 @@
                         <button id="memberListBtn" class="btn btn-primary">Member List</button>
                         <button id="subscriptionBtn" class="btn btn-primary">Subscription</button>
                         <button id="profileBtn" class="btn btn-primary">Profile</button>
-                        <button id="logoutBtn" class="btn btn-danger">Logout</button>
                     </div>
                     <div id="adminTab">
                         <button id="adminBtn" class="btn btn-primary mt-2">Admin</button>
@@ -118,7 +117,6 @@
             const memberListBtn = document.getElementById('memberListBtn');
             const subscriptionBtn = document.getElementById('subscriptionBtn');
             const profileBtn = document.getElementById('profileBtn');
-            const logoutBtn = document.getElementById('logoutBtn');
             const adminBtn = document.getElementById('adminBtn');
 
             if (user) {
@@ -134,11 +132,11 @@
 
                         // Total Wealth
                         let totalIncome = 0, totalExpense = 0;
-                        const transactions = await db.collection('transactions').get();
-                        transactions.forEach(doc => {
+                        const transactionsSnapshot = await db.collection('transactions').get();
+                        transactionsSnapshot.forEach(doc => {
                             const t = doc.data();
-                            if (t.type === 'income') totalIncome += t.amount;
-                            if (t.type === 'expense') totalExpense += t.amount;
+                            if (t.type === 'income') totalIncome += t.amount || 0;
+                            if (t.type === 'expense') totalExpense += t.amount || 0;
                         });
                         const wealth = totalIncome - totalExpense;
                         totalWealth.textContent = `Our Total Wealth: ₹${wealth}`;
@@ -152,33 +150,23 @@
                         }
                         let dueMonths = 0;
                         for (const month of months) {
-                            const contribution = await db.collection('contributions').doc(user.uid).collection('months').doc(month).get();
-                            if (!contribution.exists || !contribution.data()?.paid) dueMonths++;
+                            const contributionDoc = await db.collection('contributions').doc(user.uid).collection('months').doc(month).get();
+                            if (!contributionDoc.exists || !contributionDoc.data()?.paid) dueMonths++;
                         }
                         monthlyDue.textContent = `Your Monthly Due: ${dueMonths} months (₹${dueMonths * 200})`;
 
                         // Button Functionality
-                        if (chittiBtn) chittiBtn.addEventListener('click', () => alert('Chitti feature coming soon!'));
-                        if (loanBtn) loanBtn.addEventListener('click', () => alert('Loan feature coming soon!'));
-                        if (memberListBtn) memberListBtn.addEventListener('click', () => alert('Member List feature coming soon!'));
-                        if (subscriptionBtn) subscriptionBtn.addEventListener('click', () => alert('Subscription feature coming soon!'));
+                        if (chittiBtn) chittiBtn.addEventListener('click', () => window.location.href = 'chitty.html');
+                        if (loanBtn) loanBtn.addEventListener('click', () => window.location.href = 'loan.html');
+                        if (memberListBtn) memberBtn.addEventListener('click', () => window.location.href = 'members.html');
+                        if (subscriptionBtn) subscriptionBtn.addEventListener('click', () => window.location.href = 'subscription.html');
                         if (profileBtn) profileBtn.addEventListener('click', () => window.location.href = 'profile.html');
-                        if (logoutBtn) logoutBtn.addEventListener('click', () => {
-                            auth.signOut().then(() => {
-                                localStorage.removeItem('userData');
-                                alert('Logged out successfully!');
-                                window.location.href = 'login.html';
-                            }).catch((error) => {
-                                alert('Logout Error: ' + error.message);
-                            });
-                        });
+                        if (adminBtn) adminBtn.addEventListener('click', () => window.location.href = 'dashboard.html');
 
                         // Admin Tab Visibility
                         if (adminTab) {
                             adminTab.style.display = userData.role === 'admin' ? 'block' : 'none';
-                            if (adminBtn) {
-                                adminBtn.addEventListener('click', () => window.location.href = 'dashboard.html');
-                            }
+                            console.log('Admin Role:', userData.role);
                         }
                     } else {
                         console.error(`User data not found for UID: ${user.uid}`);
