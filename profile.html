@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,85 +8,88 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <header class="bg-primary text-white text-center py-3">
+    <div class="theme-toggle">
+        <button id="themeToggle">🌞</button>
+    </div>
+    <header>
         <h1>Shipyard Nagar - Member Profile</h1>
     </header>
     <main class="container my-4">
         <button id="logout" class="btn btn-danger mb-3">Logout</button>
-
         <!-- Profile -->
-        <h2>Your Profile</h2>
-        <form id="profileForm" class="border p-3 mb-4">
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="memberNumber" class="form-label">Member Number:</label>
-                    <input type="text" class="form-control" id="memberNumber" readonly>
+        <div class="card">
+            <h2>Your Profile</h2>
+            <form id="profileForm" class="p-3">
+                <div class="row">
+                    <div class="col-12 mb-3">
+                        <label for="memberNumber" class="form-label">Member Number:</label>
+                        <input type="text" class="form-control" id="memberNumber" readonly>
+                    </div>
+                    <div class="col-12 mb-3">
+                        <label for="name" class="form-label">Name:</label>
+                        <input type="text" class="form-control" id="name" readonly>
+                    </div>
+                    <div class="col-12 mb-3">
+                        <label for="homeName" class="form-label">Home Name:</label>
+                        <input type="text" class="form-control" id="homeName" required>
+                    </div>
+                    <div class="col-12 mb-3">
+                        <label for="homeNumber" class="form-label">Home Number:</label>
+                        <input type="text" class="form-control" id="homeNumber" required>
+                    </div>
+                    <div class="col-12 mb-3">
+                        <label for="familyMembers" class="form-label">Family Members:</label>
+                        <input type="number" class="form-control" id="familyMembers" required>
+                    </div>
+                    <div class="col-12 mb-3">
+                        <label for="primaryMobile" class="form-label">Primary Mobile:</label>
+                        <input type="text" class="form-control" id="primaryMobile" required>
+                    </div>
+                    <div class="col-12 mb-3">
+                        <label for="secondaryMobile" class="form-label">Secondary Mobile:</label>
+                        <input type="text" class="form-control" id="secondaryMobile">
+                    </div>
                 </div>
-                <div class="col-md-6 mb-3">
-                    <label for="name" class="form-label">Name:</label>
-                    <input type="text" class="form-control" id="name" readonly>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label for="homeName" class="form-label">Home Name:</label>
-                    <input type="text" class="form-control" id="homeName" required>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label for="homeNumber" class="form-label">Home Number:</label>
-                    <input type="text" class="form-control" id="homeNumber" required>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label for="familyMembers" class="form-label">Family Members:</label>
-                    <input type="number" class="form-control" id="familyMembers" required>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label for="primaryMobile" class="form-label">Primary Mobile:</label>
-                    <input type="text" class="form-control" id="primaryMobile" required>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label for="secondaryMobile" class="form-label">Secondary Mobile:</label>
-                    <input type="text" class="form-control" id="secondaryMobile">
-                </div>
-            </div>
-            <button type="submit" class="btn btn-primary">Update Profile</button>
-        </form>
-
+                <button type="submit" class="btn btn-primary">Update Profile</button>
+            </form>
+        </div>
         <!-- Contribution Status -->
-        <h2>Contribution Status</h2>
-        <select id="monthSelect" class="form-select mb-3">
-            <option value="2025-10">October 2025</option>
-            <option value="2025-11">November 2025</option>
-            <!-- Add more months as needed -->
-        </select>
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>Month</th>
-                    <th>Status</th>
-                    <th>Amount</th>
-                    <th>Date</th>
-                </tr>
-            </thead>
-            <tbody id="contributionTable"></tbody>
-        </table>
-
+        <div class="card">
+            <h2>Contribution Status</h2>
+            <select id="monthSelect" class="form-select mb-3">
+                <option value="2025-10">October 2025</option>
+                <option value="2025-11">November 2025</option>
+            </select>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Month</th>
+                        <th>Status</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody id="contributionTable"></tbody>
+            </table>
+        </div>
         <!-- Balance Sheet -->
-        <h2>Balance Sheet</h2>
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>Total Contributions</th>
-                    <th>Total Expenses</th>
-                    <th>Balance</th>
-                </tr>
-            </thead>
-            <tbody id="balanceTable"></tbody>
-        </table>
+        <div class="card">
+            <h2>Balance Sheet</h2>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Total Contributions</th>
+                        <th>Total Expenses</th>
+                        <th>Balance</th>
+                    </tr>
+                </thead>
+                <tbody id="balanceTable"></tbody>
+            </table>
+        </div>
     </main>
     <footer class="bg-light text-center py-2">
         <p>Powered by VTSoft 2025</p>
     </footer>
-
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
