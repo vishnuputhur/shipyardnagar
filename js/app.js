@@ -85,8 +85,11 @@ if (typeof firebase === 'undefined') {
                             }));
 
                             // Admin Tab Visibility
-                            if (userData.role === 'admin') {
-                                document.getElementById('adminTab').style.display = 'block';
+                            const adminTab = document.getElementById('adminTab');
+                            if (adminTab) {
+                                adminTab.style.display = userData.role === 'admin' ? 'block' : 'none';
+                            } else {
+                                console.error('adminTab element not found in index.html');
                             }
                         }
                     }
