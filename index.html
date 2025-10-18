@@ -50,22 +50,24 @@
   </div>
 
   <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 
   <script>
     // ✅ Check Firebase SDK
     if (typeof firebase === 'undefined') {
       alert('Error: Firebase SDK not loaded. Check network or script tags.');
     } else {
-      // ✅ Your Firebase Config
+      // ✅ Your Firebase Config (replace with actual values)
       const firebaseConfig = {
-        apiKey: "AIzaSyBWswawf9tpxNwVU0BaJ6FCwCvgcjUQXl",
-        authDomain: "YOUR_PROJECT.firebaseapp.com",
-        projectId: "YOUR_PROJECT_ID",
-        storageBucket: "YOUR_PROJECT.appspot.com",
-        messagingSenderId: "YOUR_SENDER_ID",
-        appId: "YOUR_APP_ID"
+        apiKey: "AIzaSyBWswawf9tpxNwVU0BaJ6FCwCvgcjUQXlA", // Updated to match your previous config
+        authDomain: "shipyard-nagar.firebaseapp.com",
+        projectId: "shipyard-nagar",
+        storageBucket: "shipyard-nagar.firebasestorage.app",
+        messagingSenderId: "552855824221",
+        appId: "1:552855824221:web:f709da953077475be9eab4",
+        measurementId: "G-V8CQ4YCCQ5"
       };
 
       // ✅ Initialize only once
@@ -73,41 +75,55 @@
         firebase.initializeApp(firebaseConfig);
       }
 
+      const auth = firebase.auth();
       const db = firebase.firestore();
-
-      // ✅ Change this to your Firestore document ID
-      const userId = "x3JqyBKTFAfm5IDcW6t7YTJ5...";
 
       // ✅ UI elements
       const userNameEl = document.getElementById('user-name');
       const adminBtn = document.getElementById('admin-btn');
       const memberListBtn = document.getElementById('member-list-btn');
 
-      // ✅ Load user data
-      db.collection('users').doc(userId).get()
-        .then((doc) => {
-          if (doc.exists) {
-            const data = doc.data();
-            userNameEl.textContent = data.memberName + " & family";
-            if (data.role === "admin") {
-              adminBtn.style.display = 'inline-block';
-            } else {
+      // ✅ Auth State Listener
+      auth.onAuthStateChanged((user) => {
+        if (user) {
+          // ✅ Fetch user data dynamically
+          db.collection('users').doc(user.uid).get()
+            .then((doc) => {
+              if (doc.exists) {
+                const data = doc.data();
+                userNameEl.textContent = data.memberName + " & family";
+                if (data.role === "admin") {
+                  adminBtn.style.display = 'inline-block';
+                } else {
+                  adminBtn.style.display = 'none';
+                }
+              } else {
+                userNameEl.textContent = "Guest";
+                adminBtn.style.display = 'none';
+              }
+            })
+            .catch((error) => {
+              console.error("Error getting document:", error);
+              userNameEl.textContent = "Guest";
               adminBtn.style.display = 'none';
-            }
-          } else {
-            userNameEl.textContent = "Guest";
-          }
-        })
-        .catch((error) => {
-          console.error("Error getting document:", error);
-          userNameEl.textContent = "Guest";
-        });
+            });
+        } else {
+          // Redirect to login if not authenticated
+          window.location.href = 'login.html';
+        }
+      });
 
       // ✅ Navigation buttons
-      if (memberListBtn)
-        memberListBtn.addEventListener('click', () => window.location.href = 'members.html');
-      if (adminBtn)
-        adminBtn.addEventListener('click', () => window.location.href = 'admin.html');
+      if (memberListBtn) {
+        memberListBtn.addEventListener('click', () => {
+          window.location.href = 'members.html';
+        });
+      }
+      if (adminBtn) {
+        adminBtn.addEventListener('click', () => {
+          window.location.href = 'dashboard.html'; // Assuming admin goes to dashboard
+        });
+      }
     }
   </script>
 </body>
