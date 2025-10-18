@@ -40,6 +40,24 @@ body {
     overflow-x: hidden;
 }
 
+/* Header (only image, no text) */
+header {
+    background: url('../assets/head.png') no-repeat center center;
+    background-size: cover;
+    width: 100%;
+    max-width: 100vw;
+    height: 70px;
+    box-shadow: var(--shadow);
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+    margin-top: 0;
+}
+
+header h1 {
+    display: none; /* Hide heading text completely */
+}
+
 /* Theme Toggle */
 .theme-toggle {
     position: fixed;
@@ -196,7 +214,7 @@ form {
     to { opacity: 1; transform: translateX(0); }
 }
 
-.card, .btn {
+.card, .btn, header {
     animation: fadeIn 0.7s ease-in-out;
 }
 
@@ -204,6 +222,11 @@ form {
 @media (max-width: 576px) {
     .container {
         padding: 10px;
+    }
+
+    header {
+        height: 60px;
+        padding: 0;
     }
 
     .card {
