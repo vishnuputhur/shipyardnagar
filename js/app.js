@@ -22,13 +22,8 @@ if (typeof firebase === 'undefined') {
         // Set Auth Persistence to local
         auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
             .then(() => {
-                // Auth State Check for Index
+                // Auth State Check
                 auth.onAuthStateChanged(async (user) => {
-                    if (!user && window.location.pathname !== '/login.html') {
-                        window.location.href = 'login.html';
-                        return;
-                    }
-
                     if (user && window.location.pathname === '/index.html') {
                         // Load Cached Data
                         const cachedData = JSON.parse(localStorage.getItem('userData') || '{}');
@@ -41,7 +36,7 @@ if (typeof firebase === 'undefined') {
                         const userDoc = await db.collection('users').doc(user.uid).get();
                         if (userDoc.exists) {
                             const userData = userDoc.data();
-                            memberName = userData.memberName || 'Guest'; // Changed back to memberName
+                            memberName = userData.memberName || 'Guest';
                             document.getElementById('greeting').textContent = `Hi, ${memberName} & family!`;
 
                             // Profile Incomplete Check
@@ -79,7 +74,7 @@ if (typeof firebase === 'undefined') {
 
                             // Cache Data
                             localStorage.setItem('userData', JSON.stringify({
-                                memberName: memberName, // Changed back to memberName
+                                memberName: memberName,
                                 totalWealth,
                                 dueMonths
                             }));
@@ -131,7 +126,7 @@ if (typeof firebase === 'undefined') {
                             })
                             .catch((error) => {
                                 alert('Login Error: ' + error.message);
-                                console.error('Firebase Error:', error); // For debugging
+                                console.error('Firebase Error:', error);
                             });
                     });
 
@@ -159,8 +154,12 @@ if (typeof firebase === 'undefined') {
                 if (document.getElementById('logout')) {
                     document.getElementById('logout').addEventListener('click', () => {
                         auth.signOut().then(() => {
+                            localStorage.removeItem('userData'); // Clear cached data
                             alert('Logged out successfully!');
                             window.location.href = 'login.html';
+                        }).catch((error) => {
+                            alert('Logout Error: ' + error.message);
+                            console.error('Logout Error:', error);
                         });
                     });
                 }
@@ -198,7 +197,7 @@ if (typeof firebase === 'undefined') {
                     members.forEach(member => {
                         const option = document.createElement('option');
                         option.value = member.id;
-                        option.textContent = member.memberName || 'Unknown'; // Changed to memberName
+                        option.textContent = member.memberName || 'Unknown';
                         transactionMember.appendChild(option);
                     });
 
@@ -217,7 +216,7 @@ if (typeof firebase === 'undefined') {
                             const contribution = contributionDoc.exists ? contributionDoc.data() : { paid: false };
                             const row = document.createElement('tr');
                             row.innerHTML = `
-                                <td>${member.memberName || 'Unknown'}</td> <!-- Changed to memberName -->
+                                <td>${member.memberName || 'Unknown'}</td>
                                 <td><input type="checkbox" class="contribution-check" data-member="${member.id}" ${contribution.paid ? 'checked' : ''} ${editMonthBtn.dataset.editing === 'true' ? '' : 'disabled'}></td>
                             `;
                             contributionTable.appendChild(row);
@@ -226,7 +225,7 @@ if (typeof firebase === 'undefined') {
 
                     function loadSubscriptionTable() {
                         const startMonth = new Date(2025, 9, 1); // Oct 2025
-                        const currentMonth = new Date(2025, 9, 18); // Current date: Oct 18, 2025
+                        const currentMonth = new Date(2025, 9, 18); // Oct 18, 2025
                         const months = [];
                         for (let d = new Date(startMonth); d <= currentMonth; d.setMonth(d.getMonth() + 1)) {
                             months.push(d.toISOString().slice(0, 7));
@@ -287,7 +286,7 @@ if (typeof firebase === 'undefined') {
                         e.preventDefault();
                         const memberData = {
                             memberNumber: document.getElementById('memberNumber').value,
-                            memberName: document.getElementById('memberName').value, // Changed back to memberName
+                            memberName: document.getElementById('memberName').value,
                             email: document.getElementById('email').value,
                             primaryMobile: document.getElementById('primaryMobile').value,
                             role: document.getElementById('isAdmin').checked ? 'admin' : 'member'
@@ -318,7 +317,7 @@ if (typeof firebase === 'undefined') {
                         const memberDoc = membersSnapshot.docs[0];
                         const memberId = memberDoc.id;
                         const updatedData = {
-                            memberName: document.getElementById('editName').value, // Changed back to memberName
+                            memberName: document.getElementById('editName').value,
                             email: document.getElementById('editEmail').value,
                             primaryMobile: document.getElementById('editPrimaryMobile').value,
                             role: document.getElementById('editIsAdmin').checked ? 'admin' : 'member'
@@ -339,15 +338,12 @@ if (typeof firebase === 'undefined') {
                             return;
                         }
                         const memberData = membersSnapshot.docs[0].data();
-                        document.getElementById('editName').value = memberData.memberName || ''; // Changed to memberName
+                        document.getElementById('editName').value = memberData.memberName || '';
                         document.getElementById('editEmail').value = memberData.email || '';
                         document.getElementById('editPrimaryMobile').value = memberData.primaryMobile || '';
                         document.getElementById('editIsAdmin').checked = memberData.role === 'admin';
                         document.getElementById('editMemberForm').style.display = 'block';
                     });
-
-                    // Transaction Form and Table (unchanged)
-                    // ...
                 }
 
                 // Load Profile (Member)
@@ -355,6 +351,10 @@ if (typeof firebase === 'undefined') {
                     if (!document.getElementById('profileForm')) return;
 
                     auth.onAuthStateChanged(async (user) => {
+                        if (!user && window.location.pathname === '/login.html') {
+                            // Do nothing on login page if not logged in
+                            return;
+                        }
                         if (!user) {
                             alert('Not logged in. Redirecting to login...');
                             window.location.href = 'login.html';
@@ -365,7 +365,7 @@ if (typeof firebase === 'undefined') {
                         if (userDoc.exists) {
                             const userData = userDoc.data();
                             document.getElementById('memberNumber').value = userData.memberNumber || '';
-                            document.getElementById('name').value = userData.memberName || ''; // Changed to memberName
+                            document.getElementById('name').value = userData.memberName || '';
                             document.getElementById('homeName').value = userData.homeName || '';
                             document.getElementById('homeNumber').value = userData.homeNumber || '';
                             document.getElementById('familyMembers').value = userData.familyMembers || '';
