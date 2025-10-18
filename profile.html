@@ -55,4 +55,71 @@
     <script>
         // Firebase Config (same as above)
         const firebaseConfig = {
-            apiKey: "AIzaSyBWswawf9tpxNwVU0Ba
+            apiKey: "AIzaSyBWswawf9tpxNwVU0BaJ6FCwCvgcjUQXlA",
+            authDomain: "shipyard-nagar.firebaseapp.com",
+            projectId: "shipyard-nagar",
+            storageBucket: "shipyard-nagar.firebasestorage.app",
+            messagingSenderId: "552855824221",
+            appId: "1:552855824221:web:f709da953077475be9eab4",
+            measurementId: "G-V8CQ4YCCQ5"
+        };
+
+        try {
+            firebase.initializeApp(firebaseConfig);
+            const auth = firebase.auth();
+            const db = firebase.firestore();
+        } catch (error) {
+            alert('Firebase Initialization Error: ' + error.message);
+        }
+
+        auth.onAuthStateChanged(async (user) => {
+            const profileGreeting = document.getElementById('profileGreeting');
+            const logoutBtn = document.getElementById('logoutBtn');
+
+            if (user) {
+                try {
+                    const userDoc = await db.collection('users').doc(user.uid).get();
+                    if (userDoc.exists) {
+                        const userData = userDoc.data();
+                        profileGreeting.textContent = `Welcome, ${userData.memberName || 'Guest'}!`;
+                    }
+                } catch (error) {
+                    console.error('Error fetching profile data:', error);
+                    profileGreeting.textContent = 'Welcome, Guest!';
+                }
+            } else {
+                window.location.href = 'login.html';
+            }
+
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', () => {
+                    auth.signOut().then(() => {
+                        localStorage.removeItem('userData');
+                        alert('Logged out successfully!');
+                        window.location.href = 'login.html';
+                    }).catch((error) => {
+                        alert('Logout Error: ' + error.message);
+                    });
+                });
+            }
+        });
+
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        if (themeToggle) {
+            themeToggle.addEventListener('click', () => {
+                const html = document.documentElement;
+                const currentTheme = html.getAttribute('data-theme');
+                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+                html.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+            });
+
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                document.documentElement.setAttribute('data-theme', savedTheme);
+            }
+        }
+    </script>
+</body>
+</html>
