@@ -1,50 +1,213 @@
-body {
-    font-family: Arial, sans-serif;
+/* Reset default styles */
+* {
     margin: 0;
     padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Theme Variables */
+:root {
+    --bg-color: #f0f2f5;
+    --text-color: #333;
+    --card-bg: #fff;
+    --primary-color: #007bff;
+    --header-bg: #007bff;
+    --header-text: #fff;
+    --shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    --transition: all 0.3s ease;
+}
+
+[data-theme="dark"] {
+    --bg-color: #222;
+    --text-color: #fff;
+    --card-bg: #333;
+    --primary-color: #66b0ff;
+    --header-bg: #1a73e8;
+    --shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+}
+
+/* Body */
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    min-height: 100vh;
+    transition: var(--transition);
+}
+
+/* Header with Letterhead */
+header {
+    background: url('../assets/head.png') no-repeat center/cover;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 10px;
+    box-shadow: var(--shadow);
+    position: relative;
+    z-index: 1;
+}
+
+header h1 {
+    font-size: 1.5rem;
+    color: var(--header-text);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Theme Toggle */
+.theme-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+.theme-toggle button {
+    background: var(--primary-color);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: var(--shadow);
+}
+
+.theme-toggle button:hover {
+    transform: scale(1.1);
+}
+
+/* Main Content */
+main {
+    padding: 15px;
+}
+
+/* Cards (3D Effect) */
+.card {
+    background: var(--card-bg);
+    border-radius: 15px;
+    padding: 15px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+    transform: perspective(1000px) rotateX(0deg) rotateY(0deg);
+    transition: var(--transition);
+}
+
+.card:hover {
+    transform: perspective(1000px) rotateX(2deg) rotateY(2deg);
+}
+
+/* Forms */
+form {
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
+    gap: 15px;
 }
-header {
-    background: #007bff;
-    color: white;
-    text-align: center;
-    padding: 1rem;
-}
-main {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-}
-.login-container {
-    width: 100%;
-    max-width: 400px;
-    padding: 20px;
+
+.form-control {
+    border-radius: 10px;
     border: 1px solid #ccc;
-    border-radius: 5px;
-}
-input, button {
-    width: 100%;
-    margin: 10px 0;
     padding: 10px;
-    box-sizing: border-box;
+    transition: var(--transition);
 }
-button {
-    background: #007bff;
-    color: white;
+
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 5px var(--primary-color);
+}
+
+/* Buttons */
+.btn {
+    border-radius: 25px;
+    padding: 10px 20px;
+    font-weight: bold;
+    transition: var(--transition);
+    transform: translateY(0);
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
     border: none;
-    cursor: pointer;
 }
-footer {
+
+.btn-danger, .btn-warning {
+    transition: var(--transition);
+}
+
+/* Tables */
+.table {
+    background: var(--card-bg);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+}
+
+.table th, .table td {
+    padding: 12px;
     text-align: center;
-    padding: 10px;
-    background: #f8f8f8;
 }
-@media (max-width: 600px) {
-    .login-container {
+
+/* Login Page Logo */
+.logo-container {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.logo-container img {
+    width: 150px;
+    height: 150px;
+    object-fit: contain;
+    animation: fadeIn 1s ease-in-out;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.card, .btn, header {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+/* Mobile Optimization */
+@media (max-width: 576px) {
+    header h1 {
+        font-size: 1.2rem;
+    }
+
+    .card {
         padding: 10px;
     }
+
+    .form-control {
+        font-size: 0.9rem;
+    }
+
+    .btn {
+        padding: 8px 15px;
+        font-size: 0.9rem;
+    }
+
+    .table th, .table td {
+        font-size: 0.8rem;
+        padding: 8px;
+    }
+}
+
+/* Theme Toggle Animation */
+.theme-toggle button::before {
+    content: '🌞';
+    font-size: 20px;
+}
+
+[data-theme="dark"] .theme-toggle button::before {
+    content: '🌙';
 }
