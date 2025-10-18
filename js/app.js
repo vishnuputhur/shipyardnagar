@@ -19,9 +19,87 @@ if (typeof firebase === 'undefined') {
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        // Set Auth Persistence to local
+        // Set Auth Persistence
         auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
             .then(() => {
+                // Check Auth State
+                auth.onAuthStateChanged(async (user) => {
+                    if (!user && window.location.pathname !== '/login.html') {
+                        window.location.href = 'login.html';
+                        return;
+                    }
+
+                    if (user && window.location.pathname === '/index.html') {
+                        // Load Cached Data
+                        const cachedData = JSON.parse(localStorage.getItem('userData') || '{}');
+                        if (cachedData.name) {
+                            document.getElementById('greeting').textContent = `Hi, ${cachedData.name} & family!`;
+                            document.getElementById('totalWealth').textContent = `Our Total Wealth: ₹${cachedData.totalWealth || 0}`;
+                            document.getElementById('monthlyDue').textContent = `Your Monthly Due: ${cachedData.dueMonths || 0} months (₹${(cachedData.dueMonths || 0) * 200})`;
+                        }
+
+                        // Check Profile Completeness
+                        const userDoc = await db.collection('users').doc(user.uid).get();
+                        if (userDoc.exists) {
+                            const userData = userDoc.data();
+                            if (!userData.homeName || !userData.homeNumber || !userData.familyMembers) {
+                                const goToProfile = confirm('Your profile is incomplete. Please complete it.\nPress OK to go to Profile.');
+                                if (goToProfile) {
+                                    window.location.href = 'profile.html';
+                                }
+                            }
+
+                            // Update UI with Firebase Data
+                            document.getElementById('greeting').textContent = `Hi, ${userData.name} & family!`;
+                            
+                            // Calculate Total Wealth
+                            let totalIncome = 0, totalExpense = 0;
+                            const transactions = await db.collection('transactions').get();
+                            transactions.forEach(doc => {
+                                const t = doc.data();
+                                if (t.type === 'income') totalIncome += t.amount;
+                                else if (t.type === 'expense') totalExpense += t.amount;
+                            });
+                            const totalWealth = totalIncome - totalExpense;
+                            document.getElementById('totalWealth').textContent = `Our Total Wealth: ₹${totalWealth}`;
+
+                            // Calculate Monthly Due
+                            const months = ['2025-10', '2025-11']; // Add more as needed
+                            let dueMonths = 0;
+                            for (const month of months) {
+                                const contribution = await db.collection('contributions').doc(user.uid).collection('months').doc(month).get();
+                                if (!contribution.exists || !contribution.data().paid) dueMonths++;
+                            }
+                            document.getElementById('monthlyDue').textContent = `Your Monthly Due: ${dueMonths} months (₹${dueMonths * 200})`;
+
+                            // Cache Data
+                            localStorage.setItem('userData', JSON.stringify({
+                                name: userData.name,
+                                totalWealth,
+                                dueMonths
+                            }));
+
+                            // Admin Tab Visibility
+                            if (userData.role === 'admin') {
+                                document.getElementById('adminTab').style.display = 'block';
+                            }
+                        }
+                    }
+                });
+
+                // Admin Tab Check
+                window.checkAdmin = async function() {
+                    const user = auth.currentUser;
+                    if (user) {
+                        const userDoc = await db.collection('users').doc(user.uid).get();
+                        if (userDoc.exists && userDoc.data().role === 'admin') {
+                            window.location.href = 'dashboard.html';
+                        } else {
+                            alert('You are not an admin.');
+                        }
+                    }
+                };
+
                 // Member Login
                 if (document.getElementById('memberLoginForm')) {
                     document.getElementById('memberLoginForm').addEventListener('submit', (e) => {
@@ -30,12 +108,12 @@ if (typeof firebase === 'undefined') {
                         const password = document.getElementById('memberPassword').value;
 
                         auth.signInWithEmailAndPassword(email, password)
-                            .then((userCredential) => {
-                                alert('Member login successful! Redirecting to profile...');
-                                window.location.href = 'profile.html';
+                            .then(() => {
+                                alert('Login successful! Redirecting to home...');
+                                window.location.href = 'index.html';
                             })
                             .catch((error) => {
-                                alert('Member Login Error: ' + error.message);
+                                alert('Login Error: ' + error.message);
                             });
                     });
 
@@ -55,49 +133,6 @@ if (typeof firebase === 'undefined') {
                             localStorage.setItem('email', document.getElementById('memberEmail').value);
                         } else {
                             localStorage.removeItem('email');
-                        }
-                    });
-                }
-
-                // Admin Login
-                if (document.getElementById('adminLoginForm')) {
-                    document.getElementById('adminLoginForm').addEventListener('submit', (e) => {
-                        e.preventDefault();
-                        const email = document.getElementById('adminEmail').value;
-                        const password = document.getElementById('adminPassword').value;
-
-                        auth.signInWithEmailAndPassword(email, password)
-                            .then(async (userCredential) => {
-                                const user = userCredential.user;
-                                try {
-                                    const userDoc = await db.collection('users').doc(user.uid).get();
-                                    if (!userDoc.exists) {
-                                        alert(`Error: User document for UID ${user.uid} not found in Firestore 'users' collection.`);
-                                        setTimeout(() => window.location.href = 'profile.html', 2000);
-                                    } else if (userDoc.data().role !== 'admin') {
-                                        alert(`Error: User role is "${userDoc.data().role || 'undefined'}", not "admin". UID: ${user.uid}`);
-                                        setTimeout(() => window.location.href = 'profile.html', 2000);
-                                    } else {
-                                        alert('Admin login successful! Redirecting to dashboard...');
-                                        window.location.href = 'dashboard.html';
-                                    }
-                                } catch (error) {
-                                    alert('Admin Login Error: ' + error.message);
-                                }
-                            })
-                            .catch((error) => {
-                                alert('Admin Login Error: ' + error.message);
-                            });
-                    });
-
-                    document.getElementById('adminForgotPassword').addEventListener('click', () => {
-                        const email = document.getElementById('adminEmail').value;
-                        if (email) {
-                            auth.sendPasswordResetEmail(email)
-                                .then(() => alert('Password reset email sent!'))
-                                .catch((error) => alert('Forgot Password Error: ' + error.message));
-                        } else {
-                            alert('Please enter your email first!');
                         }
                     });
                 }
@@ -191,14 +226,15 @@ if (typeof firebase === 'undefined') {
                         const memberData = {
                             memberNumber: document.getElementById('memberNumber').value,
                             name: document.getElementById('memberName').value,
-                            homeName: document.getElementById('homeName').value,
-                            homeNumber: document.getElementById('homeNumber').value,
-                            familyMembers: parseInt(document.getElementById('familyMembers').value),
+                            email: document.getElementById('email').value,
                             primaryMobile: document.getElementById('primaryMobile').value,
-                            secondaryMobile: document.getElementById('secondaryMobile').value,
                             role: 'member'
                         };
-                        await db.collection('users').add(memberData);
+                        const userCredential = await auth.createUserWithEmailAndPassword(
+                            memberData.email,
+                            document.getElementById('password').value
+                        );
+                        await db.collection('users').doc(userCredential.user.uid).set(memberData);
                         alert('Member added!');
                         document.getElementById('addMemberForm').reset();
                         loadDashboard();
@@ -245,7 +281,6 @@ if (typeof firebase === 'undefined') {
                 async function loadProfile() {
                     if (!document.getElementById('profileForm')) return;
 
-                    // Wait for auth state to stabilize
                     auth.onAuthStateChanged(async (user) => {
                         if (!user) {
                             alert('Not logged in. Redirecting to login...');
@@ -253,15 +288,14 @@ if (typeof firebase === 'undefined') {
                             return;
                         }
 
-                        // Load Profile
                         const userDoc = await db.collection('users').doc(user.uid).get();
                         if (userDoc.exists) {
                             const userData = userDoc.data();
                             document.getElementById('memberNumber').value = userData.memberNumber;
                             document.getElementById('name').value = userData.name;
-                            document.getElementById('homeName').value = userData.homeName;
-                            document.getElementById('homeNumber').value = userData.homeNumber;
-                            document.getElementById('familyMembers').value = userData.familyMembers;
+                            document.getElementById('homeName').value = userData.homeName || '';
+                            document.getElementById('homeNumber').value = userData.homeNumber || '';
+                            document.getElementById('familyMembers').value = userData.familyMembers || '';
                             document.getElementById('primaryMobile').value = userData.primaryMobile;
                             document.getElementById('secondaryMobile').value = userData.secondaryMobile || '';
                         } else {
@@ -269,13 +303,12 @@ if (typeof firebase === 'undefined') {
                             window.location.href = 'login.html';
                         }
 
-                        // Update Profile
                         document.getElementById('profileForm').addEventListener('submit', async (e) => {
                             e.preventDefault();
                             const updatedData = {
                                 homeName: document.getElementById('homeName').value,
                                 homeNumber: document.getElementById('homeNumber').value,
-                                familyMembers: parseInt(document.getElementById('familyMembers').value),
+                                familyMembers: parseInt(document.getElementById('familyMembers').value) || 0,
                                 primaryMobile: document.getElementById('primaryMobile').value,
                                 secondaryMobile: document.getElementById('secondaryMobile').value || null
                             };
@@ -287,7 +320,6 @@ if (typeof firebase === 'undefined') {
                             }
                         });
 
-                        // Load Contributions
                         const monthSelect = document.getElementById('monthSelect');
                         const contributionTable = document.getElementById('contributionTable');
 
@@ -311,7 +343,6 @@ if (typeof firebase === 'undefined') {
                             loadContributions(monthSelect.value);
                         });
 
-                        // Load Balance Sheet
                         const balanceTable = document.getElementById('balanceTable');
                         async function loadBalanceSheet() {
                             let totalContributions = 0;
@@ -371,7 +402,6 @@ if (themeToggle) {
         localStorage.setItem('theme', newTheme);
     });
 
-    // Load saved theme
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme) {
         document.documentElement.setAttribute('data-theme', savedTheme);
