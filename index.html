@@ -41,20 +41,18 @@
             right: 10px;
         }
 
-        /* Initially hide buttons until user data is loaded */
-        .button-grid button {
-            display: none;
+        /* Button Styling */
+        button {
+            transition: transform 0.1s ease;
         }
-        
-        /* Show buttons when user is authenticated */
-        .authenticated .button-grid button {
-            display: inline-block;
+        button:hover {
+            transform: scale(1.05);
         }
     </style>
 </head>
 <body>
     <div class="theme-toggle">
-        <button id="themeToggle">🌞</button>
+        <button id="themeToggle" class="btn btn-outline-secondary">🌞</button>
     </div>
     <header>
         <h1>Shipyard Nagar Residential Association</h1>
@@ -67,7 +65,7 @@
             <div class="col-12">
                 <div class="card">
                     <h2>Welcome</h2>
-                    <p id="greeting">Hi, Guest & family!</p>
+                    <p id="greeting">Hi, <span id="user-name">Guest</span> & family!</p>
                     <p id="totalWealth">Our Total Wealth: ₹0</p>
                     <p id="monthlyDue">Your Monthly Due: 0 months (₹0)</p>
                     <div class="button-grid">
@@ -94,148 +92,171 @@
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 
     <script>
-        // Firebase Config
-        const firebaseConfig = {
-            apiKey: "AIzaSyBWswawf9tpxNwVU0BaJ6FCwCvgcjUQXlA",
-            authDomain: "shipyard-nagar.firebaseapp.com",
-            projectId: "shipyard-nagar",
-            storageBucket: "shipyard-nagar.firebasestorage.app",
-            messagingSenderId: "552855824221",
-            appId: "1:552855824221:web:f709da953077475be9eab4",
-            measurementId: "G-V8CQ4YCCQ5"
-        };
+        // ✅ Check Firebase SDK
+        if (typeof firebase === 'undefined') {
+            alert('Error: Firebase SDK not loaded. Check network or script tags.');
+        } else {
+            // ✅ Firebase Config
+            const firebaseConfig = {
+                apiKey: "AIzaSyBWswawf9tpxNwVU0BaJ6FCwCvgcjUQXlA",
+                authDomain: "shipyard-nagar.firebaseapp.com",
+                projectId: "shipyard-nagar",
+                storageBucket: "shipyard-nagar.firebasestorage.app",
+                messagingSenderId: "552855824221",
+                appId: "1:552855824221:web:f709da953077475be9eab4",
+                measurementId: "G-V8CQ4YCCQ5"
+            };
 
-        // Initialize Firebase
-        let auth, db;
-        try {
-            firebase.initializeApp(firebaseConfig);
-            auth = firebase.auth();
-            db = firebase.firestore();
-            console.log('Firebase initialized successfully');
-        } catch (error) {
-            alert('Firebase Initialization Error: ' + error.message);
-            console.error('Firebase Init Error:', error);
-        }
+            // ✅ Initialize only once
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
+            }
 
-        // DOM Content Loaded
-        document.addEventListener('DOMContentLoaded', () => {
-            // Auth State Check
-            auth.onAuthStateChanged(async (user) => {
-                const greeting = document.getElementById('greeting');
-                const totalWealth = document.getElementById('totalWealth');
-                const monthlyDue = document.getElementById('monthlyDue');
-                const adminTab = document.getElementById('adminTab');
-                const chittiBtn = document.getElementById('chittiBtn');
-                const loanBtn = document.getElementById('loanBtn');
-                const memberListBtn = document.getElementById('memberListBtn');
-                const subscriptionBtn = document.getElementById('subscriptionBtn');
-                const profileBtn = document.getElementById('profileBtn');
-                const adminBtn = document.getElementById('adminBtn');
-                const buttonGrid = document.querySelector('.button-grid');
-                const mainCard = document.querySelector('.card');
+            const auth = firebase.auth();
+            const db = firebase.firestore();
 
+            // ✅ UI elements
+            const userNameEl = document.getElementById('user-name');
+            const greeting = document.getElementById('greeting');
+            const totalWealth = document.getElementById('totalWealth');
+            const monthlyDue = document.getElementById('monthlyDue');
+            const adminTab = document.getElementById('adminTab');
+            const adminBtn = document.getElementById('adminBtn');
+            const chittiBtn = document.getElementById('chittiBtn');
+            const loanBtn = document.getElementById('loanBtn');
+            const memberListBtn = document.getElementById('memberListBtn');
+            const subscriptionBtn = document.getElementById('subscriptionBtn');
+            const profileBtn = document.getElementById('profileBtn');
+
+            // ✅ Auth State Listener
+            auth.onAuthStateChanged((user) => {
                 if (user) {
-                    try {
-                        const userDoc = await db.collection('users').doc(user.uid).get();
-                        if (userDoc.exists) {
-                            const userData = userDoc.data();
-                            console.log('User Data:', userData);
+                    // ✅ Fetch user data dynamically
+                    db.collection('users').doc(user.uid).get()
+                        .then((doc) => {
+                            if (doc.exists) {
+                                const data = doc.data();
+                                userNameEl.textContent = data.memberName || "Guest";
+                                
+                                // Show admin button only for admin users
+                                if (data.role === "admin") {
+                                    adminTab.style.display = 'block';
+                                } else {
+                                    adminTab.style.display = 'none';
+                                }
 
-                            // Set memberName
-                            const memberName = userData.memberName || 'Guest';
-                            greeting.textContent = `Hi, ${memberName} & family!`;
-
-                            // Total Wealth
-                            let totalIncome = 0, totalExpense = 0;
-                            const transactionsSnapshot = await db.collection('transactions').get();
-                            transactionsSnapshot.forEach(doc => {
-                                const t = doc.data();
-                                if (t.type === 'income') totalIncome += t.amount || 0;
-                                if (t.type === 'expense') totalExpense += t.amount || 0;
-                            });
-                            const wealth = totalIncome - totalExpense;
-                            totalWealth.textContent = `Our Total Wealth: ₹${wealth}`;
-
-                            // Monthly Due
-                            const startMonth = new Date(2025, 9, 1); // Oct 2025
-                            const currentMonth = new Date(2025, 9, 18); // Oct 18, 2025
-                            const months = [];
-                            for (let d = new Date(startMonth); d <= currentMonth; d.setMonth(d.getMonth() + 1)) {
-                                months.push(d.toISOString().slice(0, 7));
+                                // Calculate and display total wealth
+                                calculateTotalWealth();
+                                
+                                // Calculate and display monthly due
+                                calculateMonthlyDue(user.uid);
+                                
+                            } else {
+                                userNameEl.textContent = "Guest";
+                                adminTab.style.display = 'none';
                             }
-                            let dueMonths = 0;
-                            for (const month of months) {
-                                const contributionDoc = await db.collection('contributions').doc(user.uid).collection('months').doc(month).get();
-                                if (!contributionDoc.exists || !contributionDoc.data()?.paid) dueMonths++;
-                            }
-                            monthlyDue.textContent = `Your Monthly Due: ${dueMonths} months (₹${dueMonths * 200})`;
-
-                            // Show all buttons for authenticated users
-                            if (buttonGrid) {
-                                buttonGrid.classList.add('authenticated');
-                            }
-
-                            // Button Functionality
-                            if (chittiBtn) chittiBtn.addEventListener('click', () => window.location.href = 'chitty.html');
-                            if (loanBtn) loanBtn.addEventListener('click', () => window.location.href = 'loan.html');
-                            if (memberListBtn) memberListBtn.addEventListener('click', () => window.location.href = 'members.html');
-                            if (subscriptionBtn) subscriptionBtn.addEventListener('click', () => window.location.href = 'subscription.html');
-                            if (profileBtn) profileBtn.addEventListener('click', () => window.location.href = 'profile.html');
-                            if (adminBtn) adminBtn.addEventListener('click', () => window.location.href = 'dashboard.html');
-
-                            // Admin Tab Visibility
-                            if (adminTab) {
-                                const isAdmin = userData.role && userData.role.toLowerCase() === 'admin';
-                                adminTab.style.display = isAdmin ? 'block' : 'none';
-                                console.log('Admin Role Check:', userData.role, 'Is Admin:', isAdmin);
-                            }
-                        } else {
-                            console.error(`User data not found for UID: ${user.uid}`);
-                            greeting.textContent = 'Hi, Guest & family!';
-                            
-                            // Still show buttons for authenticated users even if user data is missing
-                            if (buttonGrid) {
-                                buttonGrid.classList.add('authenticated');
-                            }
-                            
-                            if (adminTab) adminTab.style.display = 'none';
-                        }
-                    } catch (error) {
-                        console.error('Error fetching user data:', error);
-                        greeting.textContent = 'Hi, Guest & family!';
-                        
-                        // Show buttons even if there's an error (user is authenticated)
-                        if (buttonGrid) {
-                            buttonGrid.classList.add('authenticated');
-                        }
-                        
-                        if (adminTab) adminTab.style.display = 'none';
-                    }
+                        })
+                        .catch((error) => {
+                            console.error("Error getting document:", error);
+                            userNameEl.textContent = "Guest";
+                            adminTab.style.display = 'none';
+                        });
                 } else {
-                    // User is not logged in, redirect to login
+                    // Redirect to login if not authenticated
                     window.location.href = 'login.html';
                 }
             });
-        });
 
-        // Theme Toggle
-        const themeToggle = document.getElementById('themeToggle');
-        if (themeToggle) {
-            themeToggle.addEventListener('click', () => {
-                const html = document.documentElement;
-                const currentTheme = html.getAttribute('data-theme');
-                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-                html.setAttribute('data-theme', newTheme);
-                localStorage.setItem('theme', newTheme);
-                
-                // Update button emoji
-                themeToggle.textContent = newTheme === 'light' ? '🌞' : '🌙';
-            });
+            // ✅ Calculate Total Wealth
+            async function calculateTotalWealth() {
+                try {
+                    let totalIncome = 0, totalExpense = 0;
+                    const transactionsSnapshot = await db.collection('transactions').get();
+                    transactionsSnapshot.forEach(doc => {
+                        const t = doc.data();
+                        if (t.type === 'income') totalIncome += t.amount || 0;
+                        if (t.type === 'expense') totalExpense += t.amount || 0;
+                    });
+                    const wealth = totalIncome - totalExpense;
+                    totalWealth.textContent = `Our Total Wealth: ₹${wealth}`;
+                } catch (error) {
+                    console.error('Error calculating total wealth:', error);
+                    totalWealth.textContent = 'Our Total Wealth: ₹0';
+                }
+            }
 
-            // Set initial theme and button
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            document.documentElement.setAttribute('data-theme', savedTheme);
-            themeToggle.textContent = savedTheme === 'light' ? '🌞' : '🌙';
+            // ✅ Calculate Monthly Due
+            async function calculateMonthlyDue(userId) {
+                try {
+                    const startMonth = new Date(2025, 9, 1); // Oct 2025
+                    const currentMonth = new Date(2025, 9, 18); // Oct 18, 2025
+                    const months = [];
+                    for (let d = new Date(startMonth); d <= currentMonth; d.setMonth(d.getMonth() + 1)) {
+                        months.push(d.toISOString().slice(0, 7));
+                    }
+                    let dueMonths = 0;
+                    for (const month of months) {
+                        const contributionDoc = await db.collection('contributions').doc(userId).collection('months').doc(month).get();
+                        if (!contributionDoc.exists || !contributionDoc.data()?.paid) dueMonths++;
+                    }
+                    monthlyDue.textContent = `Your Monthly Due: ${dueMonths} months (₹${dueMonths * 200})`;
+                } catch (error) {
+                    console.error('Error calculating monthly due:', error);
+                    monthlyDue.textContent = 'Your Monthly Due: 0 months (₹0)';
+                }
+            }
+
+            // ✅ Navigation buttons
+            if (chittiBtn) {
+                chittiBtn.addEventListener('click', () => {
+                    window.location.href = 'chitty.html';
+                });
+            }
+            if (loanBtn) {
+                loanBtn.addEventListener('click', () => {
+                    window.location.href = 'loan.html';
+                });
+            }
+            if (memberListBtn) {
+                memberListBtn.addEventListener('click', () => {
+                    window.location.href = 'members.html';
+                });
+            }
+            if (subscriptionBtn) {
+                subscriptionBtn.addEventListener('click', () => {
+                    window.location.href = 'subscription.html';
+                });
+            }
+            if (profileBtn) {
+                profileBtn.addEventListener('click', () => {
+                    window.location.href = 'profile.html';
+                });
+            }
+            if (adminBtn) {
+                adminBtn.addEventListener('click', () => {
+                    window.location.href = 'dashboard.html';
+                });
+            }
+
+            // ✅ Theme Toggle
+            const themeToggle = document.getElementById('themeToggle');
+            if (themeToggle) {
+                themeToggle.addEventListener('click', () => {
+                    const html = document.documentElement;
+                    const currentTheme = html.getAttribute('data-theme');
+                    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+                    html.setAttribute('data-theme', newTheme);
+                    localStorage.setItem('theme', newTheme);
+                    
+                    // Update button emoji
+                    themeToggle.textContent = newTheme === 'light' ? '🌞' : '🌙';
+                });
+
+                // Set initial theme and button
+                const savedTheme = localStorage.getItem('theme') || 'light';
+                document.documentElement.setAttribute('data-theme', savedTheme);
+                themeToggle.textContent = savedTheme === 'light' ? '🌞' : '🌙';
+            }
         }
     </script>
 </body>
