@@ -40,61 +40,69 @@ if (typeof firebase === 'undefined') {
                             document.getElementById('monthlyDue').textContent = `Your Monthly Due: ${cachedData.dueMonths || 0} months (₹${(cachedData.dueMonths || 0) * 200})`;
 
                             // Refresh from Firebase
-                            const userDoc = await db.collection('users').doc(user.uid).get();
-                            if (userDoc.exists) {
-                                const userData = userDoc.data();
-                                memberName = userData.memberName || 'Guest';
-                                document.getElementById('greeting').textContent = `Hi, ${memberName} & family!`;
+                            if (user && db) {
+                                try {
+                                    const userDoc = await db.collection('users').doc(user.uid).get();
+                                    if (userDoc.exists) {
+                                        const userData = userDoc.data();
+                                        console.log('User Data:', userData); // Debug log
+                                        memberName = userData.memberName || 'Guest';
+                                        document.getElementById('greeting').textContent = `Hi, ${memberName} & family!`;
 
-                                // Profile Incomplete Check
-                                if (!userData.homeName || !userData.homeNumber || !userData.familyMembers) {
-                                    const goToProfile = confirm('Your profile is incomplete. Please complete it.\nPress OK to go to Profile.');
-                                    if (goToProfile) {
-                                        window.location.href = 'profile.html';
+                                        // Profile Incomplete Check
+                                        if (!userData.homeName || !userData.homeNumber || !userData.familyMembers) {
+                                            const goToProfile = confirm('Your profile is incomplete. Please complete it.\nPress OK to go to Profile.');
+                                            if (goToProfile) {
+                                                window.location.href = 'profile.html';
+                                            }
+                                        }
+
+                                        // Total Wealth
+                                        let totalIncome = 0, totalExpense = 0;
+                                        const transactions = await db.collection('transactions').get();
+                                        transactions.forEach(doc => {
+                                            const t = doc.data();
+                                            if (t.type === 'income') totalIncome += t.amount;
+                                            if (t.type === 'expense') totalExpense += t.amount;
+                                        });
+                                        const totalWealth = totalIncome - totalExpense;
+                                        document.getElementById('totalWealth').textContent = `Our Total Wealth: ₹${totalWealth}`;
+
+                                        // Monthly Due
+                                        const startMonth = new Date(2025, 9, 1); // Oct 2025
+                                        const currentMonth = new Date(2025, 9, 18); // Current date: Oct 18, 2025
+                                        const months = [];
+                                        for (let d = new Date(startMonth); d <= currentMonth; d.setMonth(d.getMonth() + 1)) {
+                                            months.push(d.toISOString().slice(0, 7));
+                                        }
+                                        let dueMonths = 0;
+                                        for (const month of months) {
+                                            const contribution = await db.collection('contributions').doc(user.uid).collection('months').doc(month).get();
+                                            if (!contribution.exists || !contribution.data().paid) dueMonths++;
+                                        }
+                                        document.getElementById('monthlyDue').textContent = `Your Monthly Due: ${dueMonths} months (₹${dueMonths * 200})`;
+
+                                        // Cache Data
+                                        localStorage.setItem('userData', JSON.stringify({
+                                            memberName: memberName,
+                                            totalWealth,
+                                            dueMonths
+                                        }));
+
+                                        // Admin Tab Visibility
+                                        const adminTab = document.getElementById('adminTab');
+                                        if (adminTab) {
+                                            adminTab.style.display = userData.role === 'admin' ? 'block' : 'none';
+                                            console.log('Admin Role:', userData.role); // Debug log
+                                        } else {
+                                            console.error('adminTab element not found in index.html');
+                                        }
+                                    } else {
+                                        console.error(`User data not found for UID: ${user.uid}`);
                                     }
+                                } catch (error) {
+                                    console.error('Error fetching user data:', error);
                                 }
-
-                                // Total Wealth
-                                let totalIncome = 0, totalExpense = 0;
-                                const transactions = await db.collection('transactions').get();
-                                transactions.forEach(doc => {
-                                    const t = doc.data();
-                                    if (t.type === 'income') totalIncome += t.amount;
-                                    if (t.type === 'expense') totalExpense += t.amount;
-                                });
-                                const totalWealth = totalIncome - totalExpense;
-                                document.getElementById('totalWealth').textContent = `Our Total Wealth: ₹${totalWealth}`;
-
-                                // Monthly Due
-                                const startMonth = new Date(2025, 9, 1); // Oct 2025
-                                const currentMonth = new Date(2025, 9, 18); // Current date: Oct 18, 2025
-                                const months = [];
-                                for (let d = new Date(startMonth); d <= currentMonth; d.setMonth(d.getMonth() + 1)) {
-                                    months.push(d.toISOString().slice(0, 7));
-                                }
-                                let dueMonths = 0;
-                                for (const month of months) {
-                                    const contribution = await db.collection('contributions').doc(user.uid).collection('months').doc(month).get();
-                                    if (!contribution.exists || !contribution.data().paid) dueMonths++;
-                                }
-                                document.getElementById('monthlyDue').textContent = `Your Monthly Due: ${dueMonths} months (₹${dueMonths * 200})`;
-
-                                // Cache Data
-                                localStorage.setItem('userData', JSON.stringify({
-                                    memberName: memberName,
-                                    totalWealth,
-                                    dueMonths
-                                }));
-
-                                // Admin Tab Visibility
-                                const adminTab = document.getElementById('adminTab');
-                                if (adminTab) {
-                                    adminTab.style.display = userData.role === 'admin' ? 'block' : 'none';
-                                } else {
-                                    console.error('adminTab element not found in index.html');
-                                }
-                            } else {
-                                console.error(`User data not found for UID: ${user.uid}`);
                             }
                         }
                     });
@@ -264,7 +272,7 @@ if (typeof firebase === 'undefined') {
                         function loadSubscriptionTable() {
                             if (monthSelect && contributionTable) {
                                 const startMonth = new Date(2025, 9, 1); // Oct 2025
-                                const currentMonth = new Date(2025, 9, 18); // Oct 18, 2025
+                                const currentMonth = new Date(2025, 9, 18); // Current date: Oct 18, 2025
                                 const months = [];
                                 for (let d = new Date(startMonth); d <= currentMonth; d.setMonth(d.getMonth() + 1)) {
                                     months.push(d.toISOString().slice(0, 7));
