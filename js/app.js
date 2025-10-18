@@ -16,9 +16,10 @@ if (typeof firebase === 'undefined') {
     // Initialize Firebase
     let auth, db;
     try {
-        firebase.initializeApp(firebaseConfig);
-        auth = firebase.auth();
-        db = firebase.firestore();
+        const app = firebase.initializeApp(firebaseConfig);
+        auth = app.auth();
+        db = app.firestore();
+        console.log('Firebase initialized successfully');
     } catch (error) {
         alert('Firebase Initialization Error: ' + error.message);
         console.error('Firebase Init Error:', error);
