@@ -281,3 +281,47 @@ form {
 .button-grid .btn:hover {
     transform: translateY(-3px) scale(1.05);
 }
+/* Forms Compact */
+.row {
+    gap: 10px 0;
+}
+
+.form-label {
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+}
+
+.form-control {
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    padding: 8px;
+    font-size: 0.9rem;
+    max-width: 100%; /* Compact width */
+}
+
+.btn {
+    padding: 8px 15px;
+    font-size: 0.9rem;
+}
+
+/* Mobile Optimization */
+@media (max-width: 576px) {
+    .container {
+        padding: 10px;
+    }
+
+    .card {
+        padding: 10px;
+        margin-bottom: 15px;
+    }
+
+    .form-control {
+        font-size: 0.85rem;
+        padding: 6px;
+    }
+
+    .btn {
+        padding: 6px 12px;
+        font-size: 0.85rem;
+    }
+}
