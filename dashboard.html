@@ -71,17 +71,32 @@
             cursor: pointer;
         }
         
-        .paid-checkbox {
-            background-color: #28a745 !important;
-            border-color: #28a745 !important;
+        /* Mobile-friendly month selection */
+        .month-buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 15px;
         }
         
-        /* Multi-select styling */
-        .multi-select-section {
-            background: #f8f9fa;
+        .month-btn {
+            padding: 8px 5px;
+            font-size: 12px;
+            text-align: center;
+        }
+        
+        .month-btn.selected {
+            background-color: #007bff;
+            color: white;
+        }
+        
+        /* Wealth edit section */
+        .wealth-edit-section {
+            background: #fff3cd;
             padding: 15px;
             border-radius: 10px;
-            margin-bottom: 20px;
+            margin: 15px 0;
+            border: 1px solid #ffeaa7;
         }
     </style>
 </head>
@@ -178,20 +193,34 @@
     <div class="card" id="subscriptionSection" style="display: none;">
         <h2>Subscriptions</h2>
         
-        <!-- Multi-select for months -->
-        <div class="multi-select-section">
-            <label class="form-label"><strong>Select Months to Mark/Unmark:</strong></label>
+        <!-- Mobile-friendly month selection -->
+        <div class="month-selection-section">
+            <label class="form-label"><strong>Select Month to View:</strong></label>
+            <div class="month-buttons" id="monthButtons">
+                <!-- Month buttons will be populated here -->
+            </div>
+        </div>
+
+        <!-- Wealth Edit Section -->
+        <div class="wealth-edit-section">
+            <h5>Wealth Management</h5>
             <div class="row">
-                <div class="col-md-6 mb-3">
-                    <select id="monthSelect" class="form-select" multiple size="6">
-                        <!-- Months will be populated here -->
-                    </select>
-                    <div class="form-text">Hold Ctrl/Cmd to select multiple months</div>
+                <div class="col-md-6">
+                    <div class="input-group mb-3">
+                        <input type="number" class="form-control" id="wealthAmount" placeholder="Amount">
+                        <button class="btn btn-success" id="addWealth">Add Income</button>
+                    </div>
                 </div>
                 <div class="col-md-6">
-                    <button id="markSelected" class="btn btn-success w-100 mb-2">Mark Selected as Paid</button>
-                    <button id="unmarkSelected" class="btn btn-danger w-100">Unmark Selected</button>
+                    <div class="input-group mb-3">
+                        <input type="number" class="form-control" id="expenseAmount" placeholder="Amount">
+                        <button class="btn btn-danger" id="addExpense">Add Expense</button>
+                    </div>
                 </div>
+            </div>
+            <div class="input-group">
+                <input type="text" class="form-control" id="transactionDescription" placeholder="Description">
+                <button class="btn btn-warning" id="resetWealth">Reset Wealth</button>
             </div>
         </div>
 
@@ -203,7 +232,7 @@
             </thead>
             <tbody></tbody>
         </table>
-        <p id="totalWealthDisplay">Total Wealth: ₹0</p>
+        <p id="totalWealthDisplay" class="fw-bold fs-5">Total Wealth: ₹0</p>
     </div>
 </main>
 <footer class="bg-light text-center py-2">
@@ -274,11 +303,14 @@
             const refreshTotalBtn = document.getElementById('refreshTotal');
             const logoutBtn = document.getElementById('logout');
             const subscriptionTableBody = document.querySelector('#subscriptionTable tbody');
-            const markSelectedBtn = document.getElementById('markSelected');
-            const unmarkSelectedBtn = document.getElementById('unmarkSelected');
+            const monthButtons = document.getElementById('monthButtons');
+            const addWealthBtn = document.getElementById('addWealth');
+            const addExpenseBtn = document.getElementById('addExpense');
+            const resetWealthBtn = document.getElementById('resetWealth');
 
             let currentMembers = [];
-            let currentMonths = [];
+            let allMonths = [];
+            let selectedMonth = '';
 
             // Button Event Listeners
             if (addUserBtn) {
@@ -398,98 +430,84 @@
                 });
             }
 
-            // Mark Selected Months
-            if (markSelectedBtn) {
-                markSelectedBtn.addEventListener('click', async () => {
-                    const selectedMonths = Array.from(document.getElementById('monthSelect').selectedOptions).map(opt => opt.value);
-                    if (selectedMonths.length === 0) {
-                        alert('Please select at least one month');
+            // Wealth Management Functions
+            if (addWealthBtn) {
+                addWealthBtn.addEventListener('click', async () => {
+                    const amount = parseFloat(document.getElementById('wealthAmount').value);
+                    const description = document.getElementById('transactionDescription').value || 'Manual Income';
+                    
+                    if (!amount || amount <= 0) {
+                        alert('Please enter a valid amount');
                         return;
                     }
                     
-                    if (confirm(`Are you sure you want to mark ${selectedMonths.length} month(s) as paid? This will add ₹${selectedMonths.length * 200} to total.`)) {
-                        await markMultipleMonths(selectedMonths, true);
+                    if (confirm(`Add ₹${amount} as income?`)) {
+                        await addTransaction('income', amount, description);
                     }
                 });
             }
 
-            // Unmark Selected Months
-            if (unmarkSelectedBtn) {
-                unmarkSelectedBtn.addEventListener('click', async () => {
-                    const selectedMonths = Array.from(document.getElementById('monthSelect').selectedOptions).map(opt => opt.value);
-                    if (selectedMonths.length === 0) {
-                        alert('Please select at least one month');
+            if (addExpenseBtn) {
+                addExpenseBtn.addEventListener('click', async () => {
+                    const amount = parseFloat(document.getElementById('expenseAmount').value);
+                    const description = document.getElementById('transactionDescription').value || 'Manual Expense';
+                    
+                    if (!amount || amount <= 0) {
+                        alert('Please enter a valid amount');
                         return;
                     }
                     
-                    if (confirm(`Are you sure you want to unmark ${selectedMonths.length} month(s)? This will remove ₹${selectedMonths.length * 200} from total.`)) {
-                        await markMultipleMonths(selectedMonths, false);
+                    if (confirm(`Add ₹${amount} as expense?`)) {
+                        await addTransaction('expense', amount, description);
                     }
                 });
             }
 
-            // Function to mark/unmark multiple months
-            const markMultipleMonths = async (months, markAsPaid) => {
-                loadingSpinner.style.display = 'block';
-                try {
-                    const batch = db.batch();
-                    let totalAmount = 0;
-
-                    for (const member of currentMembers) {
-                        for (const month of months) {
-                            const contributionRef = db.collection('contributions').doc(member.id).collection('months').doc(month);
+            if (resetWealthBtn) {
+                resetWealthBtn.addEventListener('click', async () => {
+                    if (confirm('Are you sure you want to reset ALL transactions? This cannot be undone!')) {
+                        loadingSpinner.style.display = 'block';
+                        try {
+                            // Delete all transactions
+                            const transactions = await db.collection('transactions').get();
+                            const batch = db.batch();
+                            transactions.forEach(doc => batch.delete(doc.ref));
+                            await batch.commit();
                             
-                            if (markAsPaid) {
-                                // Mark as paid
-                                batch.set(contributionRef, {
-                                    paid: true,
-                                    date: new Date().toISOString().split('T')[0],
-                                    amount: 200,
-                                    memberId: member.id,
-                                    month: month
-                                });
-                                totalAmount += 200;
-                            } else {
-                                // Unmark - only update paid status
-                                batch.set(contributionRef, {
-                                    paid: false,
-                                    date: null,
-                                    amount: 0,
-                                    memberId: member.id,
-                                    month: month
-                                }, { merge: true });
-                                totalAmount -= 200;
-                            }
+                            alert('All transactions reset successfully!');
+                            await refreshTotal();
+                        } catch (error) {
+                            console.error('Error resetting transactions:', error);
+                            alert('Error: ' + error.message);
+                        } finally {
+                            loadingSpinner.style.display = 'none';
                         }
                     }
+                });
+            }
 
-                    await batch.commit();
-
-                    // Update transactions only for the actual change
-                    if (markAsPaid) {
-                        await db.collection('transactions').add({
-                            type: 'income',
-                            amount: totalAmount,
-                            head: `Monthly Subscription - ${months.join(', ')}`,
-                            date: new Date().toISOString().split('T')[0],
-                            description: `Bulk payment for ${months.length} month(s)`
-                        });
-                    } else {
-                        // Remove transactions for these months
-                        const transactions = await db.collection('transactions')
-                            .where('head', '==', `Monthly Subscription - ${months.join(', ')}`)
-                            .get();
-                        
-                        const transactionBatch = db.batch();
-                        transactions.forEach(doc => transactionBatch.delete(doc.ref));
-                        await transactionBatch.commit();
-                    }
-
-                    alert(`Successfully ${markAsPaid ? 'marked' : 'unmarked'} ${months.length} month(s)!`);
-                    await loadSubscriptions();
+            const addTransaction = async (type, amount, description) => {
+                loadingSpinner.style.display = 'block';
+                try {
+                    await db.collection('transactions').add({
+                        type: type,
+                        amount: amount,
+                        head: description,
+                        date: new Date().toISOString().split('T')[0],
+                        description: description,
+                        manualEntry: true
+                    });
+                    
+                    alert(`${type === 'income' ? 'Income' : 'Expense'} of ₹${amount} added successfully!`);
+                    
+                    // Clear inputs
+                    document.getElementById('wealthAmount').value = '';
+                    document.getElementById('expenseAmount').value = '';
+                    document.getElementById('transactionDescription').value = '';
+                    
                     await refreshTotal();
                 } catch (error) {
-                    console.error('Error updating months:', error);
+                    console.error('Error adding transaction:', error);
                     alert('Error: ' + error.message);
                 } finally {
                     loadingSpinner.style.display = 'none';
@@ -498,11 +516,10 @@
 
             // Subscriptions Functionality
             const loadSubscriptions = async () => {
-                const monthSelect = document.getElementById('monthSelect');
                 const subscriptionTableBody = document.querySelector('#subscriptionTable tbody');
                 const monthHeaders = document.getElementById('monthHeaders');
 
-                if (!monthSelect || !subscriptionTableBody || !monthHeaders) {
+                if (!subscriptionTableBody || !monthHeaders) {
                     console.error('Required subscription elements not found');
                     return;
                 }
@@ -520,32 +537,122 @@
                     
                     localStorage.setItem('membersCache', JSON.stringify(currentMembers));
 
-                    // Dynamic months - Last 12 months including current
-                    const currentMonth = new Date();
-                    currentMonths = [];
-                    for (let i = 11; i >= 0; i--) {
-                        const month = new Date();
-                        month.setMonth(currentMonth.getMonth() - i);
-                        currentMonths.push(month.toISOString().slice(0, 7));
+                    // Generate months from Oct 2025 to Oct 2026
+                    allMonths = generateMonths('2025-10', '2026-10');
+                    
+                    // Create month buttons
+                    createMonthButtons(allMonths);
+                    
+                    // Select first month by default
+                    if (allMonths.length > 0 && !selectedMonth) {
+                        selectedMonth = allMonths[0];
+                        updateMonthSelection(selectedMonth);
                     }
-
-                    // Populate month select
-                    monthSelect.innerHTML = currentMonths.map(m => 
-                        `<option value="${m}">${getMonthName(m)} ${m.split('-')[0]}</option>`
-                    ).join('');
-
-                    // Populate table headers
-                    monthHeaders.innerHTML = '<th>Member Name</th>' + 
-                        currentMonths.map(m => `<th>${getMonthName(m)} ${m.split('-')[0]}</th>`).join('');
-
-                    // Render table
-                    await renderSubscriptionTable(currentMembers, currentMonths, subscriptionTableBody);
 
                 } catch (error) {
                     console.error('Error in loadSubscriptions:', error);
-                    subscriptionTableBody.innerHTML = '<tr><td colspan="12">Error loading data. Please refresh.</td></tr>';
+                    subscriptionTableBody.innerHTML = '<tr><td colspan="2">Error loading data. Please refresh.</td></tr>';
                 } finally {
                     loadingSpinner.style.display = 'none';
+                }
+            };
+
+            // Generate months array
+            const generateMonths = (start, end) => {
+                const months = [];
+                const startDate = new Date(start + '-01');
+                const endDate = new Date(end + '-01');
+                
+                let current = new Date(startDate);
+                while (current <= endDate) {
+                    months.push(current.toISOString().slice(0, 7));
+                    current.setMonth(current.getMonth() + 1);
+                }
+                
+                return months;
+            };
+
+            // Create mobile-friendly month buttons
+            const createMonthButtons = (months) => {
+                monthButtons.innerHTML = '';
+                months.forEach(month => {
+                    const button = document.createElement('button');
+                    button.className = 'btn btn-outline-primary month-btn';
+                    button.textContent = getMonthName(month);
+                    button.dataset.month = month;
+                    
+                    if (month === selectedMonth) {
+                        button.classList.add('selected');
+                    }
+                    
+                    button.addEventListener('click', () => {
+                        selectedMonth = month;
+                        updateMonthSelection(month);
+                        renderSubscriptionTableForMonth(month);
+                    });
+                    
+                    monthButtons.appendChild(button);
+                });
+            };
+
+            // Update month selection
+            const updateMonthSelection = (month) => {
+                // Update all buttons
+                document.querySelectorAll('.month-btn').forEach(btn => {
+                    if (btn.dataset.month === month) {
+                        btn.classList.add('selected');
+                    } else {
+                        btn.classList.remove('selected');
+                    }
+                });
+                
+                // Update table header
+                document.getElementById('monthHeaders').innerHTML = 
+                    `<th>Member Name</th><th>${getMonthName(month)} ${month.split('-')[0]}</th>`;
+            };
+
+            // Render table for selected month
+            const renderSubscriptionTableForMonth = async (month) => {
+                const subscriptionTableBody = document.querySelector('#subscriptionTable tbody');
+                if (!subscriptionTableBody) return;
+
+                subscriptionTableBody.innerHTML = '<tr><td colspan="2">Loading...</td></tr>';
+
+                try {
+                    const rows = [];
+                    
+                    for (const member of currentMembers) {
+                        try {
+                            const contributionDoc = await db.collection('contributions').doc(member.id).collection('months').doc(month).get();
+                            const paid = contributionDoc.exists ? contributionDoc.data().paid : false;
+                            
+                            rows.push(`
+                                <tr>
+                                    <td>${member.memberName}<br><small class="text-muted">${member.memberNumber}</small></td>
+                                    <td>
+                                        <input type="checkbox" class="contribution-check" 
+                                               data-member="${member.id}" 
+                                               data-month="${month}" 
+                                               ${paid ? 'checked' : ''}
+                                               onclick="handleSingleCheckbox(this)">
+                                    </td>
+                                </tr>
+                            `);
+                        } catch (error) {
+                            console.error(`Error loading data for ${member.memberName}:`, error);
+                            rows.push(`
+                                <tr>
+                                    <td>${member.memberName}</td>
+                                    <td>Error</td>
+                                </tr>
+                            `);
+                        }
+                    }
+                    
+                    subscriptionTableBody.innerHTML = rows.join('');
+                } catch (error) {
+                    console.error('Error rendering table:', error);
+                    subscriptionTableBody.innerHTML = '<tr><td colspan="2">Error loading data</td></tr>';
                 }
             };
 
@@ -554,67 +661,6 @@
                 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                 const monthIndex = parseInt(monthString.split('-')[1]) - 1;
                 return months[monthIndex];
-            };
-
-            // Fixed renderSubscriptionTable function
-            const renderSubscriptionTable = async (members, months, tableBody) => {
-                tableBody.innerHTML = '';
-                
-                // Create a loading row
-                const loadingRow = document.createElement('tr');
-                loadingRow.innerHTML = `<td colspan="${months.length + 1}">Loading subscriptions...</td>`;
-                tableBody.appendChild(loadingRow);
-
-                try {
-                    // Fetch all contributions in parallel for better performance
-                    const memberPromises = members.map(async (member) => {
-                        const monthPromises = months.map(async (month) => {
-                            try {
-                                const contributionDoc = await db.collection('contributions').doc(member.id).collection('months').doc(month).get();
-                                return {
-                                    month,
-                                    paid: contributionDoc.exists ? contributionDoc.data().paid : false,
-                                    contributionId: contributionDoc.exists ? contributionDoc.id : null
-                                };
-                            } catch (error) {
-                                console.error(`Error fetching contribution for ${member.memberName}, ${month}:`, error);
-                                return { month, paid: false, contributionId: null };
-                            }
-                        });
-
-                        const monthResults = await Promise.all(monthPromises);
-                        return { member, monthResults };
-                    });
-
-                    const results = await Promise.all(memberPromises);
-                    
-                    // Clear loading row
-                    tableBody.innerHTML = '';
-
-                    // Render table rows
-                    results.forEach(({ member, monthResults }) => {
-                        const row = document.createElement('tr');
-                        let cells = `<td>${member.memberName}<br><small class="text-muted">${member.memberNumber}</small></td>`;
-                        
-                        monthResults.forEach(({ month, paid }) => {
-                            const checkedAttr = paid ? 'checked' : '';
-                            cells += `<td>
-                                <input type="checkbox" class="contribution-check" 
-                                       data-member="${member.id}" 
-                                       data-month="${month}" 
-                                       ${checkedAttr}
-                                       onclick="handleSingleCheckbox(this)">
-                            </td>`;
-                        });
-                        
-                        row.innerHTML = cells;
-                        tableBody.appendChild(row);
-                    });
-
-                } catch (error) {
-                    console.error('Error rendering subscription table:', error);
-                    tableBody.innerHTML = '<tr><td colspan="' + (months.length + 1) + '">Error loading subscriptions</td></tr>';
-                }
             };
 
             // Handle single checkbox click
