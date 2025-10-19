@@ -431,12 +431,11 @@
                     for (const member of members) {
                         const row = document.createElement('tr');
                         let cells = `<td>${member.memberName}</td>`;
-                        const monthData = await Promise.all(months.map(async (month) => {
+                        for (const month of months) {
                             const contributionDoc = await db.collection('contributions').doc(member.id).collection('months').doc(month).get();
                             const paid = contributionDoc.exists ? contributionDoc.data().paid : false;
-                            return `<td><input type="checkbox" class="contribution-check" data-member="${member.id}" data-month="${month}" ${paid ? 'checked' : ''} ${document.getElementById('editMonth').dataset.editing === 'true' ? '' : 'disabled'}></td>`;
-                        }));
-                        cells += monthData.join('');
+                            cells += `<td><input type="checkbox" class="contribution-check" data-member="${member.id}" data-month="${month}" ${paid ? 'checked' : ''} ${document.getElementById('editMonth').dataset.editing === 'true' ? '' : 'disabled'}></td>`;
+                        }
                         row.innerHTML = cells;
                         subscriptionTableBody.appendChild(row);
                     }
@@ -454,7 +453,7 @@
                                         paid: true,
                                         date: new Date().toISOString().split('T')[0],
                                         amount: 200
-                                    });
+                                    }, { merge: true });
                                     await db.collection('transactions').add({
                                         type: 'income',
                                         memberId: memberId,
@@ -469,7 +468,7 @@
                                             paid: false,
                                             date: null,
                                             amount: 0
-                                        });
+                                        }, { merge: true });
                                         const transactions = await db.collection('transactions')
                                             .where('memberId', '==', memberId)
                                             .where('head', '==', `Monthly Subscription - ${month}`).get();
@@ -487,7 +486,7 @@
                                 loadingSpinner.style.display = 'none';
                             }
                         }
-                    }, { once: false }); // Allow multiple event listeners
+                    }, { once: false });
                 };
 
                 // Refresh Total
