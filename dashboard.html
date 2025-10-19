@@ -204,7 +204,7 @@
         }
 
         // DOM Content Loaded
-        document.addEventListener('DOMContentLoaded', async () => {
+        document.addEventListener('DOMContentLoaded', () => {
             const loadingSpinner = document.getElementById('loadingSpinner');
             loadingSpinner.style.display = 'block';
 
@@ -228,6 +228,7 @@
                 const editMemberBtn = document.getElementById('editMemberBtn');
                 const subscriptionBtn = document.getElementById('subscriptionBtn');
                 const refreshTotalBtn = document.getElementById('refreshTotal');
+                const logoutBtn = document.getElementById('logout');
 
                 // Button Event Listeners
                 if (addUserBtn) {
@@ -258,6 +259,18 @@
                 if (refreshTotalBtn) {
                     refreshTotalBtn.addEventListener('click', () => {
                         refreshTotal();
+                    });
+                }
+
+                if (logoutBtn) {
+                    logoutBtn.addEventListener('click', () => {
+                        auth.signOut().then(() => {
+                            console.log('Logout successful');
+                            window.location.href = 'login.html';
+                        }).catch((error) => {
+                            alert('Logout Error: ' + error.message);
+                            console.error('Logout Error:', error);
+                        });
                     });
                 }
 
@@ -340,51 +353,62 @@
                     const monthSelect = document.getElementById('monthSelect');
                     const subscriptionTable = document.getElementById('subscriptionTable');
                     const editMonthBtn = document.getElementById('editMonth');
+                    const monthHeaders = document.getElementById('monthHeaders');
 
-                    if (!monthSelect || !subscriptionTable) return;
-
-                    // Dynamic month headers
-                    const startMonth = new Date(2025, 9, 1); // Oct 2025
-                    const currentMonth = new Date(2025, 9, 18); // Oct 18, 2025
-                    const months = [];
-                    for (let d = new Date(startMonth); d <= currentMonth; d.setMonth(d.getMonth() + 1)) {
-                        months.push(d.toISOString().slice(0, 7));
+                    if (!monthSelect || !subscriptionTable || !editMonthBtn || !monthHeaders) {
+                        console.error('Required subscription elements not found');
+                        return;
                     }
-                    monthSelect.innerHTML = months.map(m => `<option value="${m}">${m.split('-')[1]} ${m.split('-')[0]}</option>`).join('');
-                    monthSelect.value = currentMonth.toISOString().slice(0, 7);
 
-                    // Update table headers
-                    const thead = document.querySelector('#subscriptionTable thead tr');
-                    thead.innerHTML = '<th>Member Name</th>' + months.map(m => `<th>${m.split('-')[1]} ${m.split('-')[0]}</th>`).join('');
+                    // Show loading spinner during fetch
+                    loadingSpinner.style.display = 'block';
 
-                    // Fetch members
-                    const membersSnapshot = await db.collection('users').get();
-                    const members = membersSnapshot.docs.map(doc => ({ id: doc.id, name: doc.data().memberName || 'Unknown' }));
-
-                    // Populate table body
-                    const subscriptionTableBody = document.getElementById('subscriptionTable');
-                    subscriptionTableBody.innerHTML = '';
-                    for (const member of members) {
-                        const row = document.createElement('tr');
-                        let cells = `<td>${member.name}</td>`;
-                        for (const month of months) {
-                            const contributionDoc = await db.collection('contributions').doc(member.id).collection('months').doc(month).get();
-                            const paid = contributionDoc.exists ? contributionDoc.data().paid : false;
-                            cells += `<td><input type="checkbox" class="contribution-check" data-member="${member.id}" data-month="${month}" ${paid ? 'checked' : ''} ${editMonthBtn.dataset.editing === 'true' ? '' : 'disabled'}></td>`;
+                    try {
+                        // Dynamic month headers
+                        const startMonth = new Date(2025, 9, 1); // Oct 2025
+                        const currentMonth = new Date(); // Current date (Oct 19, 2025)
+                        const months = [];
+                        for (let d = new Date(startMonth); d <= currentMonth; d.setMonth(d.getMonth() + 1)) {
+                            months.push(d.toISOString().slice(0, 7));
                         }
-                        row.innerHTML = cells;
-                        subscriptionTableBody.appendChild(row);
+                        monthSelect.innerHTML = months.map(m => `<option value="${m}">${m.split('-')[1]} ${m.split('-')[0]}</option>`).join('');
+                        monthSelect.value = months[months.length - 1]; // Set to latest month
+
+                        // Update table headers
+                        monthHeaders.innerHTML = '<th>Member Name</th>' + months.map(m => `<th>${m.split('-')[1]} ${m.split('-')[0]}</th>`).join('');
+
+                        // Fetch members
+                        const membersSnapshot = await db.collection('users').get();
+                        const members = membersSnapshot.docs.map(doc => ({ id: doc.id, name: doc.data().memberName || 'Unknown' }));
+
+                        // Populate table body
+                        subscriptionTable.innerHTML = '';
+                        for (const member of members) {
+                            const row = document.createElement('tr');
+                            let cells = `<td>${member.name}</td>`;
+                            for (const month of months) {
+                                const contributionDoc = await db.collection('contributions').doc(member.id).collection('months').doc(month).get();
+                                const paid = contributionDoc.exists ? contributionDoc.data().paid : false;
+                                cells += `<td><input type="checkbox" class="contribution-check" data-member="${member.id}" data-month="${month}" ${paid ? 'checked' : ''} ${editMonthBtn.dataset.editing === 'true' ? '' : 'disabled'}></td>`;
+                            }
+                            row.innerHTML = cells;
+                            subscriptionTable.appendChild(row);
+                        }
+                    } catch (error) {
+                        console.error('Error loading subscriptions:', error);
+                        alert('Error loading subscriptions: ' + error.message);
+                        subscriptionTable.innerHTML = '<tr><td colspan="12">Failed to load subscriptions.</td></tr>';
+                    } finally {
+                        loadingSpinner.style.display = 'none';
                     }
 
                     // Edit Month Toggle
-                    if (editMonthBtn) {
-                        editMonthBtn.addEventListener('click', () => {
-                            const isEditing = editMonthBtn.dataset.editing === 'true';
-                            editMonthBtn.dataset.editing = !isEditing;
-                            editMonthBtn.textContent = isEditing ? 'Edit Month' : 'Save Month';
-                            loadSubscriptions(); // Reload to update checkboxes
-                        });
-                    }
+                    editMonthBtn.addEventListener('click', () => {
+                        const isEditing = editMonthBtn.dataset.editing === 'true';
+                        editMonthBtn.dataset.editing = !isEditing;
+                        editMonthBtn.textContent = isEditing ? 'Edit Month' : 'Save Month';
+                        loadSubscriptions(); // Reload to update checkboxes
+                    });
 
                     // Handle checkbox changes
                     subscriptionTable.addEventListener('change', async (e) => {
@@ -392,70 +416,70 @@
                             const memberId = e.target.dataset.member;
                             const month = e.target.dataset.month;
                             const paid = e.target.checked;
-                            if (paid) {
-                                await db.collection('contributions').doc(memberId).collection('months').doc(month).set({
-                                    paid: true,
-                                    date: new Date().toISOString().split('T')[0],
-                                    amount: 200
-                                });
-                                await db.collection('transactions').add({
-                                    type: 'income',
-                                    memberId: memberId,
-                                    amount: 200,
-                                    head: `Monthly Subscription - ${month}`,
-                                    date: new Date().toISOString().split('T')[0]
-                                });
-                            } else {
-                                if (confirm('Are you sure you want to remove this payment?')) {
+                            loadingSpinner.style.display = 'block';
+                            try {
+                                if (paid) {
                                     await db.collection('contributions').doc(memberId).collection('months').doc(month).set({
-                                        paid: false,
-                                        date: null,
-                                        amount: 0
+                                        paid: true,
+                                        date: new Date().toISOString().split('T')[0],
+                                        amount: 200
+                                    });
+                                    await db.collection('transactions').add({
+                                        type: 'income',
+                                        memberId: memberId,
+                                        amount: 200,
+                                        head: `Monthly Subscription - ${month}`,
+                                        date: new Date().toISOString().split('T')[0]
                                     });
                                 } else {
-                                    e.target.checked = true;
+                                    if (confirm('Are you sure you want to remove this payment?')) {
+                                        await db.collection('contributions').doc(memberId).collection('months').doc(month).set({
+                                            paid: false,
+                                            date: null,
+                                            amount: 0
+                                        });
+                                    } else {
+                                        e.target.checked = true;
+                                    }
                                 }
+                                await loadSubscriptions(); // Reload to reflect changes
+                                await refreshTotal();
+                            } catch (error) {
+                                console.error('Error updating subscription:', error);
+                                alert('Error updating subscription: ' + error.message);
+                            } finally {
+                                loadingSpinner.style.display = 'none';
                             }
-                            loadSubscriptions(); // Reload to reflect changes
-                            refreshTotal();
                         }
                     });
 
                     // Handle month selection change
-                    if (monthSelect) {
-                        monthSelect.addEventListener('change', () => {
-                            loadSubscriptions(); // Reload table for new month
-                        });
-                    }
+                    monthSelect.addEventListener('change', () => {
+                        loadSubscriptions(); // Reload table for new month
+                    });
                 };
 
                 // Refresh Total
                 const refreshTotal = async () => {
                     let totalIncome = 0, totalExpense = 0;
-                    const transactions = await db.collection('transactions').get();
-                    transactions.forEach(doc => {
-                        const t = doc.data();
-                        if (t.type === 'income') totalIncome += t.amount || 0;
-                        if (t.type === 'expense') totalExpense += t.amount || 0;
-                    });
-                    const totalWealth = totalIncome - totalExpense;
-                    document.getElementById('totalWealthDisplay').textContent = `Total Wealth: ₹${totalWealth}`;
-                    console.log('Total Wealth refreshed: ' + totalWealth);
+                    try {
+                        const transactions = await db.collection('transactions').get();
+                        transactions.forEach(doc => {
+                            const t = doc.data();
+                            if (t.type === 'income') totalIncome += t.amount || 0;
+                            if (t.type === 'expense') totalExpense += t.amount || 0;
+                        });
+                        const totalWealth = totalIncome - totalExpense;
+                        document.getElementById('totalWealthDisplay').textContent = `Total Wealth: ₹${totalWealth}`;
+                        console.log('Total Wealth refreshed: ' + totalWealth);
+                    } catch (error) {
+                        console.error('Error refreshing total:', error);
+                        document.getElementById('totalWealthDisplay').textContent = 'Total Wealth: ₹0 (Error)';
+                    }
                 };
 
                 // Initial Load
                 refreshTotal();
-            });
-
-            // Logout
-            document.getElementById('logout').addEventListener('click', () => {
-                auth.signOut().then(() => {
-                    console.log('Logout successful');
-                    window.location.href = 'login.html';
-                }).catch((error) => {
-                    alert('Logout Error: ' + error.message);
-                    console.error('Logout Error:', error);
-                });
             });
         });
     </script>
