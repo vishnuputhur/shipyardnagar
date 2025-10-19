@@ -237,7 +237,7 @@
                 const subscriptionBtn = document.getElementById('subscriptionBtn');
                 const refreshTotalBtn = document.getElementById('refreshTotal');
                 const logoutBtn = document.getElementById('logout');
-                const subscriptionTable = document.getElementById('subscriptionTable');
+                const subscriptionTableBody = document.querySelector('#subscriptionTable tbody');
 
                 // Button Event Listeners
                 if (addUserBtn) {
@@ -372,42 +372,41 @@
                     // Show loading spinner
                     loadingSpinner.style.display = 'block';
 
+                    // Load Cached Data
+                    const cachedMembers = JSON.parse(localStorage.getItem('membersCache') || '[]');
+                    if (cachedMembers.length > 0) {
+                        renderSubscriptionTable(cachedMembers);
+                    }
+
+                    // Refresh from Firebase
                     try {
-                        // Dynamic month headers
-                        const startMonth = new Date(2025, 9, 1); // Oct 2025
-                        const currentMonth = new Date(); // Current date (Oct 19, 2025)
-                        const months = [];
-                        for (let d = new Date(startMonth); d <= currentMonth; d.setMonth(d.getMonth() + 1)) {
-                            months.push(d.toISOString().slice(0, 7));
-                        }
-                        monthSelect.innerHTML = months.map(m => `<option value="${m}">${m.split('-')[1]} ${m.split('-')[0]}</option>`).join('');
-                        monthSelect.value = months[months.length - 1]; // Set to latest month
-
-                        // Update table headers
-                        monthHeaders.innerHTML = '<th>Member Name</th>' + months.map(m => `<th>${m.split('-')[1]} ${m.split('-')[0]}</th>`).join('');
-
-                        // Fetch members
                         const membersSnapshot = await db.collection('users').get();
-                        subscriptionTableBody.innerHTML = ''; // Clear previous content
-                        membersSnapshot.forEach(async (doc) => {
-                            const memberData = doc.data();
-                            const row = document.createElement('tr');
-                            let cells = `<td>${memberData.memberName || 'Unknown'}</td>`;
-                            for (const month of months) {
-                                const contributionDoc = await db.collection('contributions').doc(doc.id).collection('months').doc(month).get();
-                                const paid = contributionDoc.exists ? contributionDoc.data().paid : false;
-                                cells += `<td><input type="checkbox" class="contribution-check" data-member="${doc.id}" data-month="${month}" ${paid ? 'checked' : ''} ${editMonthBtn.dataset.editing === 'true' ? '' : 'disabled'}></td>`;
-                            }
-                            row.innerHTML = cells;
-                            subscriptionTableBody.appendChild(row);
-                        });
+                        const members = membersSnapshot.docs.map(doc => ({
+                            id: doc.id,
+                            memberName: doc.data().memberName || 'Unknown'
+                        }));
+                        localStorage.setItem('membersCache', JSON.stringify(members));
+                        renderSubscriptionTable(members);
                     } catch (error) {
-                        console.error('Error loading subscriptions:', error);
-                        alert('Error loading subscriptions: ' + error.message + '. Check Firestore permissions.');
-                        subscriptionTableBody.innerHTML = '<tr><td colspan="12">Failed to load subscriptions. Check permissions.</td></tr>';
+                        console.error('Error fetching members for subscriptions:', error);
+                        if (cachedMembers.length === 0) {
+                            alert('Error loading subscriptions. Showing cached data or none available.');
+                            subscriptionTableBody.innerHTML = '<tr><td colspan="12">No subscription data available.</td></tr>';
+                        }
                     } finally {
                         loadingSpinner.style.display = 'none';
                     }
+
+                    // Dynamic month headers
+                    const startMonth = new Date(2025, 9, 1); // Oct 2025
+                    const currentMonth = new Date(); // Current date
+                    const months = [];
+                    for (let d = new Date(startMonth); d <= currentMonth; d.setMonth(d.getMonth() + 1)) {
+                        months.push(d.toISOString().slice(0, 7));
+                    }
+                    monthSelect.innerHTML = months.map(m => `<option value="${m}">${m.split('-')[1]} ${m.split('-')[0]}</option>`).join('');
+                    monthSelect.value = months[months.length - 1]; // Set to latest month
+                    monthHeaders.innerHTML = '<th>Member Name</th>' + months.map(m => `<th>${m.split('-')[1]} ${m.split('-')[0]}</th>`).join('');
 
                     // Edit Month Toggle
                     editMonthBtn.addEventListener('click', () => {
@@ -418,7 +417,7 @@
                     });
 
                     // Handle checkbox changes
-                    subscriptionTable.addEventListener('change', async (e) => {
+                    subscriptionTableBody.addEventListener('change', async (e) => {
                         if (e.target.classList.contains('contribution-check')) {
                             const memberId = e.target.dataset.member;
                             const month = e.target.dataset.month;
@@ -453,7 +452,7 @@
                                 await refreshTotal();
                             } catch (error) {
                                 console.error('Error updating subscription:', error);
-                                alert('Error updating subscription: ' + error.message + '. Check permissions.');
+                                alert('Error updating subscription: ' + error.message);
                             } finally {
                                 loadingSpinner.style.display = 'none';
                             }
@@ -463,6 +462,29 @@
                     // Handle month selection change
                     monthSelect.addEventListener('change', () => {
                         loadSubscriptions(); // Reload table for new month
+                    });
+                };
+
+                // Render Subscription Table
+                const renderSubscriptionTable = (members) => {
+                    const subscriptionTableBody = document.querySelector('#subscriptionTable tbody');
+                    subscriptionTableBody.innerHTML = '';
+                    members.forEach(member => {
+                        const row = document.createElement('tr');
+                        let cells = `<td>${member.memberName}</td>`;
+                        const startMonth = new Date(2025, 9, 1); // Oct 2025
+                        const currentMonth = new Date(); // Current date
+                        const months = [];
+                        for (let d = new Date(startMonth); d <= currentMonth; d.setMonth(d.getMonth() + 1)) {
+                            months.push(d.toISOString().slice(0, 7));
+                        }
+                        months.forEach(async (month) => {
+                            const contributionDoc = await db.collection('contributions').doc(member.id).collection('months').doc(month).get();
+                            const paid = contributionDoc.exists ? contributionDoc.data().paid : false;
+                            cells += `<td><input type="checkbox" class="contribution-check" data-member="${member.id}" data-month="${month}" ${paid ? 'checked' : ''} ${document.getElementById('editMonth').dataset.editing === 'true' ? '' : 'disabled'}></td>`;
+                        });
+                        row.innerHTML = cells;
+                        subscriptionTableBody.appendChild(row);
                     });
                 };
 
