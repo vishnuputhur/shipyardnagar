@@ -20,31 +20,86 @@
             z-index: 1000;
         }
 
-        /* Profile Card Style */
-        .profile-card {
-            background-color: #ffffff;
-            border-radius: 15px;
-            padding: 20px;
+        /* Profile Display Style */
+        .profile-display {
+            text-align: center;
             margin-top: 20px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
 
-        .profile-card h2 {
+        .profile-display h2 {
             font-size: 1.5rem;
             color: #0288d1;
             margin-bottom: 15px;
         }
 
-        .profile-card .form-label {
+        .profile-display .name {
+            font-weight: bold;
+            color: #1a237e; /* Unique color for name */
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+        }
+
+        .profile-display .small-text {
+            font-size: 0.9rem;
+            color: #666;
+            margin: 5px 0;
+        }
+
+        .profile-buttons {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .profile-buttons button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #editProfileBtn {
+            background-color: #0288d1;
+            color: white;
+        }
+
+        #editProfileBtn:hover {
+            background-color: #01579b;
+        }
+
+        #signoutBtn {
+            background-color: #d32f2f;
+            color: white;
+        }
+
+        #signoutBtn:hover {
+            background-color: #b71c1c;
+        }
+
+        .edit-form {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .edit-form .form-label {
             font-weight: bold;
             color: #333;
         }
 
-        .profile-card .form-control {
+        .edit-form .form-control {
             margin-bottom: 10px;
         }
 
-        .profile-card button {
+        .edit-form button {
             background-color: #0288d1;
             color: white;
             border: none;
@@ -53,7 +108,7 @@
             cursor: pointer;
         }
 
-        .profile-card button:hover {
+        .edit-form button:hover {
             background-color: #01579b;
         }
     </style>
@@ -63,38 +118,50 @@
         <h1>Shipyard Nagar Residential Association</h1>
     </header>
     <main class="container my-4">
-        <div class="logo-container">
-            <img src="assets/logo.jpg" alt="Shipyard Nagar Logo" class="img-fluid">
+        <div class="profile-display">
+            <h2>My Profile</h2>
+            <p class="name" id="memberName">Loading...</p>
+            <p class="small-text" id="memberNumber">Member Number: Loading...</p>
+            <p class="small-text" id="homeName">House Name: Loading...</p>
+            <p class="small-text" id="email">Email: Loading...</p>
+            <p class="small-text" id="primaryMobile">Primary Mobile: Loading...</p>
+            <p class="small-text" id="secondaryMobile">Secondary Mobile: Loading...</p>
+            <p class="small-text" id="gasConnection">Gas Connection: Loading...</p>
         </div>
-        <div class="row">
-            <div class="col-12">
-                <div class="profile-card">
-                    <h2>My Profile</h2>
-                    <form id="profileForm">
-                        <div class="mb-3">
-                            <label for="memberName" class="form-label">Name:</label>
-                            <input type="text" class="form-control" id="memberName" readonly>
-                        </div>
-                        <div class="mb-3">
-                            <label for="memberNumber" class="form-label">Member Number:</label>
-                            <input type="text" class="form-control" id="memberNumber" readonly>
-                        </div>
-                        <div class="mb-3">
-                            <label for="homeName" class="form-label">House Name:</label>
-                            <input type="text" class="form-control" id="homeName">
-                        </div>
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email:</label>
-                            <input type="email" class="form-control" id="email">
-                        </div>
-                        <div class="mb-3">
-                            <label for="primaryMobile" class="form-label">Primary Mobile:</label>
-                            <input type="text" class="form-control" id="primaryMobile">
-                        </div>
-                        <button type="submit" class="btn">Save Changes</button>
-                    </form>
+        <div class="profile-buttons">
+            <button id="editProfileBtn">Edit Profile</button>
+            <button id="signoutBtn">Signout</button>
+        </div>
+        <div class="edit-form" id="editForm">
+            <h2>Edit Profile</h2>
+            <form id="profileForm">
+                <div class="mb-3">
+                    <label for="editHomeName" class="form-label">House Name:</label>
+                    <input type="text" class="form-control" id="editHomeName">
                 </div>
-            </div>
+                <div class="mb-3">
+                    <label for="editEmail" class="form-label">Email:</label>
+                    <input type="email" class="form-control" id="editEmail">
+                </div>
+                <div class="mb-3">
+                    <label for="editPrimaryMobile" class="form-label">Primary Mobile:</label>
+                    <input type="text" class="form-control" id="editPrimaryMobile">
+                </div>
+                <div class="mb-3">
+                    <label for="editSecondaryMobile" class="form-label">Secondary Mobile:</label>
+                    <input type="text" class="form-control" id="editSecondaryMobile">
+                </div>
+                <div class="mb-3">
+                    <label for="editGasConnection" class="form-label">Gas Connection:</label>
+                    <select id="editGasConnection" class="form-select">
+                        <option value="Indian">Indian</option>
+                        <option value="HP">HP</option>
+                        <option value="BPCL">BPCL</option>
+                        <option value="Others">Others</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn">Save</button>
+            </form>
         </div>
     </main>
     <footer class="bg-light text-center py-2">
@@ -119,11 +186,10 @@
         };
 
         // Initialize Firebase
-        let auth, db;
         try {
             firebase.initializeApp(firebaseConfig);
-            auth = firebase.auth();
-            db = firebase.firestore();
+            const auth = firebase.auth();
+            const db = firebase.firestore();
             console.log('Firebase initialized successfully');
         } catch (error) {
             alert('Firebase Initialization Error: ' + error.message);
@@ -132,12 +198,17 @@
 
         // DOM Content Loaded
         document.addEventListener('DOMContentLoaded', () => {
+            const memberNameEl = document.getElementById('memberName');
+            const memberNumberEl = document.getElementById('memberNumber');
+            const homeNameEl = document.getElementById('homeName');
+            const emailEl = document.getElementById('email');
+            const primaryMobileEl = document.getElementById('primaryMobile');
+            const secondaryMobileEl = document.getElementById('secondaryMobile');
+            const gasConnectionEl = document.getElementById('gasConnection');
+            const editProfileBtn = document.getElementById('editProfileBtn');
+            const editForm = document.getElementById('editForm');
             const profileForm = document.getElementById('profileForm');
-            const memberName = document.getElementById('memberName');
-            const memberNumber = document.getElementById('memberNumber');
-            const homeName = document.getElementById('homeName');
-            const email = document.getElementById('email');
-            const primaryMobile = document.getElementById('primaryMobile');
+            const signoutBtn = document.getElementById('signoutBtn');
 
             // Auth State Check
             auth.onAuthStateChanged(async (user) => {
@@ -150,43 +221,86 @@
                     const userDoc = await db.collection('users').doc(user.uid).get();
                     if (userDoc.exists) {
                         const userData = userDoc.data();
-                        memberName.value = userData.memberName || 'Unknown';
-                        memberNumber.value = userData.memberNumber || 'N/A';
-                        homeName.value = userData.homeName || '';
-                        email.value = userData.email || '';
-                        primaryMobile.value = userData.primaryMobile || '';
+                        console.log('User Data:', userData);
+
+                        // Display Mode
+                        memberNameEl.textContent = userData.memberName || 'N/A';
+                        memberNumberEl.textContent = 'Member Number: ' + (userData.memberNumber || 'N/A');
+                        homeNameEl.textContent = 'House Name: ' + (userData.homeName || 'N/A');
+                        emailEl.textContent = 'Email: ' + (userData.email || 'N/A');
+                        primaryMobileEl.textContent = 'Primary Mobile: ' + (userData.primaryMobile || 'N/A');
+                        secondaryMobileEl.textContent = 'Secondary Mobile: ' + (userData.secondaryMobile || 'N/A');
+                        gasConnectionEl.textContent = 'Gas Connection: ' + (userData.gasConnection || 'N/A');
+
+                        // Pre-fill Edit Form
+                        document.getElementById('editHomeName').value = userData.homeName || '';
+                        document.getElementById('editEmail').value = userData.email || '';
+                        document.getElementById('editPrimaryMobile').value = userData.primaryMobile || '';
+                        document.getElementById('editSecondaryMobile').value = userData.secondaryMobile || '';
+                        document.getElementById('editGasConnection').value = userData.gasConnection || 'Indian';
                     } else {
                         console.error(`User data not found for UID: ${user.uid}`);
-                        memberName.value = 'Unknown';
-                        memberNumber.value = 'N/A';
+                        memberNameEl.textContent = 'N/A';
+                        memberNumberEl.textContent = 'Member Number: N/A';
+                        homeNameEl.textContent = 'House Name: N/A';
+                        emailEl.textContent = 'Email: N/A';
+                        primaryMobileEl.textContent = 'Primary Mobile: N/A';
+                        secondaryMobileEl.textContent = 'Secondary Mobile: N/A';
+                        gasConnectionEl.textContent = 'Gas Connection: N/A';
                     }
                 } catch (error) {
                     console.error('Error fetching user data:', error);
-                    memberName.value = 'Unknown';
-                    memberNumber.value = 'N/A';
+                    memberNameEl.textContent = 'N/A';
+                    memberNumberEl.textContent = 'Member Number: N/A';
+                    homeNameEl.textContent = 'House Name: N/A';
+                    emailEl.textContent = 'Email: N/A';
+                    primaryMobileEl.textContent = 'Primary Mobile: N/A';
+                    secondaryMobileEl.textContent = 'Secondary Mobile: N/A';
+                    gasConnectionEl.textContent = 'Gas Connection: N/A';
                 }
             });
 
+            // Edit Profile Button
+            editProfileBtn.addEventListener('click', () => {
+                editForm.style.display = 'block';
+            });
+
             // Form Submission
-            if (profileForm) {
-                profileForm.addEventListener('submit', async (e) => {
-                    e.preventDefault();
-                    const user = auth.currentUser;
-                    if (user) {
-                        try {
-                            await db.collection('users').doc(user.uid).update({
-                                homeName: homeName.value,
-                                email: email.value,
-                                primaryMobile: primaryMobile.value
-                            });
-                            alert('Profile updated successfully!');
-                        } catch (error) {
-                            alert('Error updating profile: ' + error.message);
-                            console.error('Update Error:', error);
-                        }
+            profileForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const user = auth.currentUser;
+                if (user) {
+                    try {
+                        await db.collection('users').doc(user.uid).update({
+                            homeName: document.getElementById('editHomeName').value,
+                            email: document.getElementById('editEmail').value,
+                            primaryMobile: document.getElementById('editPrimaryMobile').value,
+                            secondaryMobile: document.getElementById('editSecondaryMobile').value,
+                            gasConnection: document.getElementById('editGasConnection').value
+                        });
+                        alert('Saved');
+                        editForm.style.display = 'none';
+                        // Reload page to reflect updated data
+                        window.location.reload();
+                    } catch (error) {
+                        alert('Error saving profile: ' + error.message);
+                        console.error('Save Error:', error);
                     }
-                });
-            }
+                }
+            });
+
+            // Signout Button
+            signoutBtn.addEventListener('click', () => {
+                auth.signOut()
+                    .then(() => {
+                        alert('Signed out successfully!');
+                        window.location.href = 'login.html';
+                    })
+                    .catch((error) => {
+                        alert('Signout Error: ' + error.message);
+                        console.error('Signout Error:', error);
+                    });
+            });
         });
     </script>
 </body>
