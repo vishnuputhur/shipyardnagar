@@ -6,28 +6,62 @@
     <title>Shipyard Nagar - Admin Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
     <style>
-        body { font-family: 'Poppins', sans-serif; background: #fafafa; }
-        header h1 { text-align: center; margin: 20px 0; }
+        /* Footer Fixed at Bottom */
         footer {
-            position: fixed; bottom: 0; width: 100%; text-align: center;
-            padding: 10px; background: #f8f8f8; color: #333;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+            padding: 10px;
+            background: #f8f8f8;
+            color: #333;
+            z-index: 1000;
         }
+
+        /* Button Grid Layout */
         .button-grid {
-            display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
         }
+
+        /* Form Styling */
         .card {
-            margin-top: 20px; padding: 15px; border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); transition: all 0.3s ease;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
         }
-        .card:hover { box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15); }
-        #subscriptionTable { margin-top: 20px; overflow-x: auto; }
+
+        .card:hover {
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Table Styling */
+        #subscriptionTable {
+            margin-top: 20px;
+            overflow-x: auto;
+        }
+
         #subscriptionTable th, #subscriptionTable td {
-            padding: 10px; text-align: center; min-width: 100px;
+            padding: 10px;
+            text-align: center;
+            min-width: 100px;
         }
+
+        /* Loading Spinner */
         #loadingSpinner {
-            display: none; position: fixed; top: 50%; left: 50%;
-            transform: translate(-50%, -50%); font-size: 2rem; color: #0288d1;
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2rem;
+            color: #0288d1;
         }
     </style>
 </head>
@@ -35,11 +69,9 @@
     <header>
         <h1>Shipyard Nagar - Admin Dashboard</h1>
     </header>
-
     <main class="container my-4">
         <div id="loadingSpinner">⏳ Loading...</div>
         <button class="btn btn-danger mb-3" id="logout">Logout</button>
-
         <div class="button-grid">
             <button class="btn btn-primary" id="addUserBtn">Add Member</button>
             <button class="btn btn-primary" id="editMemberBtn">Edit Member</button>
@@ -47,66 +79,108 @@
             <button class="btn btn-secondary" id="refreshTotal">Refresh Total</button>
         </div>
 
-        <!-- Add Member -->
-        <div class="card" id="addUserSection" style="display:none;">
+        <!-- Add Member Form -->
+        <div class="card" id="addUserSection" style="display: none;">
             <h2>Add Member</h2>
             <form id="addUserForm" class="p-3">
                 <div class="row">
-                    <div class="col-12 mb-3"><label>Member Number:</label><input type="text" id="memberNumber" class="form-control" required></div>
-                    <div class="col-12 mb-3"><label>Name:</label><input type="text" id="memberName" class="form-control" required></div>
-                    <div class="col-12 mb-3"><label>House Name:</label><input type="text" id="homeName" class="form-control" required></div>
-                    <div class="col-12 mb-3"><label>Email:</label><input type="email" id="email" class="form-control" required></div>
-                    <div class="col-12 mb-3"><label>Password:</label><input type="password" id="password" class="form-control" required></div>
-                    <div class="col-12 mb-3"><label>Primary Mobile:</label><input type="text" id="primaryMobile" class="form-control" required></div>
-                    <div class="col-12 mb-3"><label><input type="checkbox" id="isAdmin"> Admin</label></div>
+                    <div class="col-12 mb-3">
+                        <label for="memberNumber" class="form-label">Member Number:</label>
+                        <input type="text" class="form-control" id="memberNumber" required>
+                    </div>
+                    <div class="col-12 mb-3">
+                        <label for="memberName" class="form-label">Name:</label>
+                        <input type="text" class="form-control" id="memberName" required>
+                    </div>
+                    <div class="col-12 mb-3">
+                        <label for="homeName" class="form-label">House Name:</label>
+                        <input type="text" class="form-control" id="homeName" required>
+                    </div>
+                    <div class="col-12 mb-3">
+                        <label for="email" class="form-label">Email:</label>
+                        <input type="email" class="form-control" id="email" required>
+                    </div>
+                    <div class="col-12 mb-3">
+                        <label for="password" class="form-label">Password:</label>
+                        <input type="password" class="form-control" id="password" required>
+                    </div>
+                    <div class="col-12 mb-3">
+                        <label for="primaryMobile" class="form-label">Primary Mobile:</label>
+                        <input type="text" class="form-control" id="primaryMobile" required>
+                    </div>
+                    <div class="col-12 mb-3">
+                        <label>
+                            <input type="checkbox" id="isAdmin"> Admin
+                        </label>
+                    </div>
                 </div>
                 <button type="submit" class="btn btn-primary">Add Member</button>
             </form>
         </div>
 
-        <!-- Edit Member -->
-        <div class="card" id="editMemberSection" style="display:none;">
+        <!-- Edit Member Form -->
+        <div class="card" id="editMemberSection" style="display: none;">
             <h2>Edit Member</h2>
             <div class="p-3">
-                <label>Member Number:</label>
-                <input type="text" id="editMemberNumber" class="form-control mb-3" required>
+                <label for="editMemberNumber" class="form-label">Member Number:</label>
+                <input type="text" class="form-control mb-3" id="editMemberNumber" required>
                 <button class="btn btn-warning mb-3" id="loadEditMember">Load Member</button>
             </div>
-            <form id="editMemberForm" class="p-3" style="display:none;">
+            <form id="editMemberForm" class="p-3" style="display: none;">
                 <div class="row">
-                    <div class="col-12 mb-3"><label>Name:</label><input type="text" id="editName" class="form-control" required></div>
-                    <div class="col-12 mb-3"><label>House Name:</label><input type="text" id="editHomeName" class="form-control" required></div>
-                    <div class="col-12 mb-3"><label>Email:</label><input type="email" id="editEmail" class="form-control" required></div>
-                    <div class="col-12 mb-3"><label>Primary Mobile:</label><input type="text" id="editPrimaryMobile" class="form-control" required></div>
-                    <div class="col-12 mb-3"><label><input type="checkbox" id="editIsAdmin"> Admin</label></div>
+                    <div class="col-12 mb-3">
+                        <label for="editName" class="form-label">Name:</label>
+                        <input type="text" class="form-control" id="editName" required>
+                    </div>
+                    <div class="col-12 mb-3">
+                        <label for="editHomeName" class="form-label">House Name:</label>
+                        <input type="text" class="form-control" id="editHomeName" required>
+                    </div>
+                    <div class="col-12 mb-3">
+                        <label for="editEmail" class="form-label">Email:</label>
+                        <input type="email" class="form-control" id="editEmail" required>
+                    </div>
+                    <div class="col-12 mb-3">
+                        <label for="editPrimaryMobile" class="form-label">Primary Mobile:</label>
+                        <input type="text" class="form-control" id="editPrimaryMobile" required>
+                    </div>
+                    <div class="col-12 mb-3">
+                        <label>
+                            <input type="checkbox" id="editIsAdmin"> Admin
+                        </label>
+                    </div>
                 </div>
                 <button type="submit" class="btn btn-primary">Update Member</button>
             </form>
         </div>
 
-        <!-- Subscriptions -->
-        <div class="card" id="subscriptionSection" style="display:none;">
+        <!-- Subscriptions Section -->
+        <div class="card" id="subscriptionSection" style="display: none;">
             <h2>Subscriptions</h2>
             <select id="monthSelect" class="form-select mb-3"></select>
             <button id="editMonth" class="btn btn-warning mb-3" data-editing="false">Edit Month</button>
-            <table class="table table-bordered">
+            <table class="table table-bordered" id="subscriptionTable">
                 <thead>
-                    <tr id="monthHeaders"><th>Member Name</th></tr>
+                    <tr id="monthHeaders">
+                        <th>Member Name</th>
+                    </tr>
                 </thead>
-                <tbody id="subscriptionTable"></tbody>
+                <tbody></tbody>
             </table>
             <p id="totalWealthDisplay">Total Wealth: ₹0</p>
         </div>
     </main>
+    <footer class="bg-light text-center py-2">
+        <p>Powered by VTSoft 2025</p>
+    </footer>
 
-    <footer><p>Powered by VTSoft 2025</p></footer>
-
-    <!-- Firebase -->
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 
     <script>
+        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyBWswawf9tpxNwVU0BaJ6FCwCvgcjUQXlA",
             authDomain: "shipyard-nagar.firebaseapp.com",
@@ -117,207 +191,304 @@
             measurementId: "G-V8CQ4YCCQ5"
         };
 
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
+        // Initialize Firebase
+        let auth, db;
+        try {
+            firebase.initializeApp(firebaseConfig);
+            auth = firebase.auth();
+            db = firebase.firestore();
+            console.log('Firebase initialized successfully');
+        } catch (error) {
+            alert('Firebase Initialization Error: ' + error.message);
+            console.error('Firebase Init Error:', error);
+        }
 
+        // DOM Content Loaded
         document.addEventListener('DOMContentLoaded', () => {
-            const spinner = document.getElementById('loadingSpinner');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            loadingSpinner.style.display = 'block';
 
+            // Auth State Check
             auth.onAuthStateChanged(async (user) => {
                 if (!user) {
-                    alert('Please login as admin.');
+                    alert('No user logged in. Redirecting to login...');
                     window.location.href = 'login.html';
                     return;
                 }
 
-                try {
-                    const userDoc = await db.collection('users').doc(user.uid).get();
-                    const userData = userDoc.data();
-                    if (!userData || userData.role !== 'admin') {
-                        alert('Unauthorized access!');
-                        await auth.signOut();
-                        window.location.href = 'login.html';
-                        return;
-                    }
-                } catch (err) {
-                    alert('Error checking admin role: ' + err.message);
+                const userDoc = await db.collection('users').doc(user.uid).get();
+                if (!userDoc.exists || userDoc.data().role !== 'admin') {
+                    console.log('User data:', userDoc.data());
+                    alert('Permission denied. Only admins can access this dashboard. Redirecting to login...');
+                    window.location.href = 'login.html';
                     return;
                 }
 
-                spinner.style.display = 'none';
-                setupUI();
+                // Hide loading spinner
+                loadingSpinner.style.display = 'none';
+
+                // UI Elements
+                const addUserSection = document.getElementById('addUserSection');
+                const editMemberSection = document.getElementById('editMemberSection');
+                const subscriptionSection = document.getElementById('subscriptionSection');
+                const totalWealthDisplay = document.getElementById('totalWealthDisplay');
+                const addUserBtn = document.getElementById('addUserBtn');
+                const editMemberBtn = document.getElementById('editMemberBtn');
+                const subscriptionBtn = document.getElementById('subscriptionBtn');
+                const refreshTotalBtn = document.getElementById('refreshTotal');
+                const logoutBtn = document.getElementById('logout');
+                const subscriptionTable = document.getElementById('subscriptionTable');
+
+                // Button Event Listeners
+                if (addUserBtn) {
+                    addUserBtn.addEventListener('click', () => {
+                        addUserSection.style.display = 'block';
+                        editMemberSection.style.display = 'none';
+                        subscriptionSection.style.display = 'none';
+                    });
+                }
+
+                if (editMemberBtn) {
+                    editMemberBtn.addEventListener('click', () => {
+                        addUserSection.style.display = 'none';
+                        editMemberSection.style.display = 'block';
+                        subscriptionSection.style.display = 'none';
+                    });
+                }
+
+                if (subscriptionBtn) {
+                    subscriptionBtn.addEventListener('click', () => {
+                        addUserSection.style.display = 'none';
+                        editMemberSection.style.display = 'none';
+                        subscriptionSection.style.display = 'block';
+                        loadSubscriptions();
+                    });
+                }
+
+                if (refreshTotalBtn) {
+                    refreshTotalBtn.addEventListener('click', () => {
+                        refreshTotal();
+                    });
+                }
+
+                if (logoutBtn) {
+                    logoutBtn.addEventListener('click', () => {
+                        auth.signOut().then(() => {
+                            console.log('Logout successful');
+                            window.location.href = 'login.html';
+                        }).catch((error) => {
+                            alert('Logout Error: ' + error.message);
+                            console.error('Logout Error:', error);
+                        });
+                    });
+                }
+
+                // Add Member Form Submission
+                const addUserForm = document.getElementById('addUserForm');
+                if (addUserForm) {
+                    addUserForm.addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        const memberData = {
+                            memberNumber: document.getElementById('memberNumber').value,
+                            memberName: document.getElementById('memberName').value,
+                            homeName: document.getElementById('homeName').value,
+                            email: document.getElementById('email').value,
+                            primaryMobile: document.getElementById('primaryMobile').value,
+                            role: document.getElementById('isAdmin').checked ? 'admin' : 'member'
+                        };
+                        try {
+                            const userCredential = await auth.createUserWithEmailAndPassword(
+                                memberData.email,
+                                document.getElementById('password').value
+                            );
+                            await db.collection('users').doc(userCredential.user.uid).set(memberData);
+                            alert('Member added successfully!');
+                            addUserForm.reset();
+                            refreshTotal();
+                        } catch (error) {
+                            alert('Error adding member: ' + error.message);
+                        }
+                    });
+                }
+
+                // Edit Member Functionality
+                const loadEditMember = document.getElementById('loadEditMember');
+                if (loadEditMember) {
+                    loadEditMember.addEventListener('click', async () => {
+                        const memberNumber = document.getElementById('editMemberNumber').value;
+                        const membersSnapshot = await db.collection('users').where('memberNumber', '==', memberNumber).get();
+                        if (!membersSnapshot.empty) {
+                            const memberData = membersSnapshot.docs[0].data();
+                            document.getElementById('editName').value = memberData.memberName || '';
+                            document.getElementById('editHomeName').value = memberData.homeName || '';
+                            document.getElementById('editEmail').value = memberData.email || '';
+                            document.getElementById('editPrimaryMobile').value = memberData.primaryMobile || '';
+                            document.getElementById('editIsAdmin').checked = memberData.role === 'admin';
+                            document.getElementById('editMemberForm').style.display = 'block';
+                        } else {
+                            alert('Member not found!');
+                        }
+                    });
+                }
+
+                const editMemberForm = document.getElementById('editMemberForm');
+                if (editMemberForm) {
+                    editMemberForm.addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        const memberNumber = document.getElementById('editMemberNumber').value;
+                        const membersSnapshot = await db.collection('users').where('memberNumber', '==', memberNumber).get();
+                        if (!membersSnapshot.empty) {
+                            const memberDoc = membersSnapshot.docs[0];
+                            const updatedData = {
+                                memberName: document.getElementById('editName').value,
+                                homeName: document.getElementById('editHomeName').value,
+                                email: document.getElementById('editEmail').value,
+                                primaryMobile: document.getElementById('editPrimaryMobile').value,
+                                role: document.getElementById('editIsAdmin').checked ? 'admin' : 'member'
+                            };
+                            await db.collection('users').doc(memberDoc.id).update(updatedData);
+                            alert('Member updated successfully!');
+                            editMemberForm.reset();
+                            editMemberForm.style.display = 'none';
+                            refreshTotal();
+                        } else {
+                            alert('Member not found!');
+                        }
+                    });
+                }
+
+                // Subscriptions Functionality
+                const loadSubscriptions = async () => {
+                    const monthSelect = document.getElementById('monthSelect');
+                    const subscriptionTableBody = document.querySelector('#subscriptionTable tbody');
+                    const editMonthBtn = document.getElementById('editMonth');
+                    const monthHeaders = document.getElementById('monthHeaders');
+
+                    if (!monthSelect || !subscriptionTableBody || !editMonthBtn || !monthHeaders) {
+                        console.error('Required subscription elements not found');
+                        return;
+                    }
+
+                    // Show loading spinner
+                    loadingSpinner.style.display = 'block';
+
+                    try {
+                        // Dynamic month headers
+                        const startMonth = new Date(2025, 9, 1); // Oct 2025
+                        const currentMonth = new Date(); // Current date (Oct 19, 2025)
+                        const months = [];
+                        for (let d = new Date(startMonth); d <= currentMonth; d.setMonth(d.getMonth() + 1)) {
+                            months.push(d.toISOString().slice(0, 7));
+                        }
+                        monthSelect.innerHTML = months.map(m => `<option value="${m}">${m.split('-')[1]} ${m.split('-')[0]}</option>`).join('');
+                        monthSelect.value = months[months.length - 1]; // Set to latest month
+
+                        // Update table headers
+                        monthHeaders.innerHTML = '<th>Member Name</th>' + months.map(m => `<th>${m.split('-')[1]} ${m.split('-')[0]}</th>`).join('');
+
+                        // Fetch members
+                        const membersSnapshot = await db.collection('users').get();
+                        subscriptionTableBody.innerHTML = ''; // Clear previous content
+                        membersSnapshot.forEach(async (doc) => {
+                            const memberData = doc.data();
+                            const row = document.createElement('tr');
+                            let cells = `<td>${memberData.memberName || 'Unknown'}</td>`;
+                            for (const month of months) {
+                                const contributionDoc = await db.collection('contributions').doc(doc.id).collection('months').doc(month).get();
+                                const paid = contributionDoc.exists ? contributionDoc.data().paid : false;
+                                cells += `<td><input type="checkbox" class="contribution-check" data-member="${doc.id}" data-month="${month}" ${paid ? 'checked' : ''} ${editMonthBtn.dataset.editing === 'true' ? '' : 'disabled'}></td>`;
+                            }
+                            row.innerHTML = cells;
+                            subscriptionTableBody.appendChild(row);
+                        });
+                    } catch (error) {
+                        console.error('Error loading subscriptions:', error);
+                        alert('Error loading subscriptions: ' + error.message + '. Check Firestore permissions.');
+                        subscriptionTableBody.innerHTML = '<tr><td colspan="12">Failed to load subscriptions. Check permissions.</td></tr>';
+                    } finally {
+                        loadingSpinner.style.display = 'none';
+                    }
+
+                    // Edit Month Toggle
+                    editMonthBtn.addEventListener('click', () => {
+                        const isEditing = editMonthBtn.dataset.editing === 'true';
+                        editMonthBtn.dataset.editing = !isEditing;
+                        editMonthBtn.textContent = isEditing ? 'Edit Month' : 'Save Month';
+                        loadSubscriptions(); // Reload to update checkboxes
+                    });
+
+                    // Handle checkbox changes
+                    subscriptionTable.addEventListener('change', async (e) => {
+                        if (e.target.classList.contains('contribution-check')) {
+                            const memberId = e.target.dataset.member;
+                            const month = e.target.dataset.month;
+                            const paid = e.target.checked;
+                            loadingSpinner.style.display = 'block';
+                            try {
+                                if (paid) {
+                                    await db.collection('contributions').doc(memberId).collection('months').doc(month).set({
+                                        paid: true,
+                                        date: new Date().toISOString().split('T')[0],
+                                        amount: 200
+                                    });
+                                    await db.collection('transactions').add({
+                                        type: 'income',
+                                        memberId: memberId,
+                                        amount: 200,
+                                        head: `Monthly Subscription - ${month}`,
+                                        date: new Date().toISOString().split('T')[0]
+                                    });
+                                } else {
+                                    if (confirm('Are you sure you want to remove this payment?')) {
+                                        await db.collection('contributions').doc(memberId).collection('months').doc(month).set({
+                                            paid: false,
+                                            date: null,
+                                            amount: 0
+                                        });
+                                    } else {
+                                        e.target.checked = true;
+                                    }
+                                }
+                                await loadSubscriptions(); // Reload to reflect changes
+                                await refreshTotal();
+                            } catch (error) {
+                                console.error('Error updating subscription:', error);
+                                alert('Error updating subscription: ' + error.message + '. Check permissions.');
+                            } finally {
+                                loadingSpinner.style.display = 'none';
+                            }
+                        }
+                    });
+
+                    // Handle month selection change
+                    monthSelect.addEventListener('change', () => {
+                        loadSubscriptions(); // Reload table for new month
+                    });
+                };
+
+                // Refresh Total
+                const refreshTotal = async () => {
+                    let totalIncome = 0, totalExpense = 0;
+                    try {
+                        const transactions = await db.collection('transactions').get();
+                        transactions.forEach(doc => {
+                            const t = doc.data();
+                            if (t.type === 'income') totalIncome += t.amount || 0;
+                            if (t.type === 'expense') totalExpense += t.amount || 0;
+                        });
+                        const totalWealth = totalIncome - totalExpense;
+                        document.getElementById('totalWealthDisplay').textContent = `Total Wealth: ₹${totalWealth}`;
+                        console.log('Total Wealth refreshed: ' + totalWealth);
+                    } catch (error) {
+                        console.error('Error refreshing total:', error);
+                        document.getElementById('totalWealthDisplay').textContent = 'Total Wealth: ₹0 (Error)';
+                    }
+                };
+
+                // Initial Load
+                refreshTotal();
             });
         });
-
-        function setupUI() {
-            const addUserBtn = document.getElementById('addUserBtn');
-            const editMemberBtn = document.getElementById('editMemberBtn');
-            const subscriptionBtn = document.getElementById('subscriptionBtn');
-            const logoutBtn = document.getElementById('logout');
-            const refreshTotalBtn = document.getElementById('refreshTotal');
-
-            const addUserSection = document.getElementById('addUserSection');
-            const editMemberSection = document.getElementById('editMemberSection');
-            const subscriptionSection = document.getElementById('subscriptionSection');
-
-            addUserBtn.onclick = () => {
-                addUserSection.style.display = 'block';
-                editMemberSection.style.display = 'none';
-                subscriptionSection.style.display = 'none';
-            };
-
-            editMemberBtn.onclick = () => {
-                addUserSection.style.display = 'none';
-                editMemberSection.style.display = 'block';
-                subscriptionSection.style.display = 'none';
-            };
-
-            subscriptionBtn.onclick = () => {
-                addUserSection.style.display = 'none';
-                editMemberSection.style.display = 'none';
-                subscriptionSection.style.display = 'block';
-                loadSubscriptions();
-            };
-
-            logoutBtn.onclick = async () => {
-                await auth.signOut();
-                window.location.href = 'login.html';
-            };
-
-            refreshTotalBtn.onclick = refreshTotal;
-
-            document.getElementById('addUserForm').onsubmit = addMember;
-            document.getElementById('loadEditMember').onclick = loadMember;
-            document.getElementById('editMemberForm').onsubmit = updateMember;
-        }
-
-        async function addMember(e) {
-            e.preventDefault();
-            const data = {
-                memberNumber: memberNumber.value,
-                memberName: memberName.value,
-                homeName: homeName.value,
-                email: email.value,
-                primaryMobile: primaryMobile.value,
-                role: isAdmin.checked ? 'admin' : 'member'
-            };
-            try {
-                const userCred = await auth.createUserWithEmailAndPassword(email.value, password.value);
-                await db.collection('users').doc(userCred.user.uid).set(data);
-                alert('Member added!');
-                e.target.reset();
-            } catch (err) {
-                alert('Error adding: ' + err.message);
-            }
-        }
-
-        async function loadMember() {
-            const num = document.getElementById('editMemberNumber').value;
-            const snap = await db.collection('users').where('memberNumber', '==', num).get();
-            if (snap.empty) { alert('Not found'); return; }
-            const d = snap.docs[0].data();
-            editName.value = d.memberName;
-            editHomeName.value = d.homeName;
-            editEmail.value = d.email;
-            editPrimaryMobile.value = d.primaryMobile;
-            editIsAdmin.checked = d.role === 'admin';
-            document.getElementById('editMemberForm').style.display = 'block';
-        }
-
-        async function updateMember(e) {
-            e.preventDefault();
-            const num = editMemberNumber.value;
-            const snap = await db.collection('users').where('memberNumber', '==', num).get();
-            if (snap.empty) { alert('Not found'); return; }
-            const docRef = snap.docs[0].ref;
-            await docRef.update({
-                memberName: editName.value,
-                homeName: editHomeName.value,
-                email: editEmail.value,
-                primaryMobile: editPrimaryMobile.value,
-                role: editIsAdmin.checked ? 'admin' : 'member'
-            });
-            alert('Updated!');
-            e.target.reset();
-            e.target.style.display = 'none';
-        }
-
-        async function loadSubscriptions() {
-            const spinner = document.getElementById('loadingSpinner');
-            spinner.style.display = 'block';
-            const monthHeaders = document.getElementById('monthHeaders');
-            const subscriptionTable = document.getElementById('subscriptionTable');
-            const editBtn = document.getElementById('editMonth');
-
-            const startMonth = new Date(2025, 9, 1);
-            const currentMonth = new Date();
-            const months = [];
-            for (let d = new Date(startMonth); d <= currentMonth; d.setMonth(d.getMonth() + 1)) {
-                months.push(d.toISOString().slice(0, 7));
-            }
-
-            monthHeaders.innerHTML = '<th>Member Name</th>' + months.map(m => `<th>${m}</th>`).join('');
-
-            const membersSnap = await db.collection('users').get();
-            subscriptionTable.innerHTML = '';
-
-            for (const doc of membersSnap.docs) {
-                const member = doc.data();
-                const row = document.createElement('tr');
-                let cells = `<td>${member.memberName}</td>`;
-                for (const month of months) {
-                    const cDoc = await db.collection('contributions').doc(doc.id).collection('months').doc(month).get();
-                    const paid = cDoc.exists && cDoc.data().paid;
-                    cells += `<td><input type="checkbox" data-member="${doc.id}" data-month="${month}" ${paid ? 'checked' : ''} ${editBtn.dataset.editing === 'true' ? '' : 'disabled'}></td>`;
-                }
-                row.innerHTML = cells;
-                subscriptionTable.appendChild(row);
-            }
-
-            spinner.style.display = 'none';
-
-            editBtn.onclick = () => {
-                const editing = editBtn.dataset.editing === 'true';
-                editBtn.dataset.editing = (!editing).toString();
-                editBtn.textContent = editing ? 'Edit Month' : 'Save Month';
-                loadSubscriptions();
-            };
-
-            subscriptionTable.onchange = async (e) => {
-                if (e.target.tagName !== 'INPUT') return;
-                const memberId = e.target.dataset.member;
-                const month = e.target.dataset.month;
-                const paid = e.target.checked;
-                if (paid) {
-                    await db.collection('contributions').doc(memberId).collection('months').doc(month).set({
-                        paid: true, date: new Date().toISOString().split('T')[0], amount: 200
-                    });
-                    await db.collection('transactions').add({
-                        type: 'income', memberId, amount: 200,
-                        head: `Monthly Subscription - ${month}`,
-                        date: new Date().toISOString().split('T')[0]
-                    });
-                } else {
-                    if (confirm('Remove this payment?')) {
-                        await db.collection('contributions').doc(memberId).collection('months').doc(month).delete();
-                    } else e.target.checked = true;
-                }
-                refreshTotal();
-            };
-        }
-
-        async function refreshTotal() {
-            let income = 0, expense = 0;
-            const tx = await db.collection('transactions').get();
-            tx.forEach(doc => {
-                const d = doc.data();
-                if (d.type === 'income') income += d.amount || 0;
-                else if (d.type === 'expense') expense += d.amount || 0;
-            });
-            const total = income - expense;
-            document.getElementById('totalWealthDisplay').textContent = `Total Wealth: ₹${total}`;
-        }
     </script>
 </body>
 </html>
