@@ -210,16 +210,8 @@
 
             // Auth State Check
             auth.onAuthStateChanged(async (user) => {
-                if (!user) {
-                    alert('No user logged in. Redirecting to login...');
-                    window.location.href = 'login.html';
-                    return;
-                }
-
-                const userDoc = await db.collection('users').doc(user.uid).get();
-                if (!userDoc.exists || userDoc.data().role !== 'admin') {
-                    console.log('User data:', userDoc.data());
-                    alert('Permission denied. Only admins can access this dashboard. Redirecting to login...');
+                if (!user || !(await db.collection('users').doc(user.uid).get()).data()?.role === 'admin') {
+                    alert('Unauthorized access. Redirecting to login...');
                     window.location.href = 'login.html';
                     return;
                 }
@@ -368,13 +360,13 @@
                         return;
                     }
 
-                    // Show loading spinner during fetch
+                    // Show loading spinner
                     loadingSpinner.style.display = 'block';
 
                     try {
                         // Dynamic month headers
                         const startMonth = new Date(2025, 9, 1); // Oct 2025
-                        const currentMonth = new Date(); // Current date (Oct 19, 2025)
+                        const currentMonth = new Date(); // Current date
                         const months = [];
                         for (let d = new Date(startMonth); d <= currentMonth; d.setMonth(d.getMonth() + 1)) {
                             months.push(d.toISOString().slice(0, 7));
@@ -387,13 +379,16 @@
 
                         // Fetch members
                         const membersSnapshot = await db.collection('users').get();
-                        const members = membersSnapshot.docs.map(doc => ({ id: doc.id, name: doc.data().memberName || 'Unknown' }));
+                        const members = membersSnapshot.docs.map(doc => ({
+                            id: doc.id,
+                            memberName: doc.data().memberName || 'Unknown'
+                        }));
 
                         // Populate table body
                         subscriptionTable.innerHTML = '';
                         for (const member of members) {
                             const row = document.createElement('tr');
-                            let cells = `<td>${member.name}</td>`;
+                            let cells = `<td>${member.memberName}</td>`;
                             for (const month of months) {
                                 const contributionDoc = await db.collection('contributions').doc(member.id).collection('months').doc(month).get();
                                 const paid = contributionDoc.exists ? contributionDoc.data().paid : false;
@@ -404,8 +399,8 @@
                         }
                     } catch (error) {
                         console.error('Error loading subscriptions:', error);
-                        alert('Error loading subscriptions: ' + error.message + '. Check Firestore permissions.');
-                        subscriptionTable.innerHTML = '<tr><td colspan="12">Failed to load subscriptions. Check permissions.</td></tr>';
+                        alert('Error loading subscriptions: ' + error.message);
+                        subscriptionTable.innerHTML = '<tr><td colspan="12">Failed to load subscriptions.</td></tr>';
                     } finally {
                         loadingSpinner.style.display = 'none';
                     }
@@ -454,7 +449,7 @@
                                 await refreshTotal();
                             } catch (error) {
                                 console.error('Error updating subscription:', error);
-                                alert('Error updating subscription: ' + error.message + '. Check permissions.');
+                                alert('Error updating subscription: ' + error.message);
                             } finally {
                                 loadingSpinner.style.display = 'none';
                             }
