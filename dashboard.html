@@ -210,8 +210,16 @@
 
             // Auth State Check
             auth.onAuthStateChanged(async (user) => {
-                if (!user || !(await db.collection('users').doc(user.uid).get()).data()?.role === 'admin') {
-                    alert('Unauthorized access. Redirecting to login...');
+                if (!user) {
+                    alert('No user logged in. Redirecting to login...');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const userDoc = await db.collection('users').doc(user.uid).get();
+                if (!userDoc.exists || userDoc.data().role !== 'admin') {
+                    console.log('User data:', userDoc.data());
+                    alert('Permission denied. Only admins can access this dashboard. Redirecting to login...');
                     window.location.href = 'login.html';
                     return;
                 }
@@ -396,8 +404,8 @@
                         }
                     } catch (error) {
                         console.error('Error loading subscriptions:', error);
-                        alert('Error loading subscriptions: ' + error.message);
-                        subscriptionTable.innerHTML = '<tr><td colspan="12">Failed to load subscriptions.</td></tr>';
+                        alert('Error loading subscriptions: ' + error.message + '. Check Firestore permissions.');
+                        subscriptionTable.innerHTML = '<tr><td colspan="12">Failed to load subscriptions. Check permissions.</td></tr>';
                     } finally {
                         loadingSpinner.style.display = 'none';
                     }
@@ -446,7 +454,7 @@
                                 await refreshTotal();
                             } catch (error) {
                                 console.error('Error updating subscription:', error);
-                                alert('Error updating subscription: ' + error.message);
+                                alert('Error updating subscription: ' + error.message + '. Check permissions.');
                             } finally {
                                 loadingSpinner.style.display = 'none';
                             }
