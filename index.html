@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
     <style>
         :root {
             --primary-orange: #FF6B35;
@@ -26,7 +27,7 @@
             font-family: 'Poppins', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding-bottom: 60px;
+            padding-bottom: 0;
             position: relative;
             overflow-x: hidden;
         }
@@ -43,56 +44,61 @@
             z-index: -1;
         }
 
-        /* Header Styling */
-        header {
-            margin-top: 4mm;
-            text-align: center;
-            padding: 20px 0;
+        /* Header Image */
+        .header-image {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            margin-top: 0;
         }
 
-        header h1 {
-            font-weight: 700;
-            font-size: 1.8rem;
+        /* Theme Toggle */
+        .theme-toggle {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            z-index: 1000;
+        }
+
+        .theme-toggle-btn {
             background: var(--gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-shadow: 0 2px 10px rgba(255, 107, 53, 0.3);
-            margin: 0;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            color: white;
+            font-size: 1rem;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle-btn:hover {
+            transform: rotate(15deg) scale(1.1);
+            box-shadow: var(--shadow-hover);
         }
 
         /* Logo Container */
         .logo-container {
             text-align: center;
-            margin: 10px 0 25px 0;
+            margin: 10px 0 15px 0;
         }
 
         .logo-container img {
-            max-height: 120px;
-            border-radius: 20px;
+            max-height: 80px;
+            border-radius: 15px;
             box-shadow: var(--shadow);
-            border: 3px solid white;
-            transform: perspective(1000px) rotateX(5deg);
-            transition: all 0.3s ease;
-        }
-
-        .logo-container img:hover {
-            transform: perspective(1000px) rotateX(0deg) scale(1.05);
-            box-shadow: var(--shadow-hover);
+            border: 2px solid white;
         }
 
         /* Main Card */
         .main-card {
             background: var(--card-bg);
             backdrop-filter: blur(20px);
-            border-radius: 25px;
-            padding: 30px;
+            border-radius: 20px;
+            padding: 20px;
             box-shadow: var(--shadow);
             border: 1px solid rgba(255, 255, 255, 0.2);
-            transform: perspective(1000px) rotateY(0deg);
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
+            margin-bottom: 60px;
         }
 
         .main-card::before {
@@ -101,28 +107,17 @@
             top: 0;
             left: 0;
             right: 0;
-            height: 4px;
+            height: 3px;
             background: var(--gradient);
         }
 
-        .main-card:hover {
-            transform: perspective(1000px) rotateY(-2deg) translateY(-5px);
-            box-shadow: var(--shadow-hover);
-        }
-
-        /* Welcome Text */
-        .welcome-text h2 {
-            color: var(--primary-orange);
-            font-weight: 600;
-            margin-bottom: 10px;
-            font-size: 1.5rem;
-        }
-
+        /* User Info */
         .user-greeting {
-            font-size: 1.3rem;
+            font-size: 1.2rem;
             font-weight: 500;
             color: #333;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
+            text-align: center;
         }
 
         [data-theme="dark"] .user-greeting {
@@ -131,12 +126,13 @@
 
         .wealth-info, .due-info {
             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            padding: 12px 15px;
-            border-radius: 15px;
-            margin: 8px 0;
-            border-left: 4px solid var(--primary-orange);
+            padding: 10px 12px;
+            border-radius: 12px;
+            margin: 6px 0;
+            border-left: 3px solid var(--primary-orange);
             font-weight: 500;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            font-size: 0.9rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         [data-theme="dark"] .wealth-info, 
@@ -145,27 +141,31 @@
             color: #fff;
         }
 
-        /* Button Grid */
+        /* Button Grid - 35% smaller */
         .button-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin-top: 25px;
+            gap: 10px;
+            margin-top: 20px;
         }
 
         .app-btn {
             background: var(--gradient);
             border: none;
-            border-radius: 15px;
-            padding: 18px 10px;
+            border-radius: 12px;
+            padding: 12px 8px;
             color: white;
-            font-weight: 600;
-            font-size: 0.9rem;
+            font-weight: 500;
+            font-size: 0.8rem;
             box-shadow: var(--shadow);
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
-            transform: perspective(500px) rotateX(0deg);
+            height: 65px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
 
         .app-btn::before {
@@ -180,7 +180,7 @@
         }
 
         .app-btn:hover {
-            transform: perspective(500px) rotateX(5deg) translateY(-3px);
+            transform: translateY(-2px);
             box-shadow: var(--shadow-hover);
         }
 
@@ -189,53 +189,27 @@
         }
 
         .app-btn i {
-            font-size: 1.3rem;
-            margin-bottom: 5px;
-            display: block;
+            font-size: 1.1rem;
+            margin-bottom: 4px;
         }
 
         .admin-btn {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            margin-top: 15px;
+            margin-top: 10px;
             grid-column: span 2;
         }
 
-        /* Theme Toggle */
-        .theme-toggle {
-            position: fixed;
-            top: 15px;
-            right: 15px;
-            z-index: 1000;
-        }
-
-        .theme-toggle-btn {
-            background: var(--gradient);
-            border: none;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            color: white;
-            font-size: 1.2rem;
-            box-shadow: var(--shadow);
-            transition: all 0.3s ease;
-        }
-
-        .theme-toggle-btn:hover {
-            transform: rotate(15deg) scale(1.1);
-            box-shadow: var(--shadow-hover);
-        }
-
-        /* Footer */
+        /* Footer - Fixed at very bottom */
         footer {
             position: fixed;
             bottom: 0;
             width: 100%;
             text-align: center;
-            padding: 8px;
+            padding: 5px;
             background: rgba(248, 248, 248, 0.9);
             backdrop-filter: blur(10px);
             color: #666;
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             z-index: 1000;
             border-top: 1px solid rgba(255, 107, 53, 0.2);
         }
@@ -245,57 +219,58 @@
             color: #ccc;
         }
 
-        /* 3D Effects */
-        .floating {
-            animation: floating 3s ease-in-out infinite;
-        }
-
-        @keyframes floating {
-            0%, 100% { transform: translateY(0px) rotateY(0deg); }
-            50% { transform: translateY(-10px) rotateY(5deg); }
-        }
-
         /* Responsive */
         @media (max-width: 576px) {
             .button-grid {
                 grid-template-columns: 1fr;
-                gap: 12px;
+                gap: 8px;
             }
             
             .admin-btn {
                 grid-column: span 1;
             }
             
-            header h1 {
-                font-size: 1.5rem;
+            .header-image {
+                height: 100px;
+            }
+            
+            .logo-container img {
+                max-height: 60px;
             }
             
             .main-card {
-                padding: 20px;
-                margin: 0 10px;
+                padding: 15px;
+                margin: 0 10px 60px 10px;
+            }
+            
+            .app-btn {
+                height: 60px;
+                font-size: 0.75rem;
+            }
+            
+            .app-btn i {
+                font-size: 1rem;
             }
         }
     </style>
 </head>
 <body>
+    <!-- Header Image -->
+    <img src="assets/head.png" alt="Header" class="header-image">
+    
     <div class="theme-toggle">
         <button id="themeToggle" class="theme-toggle-btn">🌞</button>
     </div>
     
-    <header>
-        <h1 class="floating">Shipyard Nagar</h1>
-    </header>
-    
     <main class="container">
         <div class="logo-container">
-            <img src="assets/logo.jpg" alt="Shipyard Nagar Logo" class="img-fluid floating">
+            <img src="assets/logo.jpg" alt="Shipyard Nagar Logo" class="img-fluid">
         </div>
         
         <div class="row justify-content-center">
             <div class="col-12 col-md-8 col-lg-6">
                 <div class="main-card">
                     <div class="welcome-text">
-                        <h2>Welcome Home</h2>
                         <p class="user-greeting">Hi, <span id="user-name">Guest</span> & family! 👋</p>
                         
                         <div class="wealth-info">
@@ -309,7 +284,20 @@
                         </div>
                     </div>
                     
+                    <!-- Reordered buttons as requested -->
                     <div class="button-grid">
+                        <button id="profileBtn" class="app-btn">
+                            <i class="fas fa-user-circle"></i>
+                            Profile
+                        </button>
+                        <button id="subscriptionBtn" class="app-btn">
+                            <i class="fas fa-credit-card"></i>
+                            Subscription
+                        </button>
+                        <button id="memberListBtn" class="app-btn">
+                            <i class="fas fa-users"></i>
+                            Members
+                        </button>
                         <button id="chittiBtn" class="app-btn">
                             <i class="fas fa-hand-holding-usd"></i>
                             Chitti
@@ -317,18 +305,6 @@
                         <button id="loanBtn" class="app-btn">
                             <i class="fas fa-university"></i>
                             Loan
-                        </button>
-                        <button id="memberListBtn" class="app-btn">
-                            <i class="fas fa-users"></i>
-                            Members
-                        </button>
-                        <button id="subscriptionBtn" class="app-btn">
-                            <i class="fas fa-credit-card"></i>
-                            Subscription
-                        </button>
-                        <button id="profileBtn" class="app-btn">
-                            <i class="fas fa-user-circle"></i>
-                            Profile
                         </button>
                         
                         <div id="adminTab" style="display: none;">
@@ -466,7 +442,22 @@
                 }
             }
 
-            // ✅ Navigation buttons
+            // ✅ Navigation buttons - Reordered as requested
+            if (profileBtn) {
+                profileBtn.addEventListener('click', () => {
+                    window.location.href = 'profile.html';
+                });
+            }
+            if (subscriptionBtn) {
+                subscriptionBtn.addEventListener('click', () => {
+                    window.location.href = 'subscription.html';
+                });
+            }
+            if (memberListBtn) {
+                memberListBtn.addEventListener('click', () => {
+                    window.location.href = 'members.html';
+                });
+            }
             if (chittiBtn) {
                 chittiBtn.addEventListener('click', () => {
                     window.location.href = 'chitty.html';
@@ -475,21 +466,6 @@
             if (loanBtn) {
                 loanBtn.addEventListener('click', () => {
                     window.location.href = 'loan.html';
-                });
-            }
-            if (memberListBtn) {
-                memberListBtn.addEventListener('click', () => {
-                    window.location.href = 'members.html';
-                });
-            }
-            if (subscriptionBtn) {
-                subscriptionBtn.addEventListener('click', () => {
-                    window.location.href = 'subscription.html';
-                });
-            }
-            if (profileBtn) {
-                profileBtn.addEventListener('click', () => {
-                    window.location.href = 'profile.html';
                 });
             }
             if (adminBtn) {
