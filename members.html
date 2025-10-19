@@ -69,32 +69,33 @@
             text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
         }
 
-        /* Member Card Style - 7% smaller */
+        /* Member Card Style - Fixed width and centered */
         .member-card {
             background: var(--card-bg);
             backdrop-filter: blur(20px);
             border-radius: 15px;
-            padding: 18px; /* Reduced padding */
-            margin-bottom: 18px; /* Reduced margin */
+            padding: 18px;
+            margin: 0 auto 18px auto; /* Center the card */
             box-shadow: var(--shadow);
             border: 1px solid rgba(255, 255, 255, 0.2);
             transition: all 0.3s ease;
-            transform: scale(0.93); /* 7% smaller */
-            transform-origin: center top;
+            width: 95%; /* Fixed width instead of transform */
+            max-width: 400px; /* Maximum width */
         }
 
         .member-card:hover {
             box-shadow: var(--shadow-hover);
-            transform: scale(0.87) translateY(-3px);
+            transform: translateY(-3px);
         }
 
         .member-card h3 {
-            font-size: 1.2rem; /* Slightly smaller */
-            margin-bottom: 12px; /* Reduced */
+            font-size: 1.2rem;
+            margin-bottom: 12px;
             color: #1e3a8a;
             font-weight: 600;
             border-bottom: 2px solid var(--orange-light);
-            padding-bottom: 6px; /* Reduced */
+            padding-bottom: 6px;
+            text-align: center;
         }
 
         [data-theme="dark"] .member-card h3 {
@@ -102,17 +103,17 @@
         }
 
         .member-card p {
-            margin: 6px 0; /* Reduced */
-            font-size: 0.85rem; /* Slightly smaller */
+            margin: 6px 0;
+            font-size: 0.85rem;
             color: #333;
             display: flex;
             align-items: center;
-            justify-content: space-between; /* Right align values */
+            justify-content: space-between;
         }
 
         .member-card p strong {
             color: var(--primary-orange);
-            min-width: 120px; /* Reduced */
+            min-width: 120px;
             display: inline-block;
             font-weight: 500;
             text-align: left;
@@ -132,8 +133,8 @@
 
         .member-card i {
             color: var(--primary-orange);
-            margin-right: 6px; /* Reduced */
-            width: 14px; /* Smaller */
+            margin-right: 6px;
+            width: 14px;
         }
 
         [data-theme="dark"] .member-card {
@@ -230,20 +231,16 @@
             
             .member-card {
                 padding: 15px;
-                margin: 0 8px 15px 8px; /* Reduced side margins */
-                transform: scale(0.95); /* Less scaling on mobile */
-            }
-            
-            .member-card:hover {
-                transform: scale(0.95) translateY(-3px);
+                margin: 0 auto 15px auto;
+                width: 92%; /* Slightly smaller on mobile */
             }
             
             .member-card p {
-                font-size: 0.8rem; /* Smaller on mobile */
+                font-size: 0.8rem;
             }
             
             .member-card p strong {
-                min-width: 96px; /* Smaller on mobile */
+                min-width: 100px;
             }
             
             footer {
@@ -256,16 +253,19 @@
             }
         }
 
-        /* Improved grid layout */
-        @media (min-width: 768px) {
+        /* Medium screens */
+        @media (min-width: 768px) and (max-width: 991px) {
             .member-card {
-                margin-bottom: 20px;
+                width: 90%;
+                max-width: 350px;
             }
         }
 
-        @media (min-width: 982px) {
+        /* Large screens */
+        @media (min-width: 992px) {
             .member-card {
-                margin-bottom: 22px;
+                width: 90%;
+                max-width: 380px;
             }
         }
     </style>
@@ -277,7 +277,7 @@
     <main class="container">
         <h1 class="page-title">Our Members</h1>
         
-        <div class="row" id="membersList">
+        <div class="row justify-content-center" id="membersList">
             <!-- Members cards will be added here -->
         </div>
         
@@ -390,15 +390,17 @@
             membersList.innerHTML = '';
             members.forEach(member => {
                 const card = document.createElement('div');
-                card.className = 'col-12 col-md-6 col-lg-4 member-card';
+                card.className = 'col-12 col-md-6 col-lg-4';
                 card.innerHTML = `
-                    <div class="card-body">
-                        <h3>${member.memberName}</h3>
-                        <p><i class="fas fa-home"></i><strong>House Name:</strong> <span class="detail-value">${member.homeName}</span></p>
-                        <p><i class="fas fa-phone"></i><strong>Primary Phone:</strong> <span class="detail-value">${member.primaryMobile}</span></p>
-                        <p><i class="fas fa-mobile-alt"></i><strong>Secondary Phone:</strong> <span class="detail-value">${member.secondaryMobile}</span></p>
-                        <p><i class="fas fa-envelope"></i><strong>Email:</strong> <span class="detail-value">${member.email}</span></p>
-                        <p><i class="fas fa-fire"></i><strong>Gas Connection:</strong> <span class="detail-value">${member.gasConnection}</span></p>
+                    <div class="member-card">
+                        <div class="card-body">
+                            <h3>${member.memberName}</h3>
+                            <p><i class="fas fa-home"></i><strong>House Name:</strong> <span class="detail-value">${member.homeName}</span></p>
+                            <p><i class="fas fa-phone"></i><strong>Primary Phone:</strong> <span class="detail-value">${member.primaryMobile}</span></p>
+                            <p><i class="fas fa-mobile-alt"></i><strong>Secondary Phone:</strong> <span class="detail-value">${member.secondaryMobile}</span></p>
+                            <p><i class="fas fa-envelope"></i><strong>Email:</strong> <span class="detail-value">${member.email}</span></p>
+                            <p><i class="fas fa-fire"></i><strong>Gas Connection:</strong> <span class="detail-value">${member.gasConnection}</span></p>
+                        </div>
                     </div>
                 `;
                 membersList.appendChild(card);
