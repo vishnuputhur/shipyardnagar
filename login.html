@@ -59,20 +59,20 @@
             z-index: 999;
         }
 
-        /* Logo Container */
+        /* Logo Container - Reduced gap and bigger logo */
         .logo-container {
             text-align: center;
-            margin: 160px 0 20px 0;
+            margin: 128px 0 20px 0; /* Reduced by 20% (160px -> 128px) */
         }
 
         .logo-container img {
-            max-height: 120px;
+            max-height: 150px; /* Increased by 25% (120px -> 150px) */
             border-radius: 20px;
             box-shadow: var(--shadow);
             border: 3px solid white;
         }
 
-        /* Main Card */
+        /* Main Card - Removed red line */
         .main-card {
             background: var(--card-bg);
             backdrop-filter: blur(20px);
@@ -84,16 +84,7 @@
             position: relative;
         }
 
-        .main-card::before {
-            content: '';
-            position: absolute;
-            top: -8px;
-            left: -10px;
-            right: -10px;
-            height: 4px;
-            background: var(--gradient);
-            border-radius: 2px;
-        }
+        /* Removed the ::before pseudo-element that created the red line */
 
         .main-card h2 {
             text-align: center;
@@ -219,11 +210,11 @@
             }
             
             .logo-container {
-                margin: 140px 0 15px 0;
+                margin: 112px 0 15px 0; /* Reduced by 20% (140px -> 112px) */
             }
             
             .logo-container img {
-                max-height: 100px;
+                max-height: 125px; /* Increased by 25% (100px -> 125px) */
             }
             
             .main-card {
