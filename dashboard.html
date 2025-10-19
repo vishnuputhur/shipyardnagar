@@ -63,6 +63,13 @@
             font-size: 2rem;
             color: #0288d1;
         }
+        
+        /* Checkbox styling */
+        .contribution-check {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -357,7 +364,7 @@
                 });
             }
 
-            // Subscriptions Functionality - Updated loadSubscriptions
+            // Subscriptions Functionality
             const loadSubscriptions = async () => {
                 const monthSelect = document.getElementById('monthSelect');
                 const subscriptionTableBody = document.querySelector('#subscriptionTable tbody');
@@ -373,7 +380,7 @@
                 loadingSpinner.style.display = 'block';
 
                 try {
-                    // Load members from Firebase (or cache)
+                    // Load members from Firebase
                     const cachedMembers = JSON.parse(localStorage.getItem('membersCache') || '[]');
                     let members;
                     if (cachedMembers.length > 0) {
@@ -408,7 +415,7 @@
                     loadingSpinner.style.display = 'none';
                 }
 
-                // Edit Month Toggle (updated to re-render)
+                // Edit Month Toggle
                 const toggleEdit = async () => {
                     const isEditing = editMonthBtn.dataset.editing === 'true';
                     editMonthBtn.dataset.editing = !isEditing;
@@ -416,7 +423,7 @@
                     // Re-render with new editing state
                     const members = JSON.parse(localStorage.getItem('membersCache') || '[]');
                     if (members.length > 0) {
-                        const months = []; // Re-generate months if needed
+                        const months = [];
                         const startMonth = new Date(2025, 9, 1);
                         const currentMonth = new Date();
                         for (let d = new Date(startMonth); d <= currentMonth; d.setMonth(d.getMonth() + 1)) {
@@ -425,10 +432,10 @@
                         await renderSubscriptionTable(members, months, subscriptionTableBody, !isEditing);
                     }
                 };
-                editMonthBtn.removeEventListener('click', toggleEdit); // Avoid duplicates
+                editMonthBtn.removeEventListener('click', toggleEdit);
                 editMonthBtn.addEventListener('click', toggleEdit);
 
-                // Handle checkbox changes (improved transaction delete)
+                // Handle checkbox changes
                 const handleCheckboxChange = async (e) => {
                     if (e.target.classList.contains('contribution-check')) {
                         const memberId = e.target.dataset.member;
@@ -457,7 +464,7 @@
                                         date: null,
                                         amount: 0
                                     });
-                                    // Delete all matching transactions (improved query)
+                                    // Delete matching transactions
                                     const transactions = await db.collection('transactions')
                                         .where('memberId', '==', memberId)
                                         .where('head', '==', `Monthly Subscription - ${month}`)
@@ -470,43 +477,81 @@
                                     return;
                                 }
                             }
-                            await loadSubscriptions(); // Reload
+                            await loadSubscriptions();
                             await refreshTotal();
                         } catch (error) {
                             console.error('Error updating subscription:', error);
                             alert('Error: ' + error.message);
-                            await loadSubscriptions(); // Reload to revert
+                            await loadSubscriptions();
                         } finally {
                             loadingSpinner.style.display = 'none';
                         }
                     }
                 };
-                subscriptionTableBody.removeEventListener('change', handleCheckboxChange); // Avoid duplicates
+                subscriptionTableBody.removeEventListener('change', handleCheckboxChange);
                 subscriptionTableBody.addEventListener('change', handleCheckboxChange);
 
                 // Month select change
                 monthSelect.addEventListener('change', loadSubscriptions);
             };
 
-            // Updated renderSubscriptionTable - Fixed async issue with for-of loop
+            // Fixed renderSubscriptionTable function
             const renderSubscriptionTable = async (members, months, tableBody, isEditing) => {
                 tableBody.innerHTML = '';
-                for (const member of members) { // Use for-of for sequential await
-                    const row = document.createElement('tr');
-                    let cells = `<td>${member.memberName}</td>`;
-                    for (const month of months) {
-                        try {
-                            const contributionDoc = await db.collection('contributions').doc(member.id).collection('months').doc(month).get();
-                            const paid = contributionDoc.exists ? contributionDoc.data().paid : false;
+                
+                // Create a loading row
+                const loadingRow = document.createElement('tr');
+                loadingRow.innerHTML = `<td colspan="${months.length + 1}">Loading subscriptions...</td>`;
+                tableBody.appendChild(loadingRow);
+
+                try {
+                    // Fetch all contributions in parallel for better performance
+                    const memberPromises = members.map(async (member) => {
+                        const monthPromises = months.map(async (month) => {
+                            try {
+                                const contributionDoc = await db.collection('contributions').doc(member.id).collection('months').doc(month).get();
+                                return {
+                                    month,
+                                    paid: contributionDoc.exists ? contributionDoc.data().paid : false
+                                };
+                            } catch (error) {
+                                console.error(`Error fetching contribution for ${member.memberName}, ${month}:`, error);
+                                return { month, paid: false };
+                            }
+                        });
+
+                        const monthResults = await Promise.all(monthPromises);
+                        return { member, monthResults };
+                    });
+
+                    const results = await Promise.all(memberPromises);
+                    
+                    // Clear loading row
+                    tableBody.innerHTML = '';
+
+                    // Render table rows
+                    results.forEach(({ member, monthResults }) => {
+                        const row = document.createElement('tr');
+                        let cells = `<td>${member.memberName}</td>`;
+                        
+                        monthResults.forEach(({ month, paid }) => {
                             const disabledAttr = isEditing ? '' : 'disabled';
-                            cells += `<td><input type="checkbox" class="contribution-check" data-member="${member.id}" data-month="${month}" ${paid ? 'checked' : ''} ${disabledAttr}></td>`;
-                        } catch (error) {
-                            console.error('Error fetching contribution:', error);
-                            cells += `<td><input type="checkbox" class="contribution-check" data-member="${member.id}" data-month="${month}" disabled></td>`;
-                        }
-                    }
-                    row.innerHTML = cells;
-                    tableBody.appendChild(row);
+                            cells += `<td>
+                                <input type="checkbox" class="contribution-check" 
+                                       data-member="${member.id}" 
+                                       data-month="${month}" 
+                                       ${paid ? 'checked' : ''} 
+                                       ${disabledAttr}>
+                            </td>`;
+                        });
+                        
+                        row.innerHTML = cells;
+                        tableBody.appendChild(row);
+                    });
+
+                } catch (error) {
+                    console.error('Error rendering subscription table:', error);
+                    tableBody.innerHTML = '<tr><td colspan="' + (months.length + 1) + '">Error loading subscriptions</td></tr>';
                 }
             };
 
