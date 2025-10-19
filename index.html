@@ -59,10 +59,10 @@
             z-index: 999;
         }
 
-        /* Logo Container */
+        /* Logo Container - Reduced top gap by 25% */
         .logo-container {
             text-align: center;
-            margin: 160px 0 15px 0; /* Adjusted for fixed header */
+            margin: 120px 0 15px 0; /* Reduced from 160px to 120px (25% reduction) */
         }
 
         .logo-container img {
@@ -79,7 +79,7 @@
             box-shadow: var(--shadow-hover);
         }
 
-        /* Main Card */
+        /* Main Card - Removed orange line */
         .main-card {
             background: var(--card-bg);
             backdrop-filter: blur(20px);
@@ -87,20 +87,8 @@
             padding: 20px;
             box-shadow: var(--shadow);
             border: 1px solid rgba(255, 255, 255, 0.2);
-            margin-bottom: 50px; /* Reduced for smaller footer */
+            margin-bottom: 50px;
             position: relative;
-        }
-
-        /* Orange line - longer and separated from box */
-        .main-card::before {
-            content: '';
-            position: absolute;
-            top: -8px; /* Separated from box */
-            left: -10px; /* Extended left */
-            right: -10px; /* Extended right */
-            height: 4px;
-            background: var(--gradient);
-            border-radius: 2px;
         }
 
         /* User Greeting - Dark blue and bold */
@@ -205,8 +193,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 3px 15px; /* Reduced padding */
-            height: 30px; /* Fixed height */
+            padding: 3px 15px;
+            height: 30px;
         }
 
         [data-theme="dark"] footer {
@@ -219,17 +207,17 @@
             text-align: center;
         }
 
-        /* Simple Theme Toggle */
+        /* Theme Toggle - Slightly larger */
         .theme-toggle-btn {
             background: transparent;
             border: 1px solid #ccc;
             border-radius: 20px;
-            padding: 3px 6px; /* Smaller padding */
+            padding: 4px 8px; /* Increased padding */
             color: #666;
-            font-size: 0.6rem; /* Smaller font */
+            font-size: 0.75rem; /* Slightly larger font */
             transition: all 0.3s ease;
             cursor: pointer;
-            height: 20px; /* Fixed height */
+            height: 24px; /* Increased height */
         }
 
         [data-theme="dark"] .theme-toggle-btn {
@@ -259,7 +247,7 @@
             }
             
             .logo-container {
-                margin: 140px 0 15px 0;
+                margin: 90px 0 15px 0; /* Adjusted for mobile */
             }
             
             .logo-container img {
