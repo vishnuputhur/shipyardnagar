@@ -186,10 +186,11 @@
         };
 
         // Initialize Firebase
+        let auth, db;
         try {
             firebase.initializeApp(firebaseConfig);
-            const auth = firebase.auth();
-            const db = firebase.firestore();
+            auth = firebase.auth();
+            db = firebase.firestore();
             console.log('Firebase initialized successfully');
         } catch (error) {
             alert('Firebase Initialization Error: ' + error.message);
@@ -210,7 +211,12 @@
             const profileForm = document.getElementById('profileForm');
             const signoutBtn = document.getElementById('signoutBtn');
 
-            // Auth State Check
+            if (!memberNameEl || !editProfileBtn || !signoutBtn) {
+                console.error('Required DOM elements not found');
+                return;
+            }
+
+            // Auth State Check and Data Load
             auth.onAuthStateChanged(async (user) => {
                 if (!user) {
                     window.location.href = 'login.html';
@@ -223,7 +229,6 @@
                         const userData = userDoc.data();
                         console.log('User Data:', userData);
 
-                        // Display Mode
                         memberNameEl.textContent = userData.memberName || 'N/A';
                         memberNumberEl.textContent = 'Member Number: ' + (userData.memberNumber || 'N/A');
                         homeNameEl.textContent = 'House Name: ' + (userData.homeName || 'N/A');
@@ -250,6 +255,7 @@
                     }
                 } catch (error) {
                     console.error('Error fetching user data:', error);
+                    alert('Error loading profile data: ' + error.message);
                     memberNameEl.textContent = 'N/A';
                     memberNumberEl.textContent = 'Member Number: N/A';
                     homeNameEl.textContent = 'House Name: N/A';
@@ -262,32 +268,38 @@
 
             // Edit Profile Button
             editProfileBtn.addEventListener('click', () => {
-                editForm.style.display = 'block';
+                if (editForm) {
+                    editForm.style.display = 'block';
+                } else {
+                    console.error('Edit form element not found');
+                }
             });
 
             // Form Submission
-            profileForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const user = auth.currentUser;
-                if (user) {
-                    try {
-                        await db.collection('users').doc(user.uid).update({
-                            homeName: document.getElementById('editHomeName').value,
-                            email: document.getElementById('editEmail').value,
-                            primaryMobile: document.getElementById('editPrimaryMobile').value,
-                            secondaryMobile: document.getElementById('editSecondaryMobile').value,
-                            gasConnection: document.getElementById('editGasConnection').value
-                        });
-                        alert('Saved');
-                        editForm.style.display = 'none';
-                        // Reload page to reflect updated data
-                        window.location.reload();
-                    } catch (error) {
-                        alert('Error saving profile: ' + error.message);
-                        console.error('Save Error:', error);
+            if (profileForm) {
+                profileForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const user = auth.currentUser;
+                    if (user) {
+                        try {
+                            await db.collection('users').doc(user.uid).update({
+                                homeName: document.getElementById('editHomeName').value,
+                                email: document.getElementById('editEmail').value,
+                                primaryMobile: document.getElementById('editPrimaryMobile').value,
+                                secondaryMobile: document.getElementById('editSecondaryMobile').value,
+                                gasConnection: document.getElementById('editGasConnection').value
+                            });
+                            alert('Saved');
+                            if (editForm) editForm.style.display = 'none';
+                            // Reload page to reflect updated data
+                            window.location.reload();
+                        } catch (error) {
+                            alert('Error saving profile: ' + error.message);
+                            console.error('Save Error:', error);
+                        }
                     }
-                }
-            });
+                });
+            }
 
             // Signout Button
             signoutBtn.addEventListener('click', () => {
