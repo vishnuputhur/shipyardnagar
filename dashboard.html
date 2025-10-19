@@ -79,444 +79,460 @@
             <button class="btn btn-secondary" id="refreshTotal">Refresh Total</button>
         </div>
 
-        <!-- Add Member Form -->
-        <div class="card" id="addUserSection" style="display: none;">
-            <h2>Add Member</h2>
-            <form id="addUserForm" class="p-3">
-                <div class="row">
-                    <div class="col-12 mb-3">
-                        <label for="memberNumber" class="form-label">Member Number:</label>
-                        <input type="text" class="form-control" id="memberNumber" required>
-                    </div>
-                    <div class="col-12 mb-3">
-                        <label for="memberName" class="form-label">Name:</label>
-                        <input type="text" class="form-control" id="memberName" required>
-                    </div>
-                    <div class="col-12 mb-3">
-                        <label for="homeName" class="form-label">House Name:</label>
-                        <input type="text" class="form-control" id="homeName" required>
-                    </div>
-                    <div class="col-12 mb-3">
-                        <label for="email" class="form-label">Email:</label>
-                        <input type="email" class="form-control" id="email" required>
-                    </div>
-                    <div class="col-12 mb-3">
-                        <label for="password" class="form-label">Password:</label>
-                        <input type="password" class="form-control" id="password" required>
-                    </div>
-                    <div class="col-12 mb-3">
-                        <label for="primaryMobile" class="form-label">Primary Mobile:</label>
-                        <input type="text" class="form-control" id="primaryMobile" required>
-                    </div>
-                    <div class="col-12 mb-3">
-                        <label>
-                            <input type="checkbox" id="isAdmin"> Admin
-                        </label>
-                    </div>
+       <!-- Add Member Form -->
+    <div class="card" id="addUserSection" style="display: none;">
+        <h2>Add Member</h2>
+        <form id="addUserForm" class="p-3">
+            <div class="row">
+                <div class="col-12 mb-3">
+                    <label for="memberNumber" class="form-label">Member Number:</label>
+                    <input type="text" class="form-control" id="memberNumber" required>
                 </div>
-                <button type="submit" class="btn btn-primary">Add Member</button>
-            </form>
-        </div>
-
-        <!-- Edit Member Form -->
-        <div class="card" id="editMemberSection" style="display: none;">
-            <h2>Edit Member</h2>
-            <div class="p-3">
-                <label for="editMemberNumber" class="form-label">Member Number:</label>
-                <input type="text" class="form-control mb-3" id="editMemberNumber" required>
-                <button class="btn btn-warning mb-3" id="loadEditMember">Load Member</button>
+                <div class="col-12 mb-3">
+                    <label for="memberName" class="form-label">Name:</label>
+                    <input type="text" class="form-control" id="memberName" required>
+                </div>
+                <div class="col-12 mb-3">
+                    <label for="homeName" class="form-label">House Name:</label>
+                    <input type="text" class="form-control" id="homeName" required>
+                </div>
+                <div class="col-12 mb-3">
+                    <label for="email" class="form-label">Email:</label>
+                    <input type="email" class="form-control" id="email" required>
+                </div>
+                <div class="col-12 mb-3">
+                    <label for="password" class="form-label">Password:</label>
+                    <input type="password" class="form-control" id="password" required>
+                </div>
+                <div class="col-12 mb-3">
+                    <label for="primaryMobile" class="form-label">Primary Mobile:</label>
+                    <input type="text" class="form-control" id="primaryMobile" required>
+                </div>
+                <div class="col-12 mb-3">
+                    <label>
+                        <input type="checkbox" id="isAdmin"> Admin
+                    </label>
+                </div>
             </div>
-            <form id="editMemberForm" class="p-3" style="display: none;">
-                <div class="row">
-                    <div class="col-12 mb-3">
-                        <label for="editName" class="form-label">Name:</label>
-                        <input type="text" class="form-control" id="editName" required>
-                    </div>
-                    <div class="col-12 mb-3">
-                        <label for="editHomeName" class="form-label">House Name:</label>
-                        <input type="text" class="form-control" id="editHomeName" required>
-                    </div>
-                    <div class="col-12 mb-3">
-                        <label for="editEmail" class="form-label">Email:</label>
-                        <input type="email" class="form-control" id="editEmail" required>
-                    </div>
-                    <div class="col-12 mb-3">
-                        <label for="editPrimaryMobile" class="form-label">Primary Mobile:</label>
-                        <input type="text" class="form-control" id="editPrimaryMobile" required>
-                    </div>
-                    <div class="col-12 mb-3">
-                        <label>
-                            <input type="checkbox" id="editIsAdmin"> Admin
-                        </label>
-                    </div>
+            <button type="submit" class="btn btn-primary">Add Member</button>
+        </form>
+    </div>
+
+    <!-- Edit Member Form -->
+    <div class="card" id="editMemberSection" style="display: none;">
+        <h2>Edit Member</h2>
+        <div class="p-3">
+            <label for="editMemberNumber" class="form-label">Member Number:</label>
+            <input type="text" class="form-control mb-3" id="editMemberNumber" required>
+            <button class="btn btn-warning mb-3" id="loadEditMember">Load Member</button>
+        </div>
+        <form id="editMemberForm" class="p-3" style="display: none;">
+            <div class="row">
+                <div class="col-12 mb-3">
+                    <label for="editName" class="form-label">Name:</label>
+                    <input type="text" class="form-control" id="editName" required>
                 </div>
-                <button type="submit" class="btn btn-primary">Update Member</button>
-            </form>
-        </div>
+                <div class="col-12 mb-3">
+                    <label for="editHomeName" class="form-label">House Name:</label>
+                    <input type="text" class="form-control" id="editHomeName" required>
+                </div>
+                <div class="col-12 mb-3">
+                    <label for="editEmail" class="form-label">Email:</label>
+                    <input type="email" class="form-control" id="editEmail" required>
+                </div>
+                <div class="col-12 mb-3">
+                    <label for="editPrimaryMobile" class="form-label">Primary Mobile:</label>
+                    <input type="text" class="form-control" id="editPrimaryMobile" required>
+                </div>
+                <div class="col-12 mb-3">
+                    <label>
+                        <input type="checkbox" id="editIsAdmin"> Admin
+                    </label>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Update Member</button>
+        </form>
+    </div>
 
-        <!-- Subscriptions Section -->
-        <div class="card" id="subscriptionSection" style="display: none;">
-            <h2>Subscriptions</h2>
-            <select id="monthSelect" class="form-select mb-3"></select>
-            <button id="editMonth" class="btn btn-warning mb-3" data-editing="false">Edit Month</button>
-            <table class="table table-bordered" id="subscriptionTable">
-                <thead>
-                    <tr id="monthHeaders">
-                        <th>Member Name</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-            <p id="totalWealthDisplay">Total Wealth: ₹0</p>
-        </div>
-    </main>
-    <footer class="bg-light text-center py-2">
-        <p>Powered by VTSoft 2025</p>
-    </footer>
+    <!-- Subscriptions Section -->
+    <div class="card" id="subscriptionSection" style="display: none;">
+        <h2>Subscriptions</h2>
+        <select id="monthSelect" class="form-select mb-3"></select>
+        <button id="editMonth" class="btn btn-warning mb-3" data-editing="false">Edit Month</button>
+        <table class="table table-bordered" id="subscriptionTable">
+            <thead>
+                <tr id="monthHeaders">
+                    <th>Member Name</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <p id="totalWealthDisplay">Total Wealth: ₹0</p>
+    </div>
+</main>
+<footer class="bg-light text-center py-2">
+    <p>Powered by VTSoft 2025</p>
+</footer>
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 
-    <script>
-        // Firebase Config
-        const firebaseConfig = {
-            apiKey: "AIzaSyBWswawf9tpxNwVU0BaJ6FCwCvgcjUQXlA",
-            authDomain: "shipyard-nagar.firebaseapp.com",
-            projectId: "shipyard-nagar",
-            storageBucket: "shipyard-nagar.firebasestorage.app",
-            messagingSenderId: "552855824221",
-            appId: "1:552855824221:web:f709da953077475be9eab4",
-            measurementId: "G-V8CQ4YCCQ5"
-        };
+<script>
+    // Firebase Config
+    const firebaseConfig = {
+        apiKey: "AIzaSyBWswawf9tpxNwVU0BaJ6FCwCvgcjUQXlA",
+        authDomain: "shipyard-nagar.firebaseapp.com",
+        projectId: "shipyard-nagar",
+        storageBucket: "shipyard-nagar.firebasestorage.app",
+        messagingSenderId: "552855824221",
+        appId: "1:552855824221:web:f709da953077475be9eab4",
+        measurementId: "G-V8CQ4YCCQ5"
+    };
 
-        // Initialize Firebase
-        let auth, db;
-        try {
-            firebase.initializeApp(firebaseConfig);
-            auth = firebase.auth();
-            db = firebase.firestore();
-            console.log('Firebase initialized successfully');
-        } catch (error) {
-            alert('Firebase Initialization Error: ' + error.message);
-            console.error('Firebase Init Error:', error);
-        }
+    // Initialize Firebase
+    let auth, db;
+    try {
+        firebase.initializeApp(firebaseConfig);
+        auth = firebase.auth();
+        db = firebase.firestore();
+        console.log('Firebase initialized successfully');
+    } catch (error) {
+        alert('Firebase Initialization Error: ' + error.message);
+        console.error('Firebase Init Error:', error);
+    }
 
-        // DOM Content Loaded
-        document.addEventListener('DOMContentLoaded', () => {
-            const loadingSpinner = document.getElementById('loadingSpinner');
-            loadingSpinner.style.display = 'block';
+    // DOM Content Loaded
+    document.addEventListener('DOMContentLoaded', () => {
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        loadingSpinner.style.display = 'block';
 
-            // Auth State Check
-            auth.onAuthStateChanged(async (user) => {
-                if (!user) {
-                    alert('No user logged in. Redirecting to login...');
-                    window.location.href = 'login.html';
-                    return;
-                }
+        // Auth State Check
+        auth.onAuthStateChanged(async (user) => {
+            if (!user) {
+                alert('No user logged in. Redirecting to login...');
+                window.location.href = 'login.html';
+                return;
+            }
 
-                const userDoc = await db.collection('users').doc(user.uid).get();
-                if (!userDoc.exists || userDoc.data().role !== 'admin') {
-                    console.log('User data:', userDoc.data());
-                    alert('Permission denied. Only admins can access this dashboard. Redirecting to login...');
-                    window.location.href = 'login.html';
-                    return;
-                }
+            const userDoc = await db.collection('users').doc(user.uid).get();
+            if (!userDoc.exists || userDoc.data().role !== 'admin') {
+                console.log('User data:', userDoc.data());
+                alert('Permission denied. Only admins can access this dashboard. Redirecting to login...');
+                window.location.href = 'login.html';
+                return;
+            }
 
-                // Hide loading spinner
-                loadingSpinner.style.display = 'none';
+            // Hide loading spinner
+            loadingSpinner.style.display = 'none';
 
-                // UI Elements
-                const addUserSection = document.getElementById('addUserSection');
-                const editMemberSection = document.getElementById('editMemberSection');
-                const subscriptionSection = document.getElementById('subscriptionSection');
-                const totalWealthDisplay = document.getElementById('totalWealthDisplay');
-                const addUserBtn = document.getElementById('addUserBtn');
-                const editMemberBtn = document.getElementById('editMemberBtn');
-                const subscriptionBtn = document.getElementById('subscriptionBtn');
-                const refreshTotalBtn = document.getElementById('refreshTotal');
-                const logoutBtn = document.getElementById('logout');
-                const subscriptionTableBody = document.querySelector('#subscriptionTable tbody');
+            // UI Elements
+            const addUserSection = document.getElementById('addUserSection');
+            const editMemberSection = document.getElementById('editMemberSection');
+            const subscriptionSection = document.getElementById('subscriptionSection');
+            const totalWealthDisplay = document.getElementById('totalWealthDisplay');
+            const addUserBtn = document.getElementById('addUserBtn');
+            const editMemberBtn = document.getElementById('editMemberBtn');
+            const subscriptionBtn = document.getElementById('subscriptionBtn');
+            const refreshTotalBtn = document.getElementById('refreshTotal');
+            const logoutBtn = document.getElementById('logout');
+            const subscriptionTableBody = document.querySelector('#subscriptionTable tbody');
 
-                // Button Event Listeners
-                if (addUserBtn) {
-                    addUserBtn.addEventListener('click', () => {
-                        addUserSection.style.display = 'block';
-                        editMemberSection.style.display = 'none';
-                        subscriptionSection.style.display = 'none';
+            // Button Event Listeners
+            if (addUserBtn) {
+                addUserBtn.addEventListener('click', () => {
+                    addUserSection.style.display = 'block';
+                    editMemberSection.style.display = 'none';
+                    subscriptionSection.style.display = 'none';
+                });
+            }
+
+            if (editMemberBtn) {
+                editMemberBtn.addEventListener('click', () => {
+                    addUserSection.style.display = 'none';
+                    editMemberSection.style.display = 'block';
+                    subscriptionSection.style.display = 'none';
+                });
+            }
+
+            if (subscriptionBtn) {
+                subscriptionBtn.addEventListener('click', () => {
+                    addUserSection.style.display = 'none';
+                    editMemberSection.style.display = 'none';
+                    subscriptionSection.style.display = 'block';
+                    loadSubscriptions();
+                });
+            }
+
+            if (refreshTotalBtn) {
+                refreshTotalBtn.addEventListener('click', () => {
+                    refreshTotal();
+                });
+            }
+
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', () => {
+                    auth.signOut().then(() => {
+                        console.log('Logout successful');
+                        window.location.href = 'login.html';
+                    }).catch((error) => {
+                        alert('Logout Error: ' + error.message);
+                        console.error('Logout Error:', error);
                     });
-                }
+                });
+            }
 
-                if (editMemberBtn) {
-                    editMemberBtn.addEventListener('click', () => {
-                        addUserSection.style.display = 'none';
-                        editMemberSection.style.display = 'block';
-                        subscriptionSection.style.display = 'none';
-                    });
-                }
-
-                if (subscriptionBtn) {
-                    subscriptionBtn.addEventListener('click', () => {
-                        addUserSection.style.display = 'none';
-                        editMemberSection.style.display = 'none';
-                        subscriptionSection.style.display = 'block';
-                        loadSubscriptions();
-                    });
-                }
-
-                if (refreshTotalBtn) {
-                    refreshTotalBtn.addEventListener('click', () => {
-                        refreshTotal();
-                    });
-                }
-
-                if (logoutBtn) {
-                    logoutBtn.addEventListener('click', () => {
-                        auth.signOut().then(() => {
-                            console.log('Logout successful');
-                            window.location.href = 'login.html';
-                        }).catch((error) => {
-                            alert('Logout Error: ' + error.message);
-                            console.error('Logout Error:', error);
-                        });
-                    });
-                }
-
-                // Add Member Form Submission
-                const addUserForm = document.getElementById('addUserForm');
-                if (addUserForm) {
-                    addUserForm.addEventListener('submit', async (e) => {
-                        e.preventDefault();
-                        const memberData = {
-                            memberNumber: document.getElementById('memberNumber').value,
-                            memberName: document.getElementById('memberName').value,
-                            homeName: document.getElementById('homeName').value,
-                            email: document.getElementById('email').value,
-                            primaryMobile: document.getElementById('primaryMobile').value,
-                            role: document.getElementById('isAdmin').checked ? 'admin' : 'member'
-                        };
-                        try {
-                            const userCredential = await auth.createUserWithEmailAndPassword(
-                                memberData.email,
-                                document.getElementById('password').value
-                            );
-                            await db.collection('users').doc(userCredential.user.uid).set(memberData);
-                            alert('Member added successfully!');
-                            addUserForm.reset();
-                            refreshTotal();
-                        } catch (error) {
-                            alert('Error adding member: ' + error.message);
-                        }
-                    });
-                }
-
-                // Edit Member Functionality
-                const loadEditMember = document.getElementById('loadEditMember');
-                if (loadEditMember) {
-                    loadEditMember.addEventListener('click', async () => {
-                        const memberNumber = document.getElementById('editMemberNumber').value;
-                        const membersSnapshot = await db.collection('users').where('memberNumber', '==', memberNumber).get();
-                        if (!membersSnapshot.empty) {
-                            const memberData = membersSnapshot.docs[0].data();
-                            document.getElementById('editName').value = memberData.memberName || '';
-                            document.getElementById('editHomeName').value = memberData.homeName || '';
-                            document.getElementById('editEmail').value = memberData.email || '';
-                            document.getElementById('editPrimaryMobile').value = memberData.primaryMobile || '';
-                            document.getElementById('editIsAdmin').checked = memberData.role === 'admin';
-                            document.getElementById('editMemberForm').style.display = 'block';
-                        } else {
-                            alert('Member not found!');
-                        }
-                    });
-                }
-
-                const editMemberForm = document.getElementById('editMemberForm');
-                if (editMemberForm) {
-                    editMemberForm.addEventListener('submit', async (e) => {
-                        e.preventDefault();
-                        const memberNumber = document.getElementById('editMemberNumber').value;
-                        const membersSnapshot = await db.collection('users').where('memberNumber', '==', memberNumber).get();
-                        if (!membersSnapshot.empty) {
-                            const memberDoc = membersSnapshot.docs[0];
-                            const updatedData = {
-                                memberName: document.getElementById('editName').value,
-                                homeName: document.getElementById('editHomeName').value,
-                                email: document.getElementById('editEmail').value,
-                                primaryMobile: document.getElementById('editPrimaryMobile').value,
-                                role: document.getElementById('editIsAdmin').checked ? 'admin' : 'member'
-                            };
-                            await db.collection('users').doc(memberDoc.id).update(updatedData);
-                            alert('Member updated successfully!');
-                            editMemberForm.reset();
-                            editMemberForm.style.display = 'none';
-                            refreshTotal();
-                        } else {
-                            alert('Member not found!');
-                        }
-                    });
-                }
-
-                // Subscriptions Functionality
-                const loadSubscriptions = async () => {
-                    const monthSelect = document.getElementById('monthSelect');
-                    const subscriptionTableBody = document.querySelector('#subscriptionTable tbody');
-                    const editMonthBtn = document.getElementById('editMonth');
-                    const monthHeaders = document.getElementById('monthHeaders');
-
-                    if (!monthSelect || !subscriptionTableBody || !editMonthBtn || !monthHeaders) {
-                        console.error('Required subscription elements not found');
-                        return;
-                    }
-
-                    // Show loading spinner
-                    loadingSpinner.style.display = 'block';
-
-                    // Load Cached Data
-                    const cachedMembers = JSON.parse(localStorage.getItem('membersCache') || '[]');
-                    if (cachedMembers.length > 0) {
-                        renderSubscriptionTable(cachedMembers);
-                    }
-
-                    // Refresh from Firebase
+            // Add Member Form Submission
+            const addUserForm = document.getElementById('addUserForm');
+            if (addUserForm) {
+                addUserForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const memberData = {
+                        memberNumber: document.getElementById('memberNumber').value,
+                        memberName: document.getElementById('memberName').value,
+                        homeName: document.getElementById('homeName').value,
+                        email: document.getElementById('email').value,
+                        primaryMobile: document.getElementById('primaryMobile').value,
+                        role: document.getElementById('isAdmin').checked ? 'admin' : 'member'
+                    };
                     try {
+                        const userCredential = await auth.createUserWithEmailAndPassword(
+                            memberData.email,
+                            document.getElementById('password').value
+                        );
+                        await db.collection('users').doc(userCredential.user.uid).set(memberData);
+                        alert('Member added successfully!');
+                        addUserForm.reset();
+                        refreshTotal();
+                    } catch (error) {
+                        alert('Error adding member: ' + error.message);
+                    }
+                });
+            }
+
+            // Edit Member Functionality
+            const loadEditMember = document.getElementById('loadEditMember');
+            if (loadEditMember) {
+                loadEditMember.addEventListener('click', async () => {
+                    const memberNumber = document.getElementById('editMemberNumber').value;
+                    const membersSnapshot = await db.collection('users').where('memberNumber', '==', memberNumber).get();
+                    if (!membersSnapshot.empty) {
+                        const memberData = membersSnapshot.docs[0].data();
+                        document.getElementById('editName').value = memberData.memberName || '';
+                        document.getElementById('editHomeName').value = memberData.homeName || '';
+                        document.getElementById('editEmail').value = memberData.email || '';
+                        document.getElementById('editPrimaryMobile').value = memberData.primaryMobile || '';
+                        document.getElementById('editIsAdmin').checked = memberData.role === 'admin';
+                        document.getElementById('editMemberForm').style.display = 'block';
+                    } else {
+                        alert('Member not found!');
+                    }
+                });
+            }
+
+            const editMemberForm = document.getElementById('editMemberForm');
+            if (editMemberForm) {
+                editMemberForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const memberNumber = document.getElementById('editMemberNumber').value;
+                    const membersSnapshot = await db.collection('users').where('memberNumber', '==', memberNumber).get();
+                    if (!membersSnapshot.empty) {
+                        const memberDoc = membersSnapshot.docs[0];
+                        const updatedData = {
+                            memberName: document.getElementById('editName').value,
+                            homeName: document.getElementById('editHomeName').value,
+                            email: document.getElementById('editEmail').value,
+                            primaryMobile: document.getElementById('editPrimaryMobile').value,
+                            role: document.getElementById('editIsAdmin').checked ? 'admin' : 'member'
+                        };
+                        await db.collection('users').doc(memberDoc.id).update(updatedData);
+                        alert('Member updated successfully!');
+                        editMemberForm.reset();
+                        editMemberForm.style.display = 'none';
+                        refreshTotal();
+                    } else {
+                        alert('Member not found!');
+                    }
+                });
+            }
+
+            // Subscriptions Functionality - Updated loadSubscriptions
+            const loadSubscriptions = async () => {
+                const monthSelect = document.getElementById('monthSelect');
+                const subscriptionTableBody = document.querySelector('#subscriptionTable tbody');
+                const editMonthBtn = document.getElementById('editMonth');
+                const monthHeaders = document.getElementById('monthHeaders');
+                const loadingSpinner = document.getElementById('loadingSpinner');
+
+                if (!monthSelect || !subscriptionTableBody || !editMonthBtn || !monthHeaders) {
+                    console.error('Required subscription elements not found');
+                    return;
+                }
+
+                loadingSpinner.style.display = 'block';
+
+                try {
+                    // Load members from Firebase (or cache)
+                    const cachedMembers = JSON.parse(localStorage.getItem('membersCache') || '[]');
+                    let members;
+                    if (cachedMembers.length > 0) {
+                        members = cachedMembers;
+                    } else {
                         const membersSnapshot = await db.collection('users').get();
-                        const members = membersSnapshot.docs.map(doc => ({
+                        members = membersSnapshot.docs.map(doc => ({
                             id: doc.id,
                             memberName: doc.data().memberName || 'Unknown'
                         }));
                         localStorage.setItem('membersCache', JSON.stringify(members));
-                        renderSubscriptionTable(members);
-                    } catch (error) {
-                        console.error('Error fetching members for subscriptions:', error);
-                        if (cachedMembers.length === 0) {
-                            alert('Error loading subscriptions. Showing cached data or none available.');
-                            subscriptionTableBody.innerHTML = '<tr><td colspan="12">No subscription data available.</td></tr>';
-                        }
-                    } finally {
-                        loadingSpinner.style.display = 'none';
                     }
 
-                    // Dynamic month headers
+                    // Dynamic months
                     const startMonth = new Date(2025, 9, 1); // Oct 2025
-                    const currentMonth = new Date(); // Current date
+                    const currentMonth = new Date();
                     const months = [];
                     for (let d = new Date(startMonth); d <= currentMonth; d.setMonth(d.getMonth() + 1)) {
                         months.push(d.toISOString().slice(0, 7));
                     }
                     monthSelect.innerHTML = months.map(m => `<option value="${m}">${m.split('-')[1]} ${m.split('-')[0]}</option>`).join('');
-                    monthSelect.value = months[months.length - 1]; // Set to latest month
+                    monthSelect.value = months[months.length - 1];
                     monthHeaders.innerHTML = '<th>Member Name</th>' + months.map(m => `<th>${m.split('-')[1]} ${m.split('-')[0]}</th>`).join('');
 
-                    // Edit Month Toggle
-                    editMonthBtn.addEventListener('click', () => {
-                        const isEditing = editMonthBtn.dataset.editing === 'true';
-                        editMonthBtn.dataset.editing = !isEditing;
-                        editMonthBtn.textContent = isEditing ? 'Edit Month' : 'Save Month';
-                        loadSubscriptions(); // Reload to update checkboxes
-                    });
+                    // Render table with fetched contributions
+                    await renderSubscriptionTable(members, months, subscriptionTableBody, editMonthBtn.dataset.editing === 'true');
 
-                    // Handle checkbox changes
-                    subscriptionTableBody.addEventListener('change', async (e) => {
-                        if (e.target.classList.contains('contribution-check')) {
-                            const memberId = e.target.dataset.member;
-                            const month = e.target.dataset.month;
-                            const paid = e.target.checked;
-                            loadingSpinner.style.display = 'block';
-                            try {
-                                if (paid) {
-                                    await db.collection('contributions').doc(memberId).collection('months').doc(month).set({
-                                        paid: true,
-                                        date: new Date().toISOString().split('T')[0],
-                                        amount: 200
-                                    });
-                                    await db.collection('transactions').add({
-                                        type: 'income',
-                                        memberId: memberId,
-                                        amount: 200,
-                                        head: `Monthly Subscription - ${month}`,
-                                        date: new Date().toISOString().split('T')[0]
-                                    });
-                                    alert('Subscription marked! ₹200 added to total.');
-                                } else {
-                                    if (confirm('Are you sure you want to remove this payment?')) {
-                                        await db.collection('contributions').doc(memberId).collection('months').doc(month).set({
-                                            paid: false,
-                                            date: null,
-                                            amount: 0
-                                        });
-                                        // Optionally remove the transaction if tracked
-                                        const transactions = await db.collection('transactions')
-                                            .where('memberId', '==', memberId)
-                                            .where('head', '==', `Monthly Subscription - ${month}`).get();
-                                        transactions.forEach(doc => doc.ref.delete());
-                                    } else {
-                                        e.target.checked = true;
-                                    }
-                                }
-                                await loadSubscriptions(); // Reload to reflect changes
-                                await refreshTotal();
-                            } catch (error) {
-                                console.error('Error updating subscription:', error);
-                                alert('Error updating subscription: ' + error.message);
-                            } finally {
-                                loadingSpinner.style.display = 'none';
-                            }
+                } catch (error) {
+                    console.error('Error in loadSubscriptions:', error);
+                    subscriptionTableBody.innerHTML = '<tr><td colspan="12">Error loading data. Please refresh.</td></tr>';
+                } finally {
+                    loadingSpinner.style.display = 'none';
+                }
+
+                // Edit Month Toggle (updated to re-render)
+                const toggleEdit = async () => {
+                    const isEditing = editMonthBtn.dataset.editing === 'true';
+                    editMonthBtn.dataset.editing = !isEditing;
+                    editMonthBtn.textContent = isEditing ? 'Edit Month' : 'Save Month';
+                    // Re-render with new editing state
+                    const members = JSON.parse(localStorage.getItem('membersCache') || '[]');
+                    if (members.length > 0) {
+                        const months = []; // Re-generate months if needed
+                        const startMonth = new Date(2025, 9, 1);
+                        const currentMonth = new Date();
+                        for (let d = new Date(startMonth); d <= currentMonth; d.setMonth(d.getMonth() + 1)) {
+                            months.push(d.toISOString().slice(0, 7));
                         }
-                    });
-
-                    // Handle month selection change
-                    monthSelect.addEventListener('change', () => {
-                        loadSubscriptions(); // Reload table for new month
-                    });
-                };
-
-                // Render Subscription Table
-                const renderSubscriptionTable = (members) => {
-                    const subscriptionTableBody = document.querySelector('#subscriptionTable tbody');
-                    subscriptionTableBody.innerHTML = '';
-                    const startMonth = new Date(2025, 9, 1); // Oct 2025
-                    const currentMonth = new Date(); // Current date
-                    const months = [];
-                    for (let d = new Date(startMonth); d <= currentMonth; d.setMonth(d.getMonth() + 1)) {
-                        months.push(d.toISOString().slice(0, 7));
+                        await renderSubscriptionTable(members, months, subscriptionTableBody, !isEditing);
                     }
-                    members.forEach(member => {
-                        const row = document.createElement('tr');
-                        let cells = `<td>${member.memberName}</td>`;
-                        months.forEach(async (month) => {
+                };
+                editMonthBtn.removeEventListener('click', toggleEdit); // Avoid duplicates
+                editMonthBtn.addEventListener('click', toggleEdit);
+
+                // Handle checkbox changes (improved transaction delete)
+                const handleCheckboxChange = async (e) => {
+                    if (e.target.classList.contains('contribution-check')) {
+                        const memberId = e.target.dataset.member;
+                        const month = e.target.dataset.month;
+                        const paid = e.target.checked;
+                        loadingSpinner.style.display = 'block';
+                        try {
+                            if (paid) {
+                                await db.collection('contributions').doc(memberId).collection('months').doc(month).set({
+                                    paid: true,
+                                    date: new Date().toISOString().split('T')[0],
+                                    amount: 200
+                                });
+                                await db.collection('transactions').add({
+                                    type: 'income',
+                                    memberId: memberId,
+                                    amount: 200,
+                                    head: `Monthly Subscription - ${month}`,
+                                    date: new Date().toISOString().split('T')[0]
+                                });
+                                alert('Subscription marked! ₹200 added to total.');
+                            } else {
+                                if (confirm('Are you sure you want to remove this payment?')) {
+                                    await db.collection('contributions').doc(memberId).collection('months').doc(month).set({
+                                        paid: false,
+                                        date: null,
+                                        amount: 0
+                                    });
+                                    // Delete all matching transactions (improved query)
+                                    const transactions = await db.collection('transactions')
+                                        .where('memberId', '==', memberId)
+                                        .where('head', '==', `Monthly Subscription - ${month}`)
+                                        .get();
+                                    const batch = db.batch();
+                                    transactions.forEach(doc => batch.delete(doc.ref));
+                                    await batch.commit();
+                                } else {
+                                    e.target.checked = true;
+                                    return;
+                                }
+                            }
+                            await loadSubscriptions(); // Reload
+                            await refreshTotal();
+                        } catch (error) {
+                            console.error('Error updating subscription:', error);
+                            alert('Error: ' + error.message);
+                            await loadSubscriptions(); // Reload to revert
+                        } finally {
+                            loadingSpinner.style.display = 'none';
+                        }
+                    }
+                };
+                subscriptionTableBody.removeEventListener('change', handleCheckboxChange); // Avoid duplicates
+                subscriptionTableBody.addEventListener('change', handleCheckboxChange);
+
+                // Month select change
+                monthSelect.addEventListener('change', loadSubscriptions);
+            };
+
+            // Updated renderSubscriptionTable - Fixed async issue with for-of loop
+            const renderSubscriptionTable = async (members, months, tableBody, isEditing) => {
+                tableBody.innerHTML = '';
+                for (const member of members) { // Use for-of for sequential await
+                    const row = document.createElement('tr');
+                    let cells = `<td>${member.memberName}</td>`;
+                    for (const month of months) {
+                        try {
                             const contributionDoc = await db.collection('contributions').doc(member.id).collection('months').doc(month).get();
                             const paid = contributionDoc.exists ? contributionDoc.data().paid : false;
-                            cells += `<td><input type="checkbox" class="contribution-check" data-member="${member.id}" data-month="${month}" ${paid ? 'checked' : ''} ${document.getElementById('editMonth').dataset.editing === 'true' ? '' : 'disabled'}></td>`;
-                        });
-                        row.innerHTML = cells;
-                        subscriptionTableBody.appendChild(row);
-                    });
-                };
-
-                // Refresh Total
-                const refreshTotal = async () => {
-                    let totalIncome = 0, totalExpense = 0;
-                    try {
-                        const transactions = await db.collection('transactions').get();
-                        transactions.forEach(doc => {
-                            const t = doc.data();
-                            if (t.type === 'income') totalIncome += t.amount || 0;
-                            if (t.type === 'expense') totalExpense += t.amount || 0;
-                        });
-                        const totalWealth = totalIncome - totalExpense;
-                        document.getElementById('totalWealthDisplay').textContent = `Total Wealth: ₹${totalWealth}`;
-                        console.log('Total Wealth refreshed: ' + totalWealth);
-                    } catch (error) {
-                        console.error('Error refreshing total:', error);
-                        document.getElementById('totalWealthDisplay').textContent = 'Total Wealth: ₹0 (Error)';
+                            const disabledAttr = isEditing ? '' : 'disabled';
+                            cells += `<td><input type="checkbox" class="contribution-check" data-member="${member.id}" data-month="${month}" ${paid ? 'checked' : ''} ${disabledAttr}></td>`;
+                        } catch (error) {
+                            console.error('Error fetching contribution:', error);
+                            cells += `<td><input type="checkbox" class="contribution-check" data-member="${member.id}" data-month="${month}" disabled></td>`;
+                        }
                     }
-                };
+                    row.innerHTML = cells;
+                    tableBody.appendChild(row);
+                }
+            };
 
-                // Initial Load
-                refreshTotal();
-            });
+            // Refresh Total
+            const refreshTotal = async () => {
+                let totalIncome = 0, totalExpense = 0;
+                try {
+                    const transactions = await db.collection('transactions').get();
+                    transactions.forEach(doc => {
+                        const t = doc.data();
+                        if (t.type === 'income') totalIncome += t.amount || 0;
+                        if (t.type === 'expense') totalExpense += t.amount || 0;
+                    });
+                    const totalWealth = totalIncome - totalExpense;
+                    document.getElementById('totalWealthDisplay').textContent = `Total Wealth: ₹${totalWealth}`;
+                    console.log('Total Wealth refreshed: ' + totalWealth);
+                } catch (error) {
+                    console.error('Error refreshing total:', error);
+                    document.getElementById('totalWealthDisplay').textContent = 'Total Wealth: ₹0 (Error)';
+                }
+            };
+
+            // Initial Load
+            refreshTotal();
         });
-    </script>
+    });
+</script>
 </body>
 </html>
