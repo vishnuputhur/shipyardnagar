@@ -59,17 +59,17 @@
             z-index: 999;
         }
 
-        /* Page Title */
+        /* Page Title - Reduced gap */
         .page-title {
             text-align: center;
-            margin: 160px 0 25px 0;
+            margin: 110px 0 20px 0; /* Reduced from 160px to 110px */
             color: white;
             font-weight: 600;
             font-size: 1.8rem;
             text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
         }
 
-        /* Member Card Style */
+        /* Member Card Style - Improved layout */
         .member-card {
             background: var(--card-bg);
             backdrop-filter: blur(20px);
@@ -83,20 +83,20 @@
 
         .member-card:hover {
             box-shadow: var(--shadow-hover);
-            transform: translateY(-5px);
+            transform: translateY(-3px);
         }
 
         .member-card h3 {
             font-size: 1.3rem;
             margin-bottom: 15px;
-            color: #1e3a8a; /* Dark blue color */
-            font-weight: 700; /* Bold */
+            color: #1e3a8a;
+            font-weight: 600; /* Reduced from 700 to 600 */
             border-bottom: 2px solid var(--orange-light);
             padding-bottom: 8px;
         }
 
         [data-theme="dark"] .member-card h3 {
-            color: #60a5fa; /* Lighter blue for dark theme */
+            color: #60a5fa;
         }
 
         .member-card p {
@@ -107,10 +107,12 @@
             align-items: center;
         }
 
+        /* Changed from bold to normal font weight */
         .member-card p strong {
             color: var(--primary-orange);
             min-width: 140px;
             display: inline-block;
+            font-weight: 500; /* Changed from bold to medium */
         }
 
         .member-card i {
@@ -164,12 +166,12 @@
             background: transparent;
             border: 1px solid #ccc;
             border-radius: 20px;
-            padding: 5px 10px; /* Larger padding */
+            padding: 5px 10px;
             color: #666;
-            font-size: 0.8rem; /* Larger font */
+            font-size: 0.8rem;
             transition: all 0.3s ease;
             cursor: pointer;
-            height: 25px; /* Larger height */
+            height: 25px;
         }
 
         [data-theme="dark"] .theme-toggle-btn {
@@ -195,6 +197,11 @@
             z-index: 1000;
         }
 
+        /* Bottom gap for last card */
+        .bottom-gap {
+            height: 50px; /* Gap after last card */
+        }
+
         /* Responsive */
         @media (max-width: 576px) {
             .header-image {
@@ -202,7 +209,7 @@
             }
             
             .page-title {
-                margin: 140px 0 20px 0;
+                margin: 100px 0 15px 0; /* Further reduced for mobile */
                 font-size: 1.5rem;
             }
             
@@ -217,11 +224,29 @@
             
             .member-card p strong {
                 min-width: 120px;
+                font-weight: 500; /* Consistent medium weight */
             }
             
             footer {
                 padding: 3px 10px;
                 height: 28px;
+            }
+            
+            .bottom-gap {
+                height: 40px; /* Smaller gap for mobile */
+            }
+        }
+
+        /* Improved grid layout for better spacing */
+        @media (min-width: 768px) {
+            .member-card {
+                margin-bottom: 25px;
+            }
+        }
+
+        @media (min-width: 992px) {
+            .member-card {
+                margin-bottom: 30px;
             }
         }
     </style>
@@ -236,6 +261,9 @@
         <div class="row" id="membersList">
             <!-- Members cards will be added here -->
         </div>
+        
+        <!-- Bottom gap for footer -->
+        <div class="bottom-gap"></div>
         
         <div id="loadingSpinner">⏳ Loading...</div>
     </main>
