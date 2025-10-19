@@ -105,9 +105,6 @@
         <h1>Shipyard Nagar Residential Association</h1>
     </header>
     <main class="container my-4">
-        <div class="logo-container">
-            <img src="assets/logo.jpg" alt="Shipyard Nagar Logo" class="img-fluid">
-        </div>
         <div class="row" id="membersList"></div> <!-- Members cards will be added here -->
         <div id="loadingSpinner">⏳ Loading...</div>
     </main>
@@ -183,7 +180,9 @@
                     memberName: doc.data().memberName || 'Unknown',
                     homeName: doc.data().homeName || 'N/A',
                     primaryMobile: doc.data().primaryMobile || 'N/A',
-                    email: doc.data().email || 'N/A'
+                    email: doc.data().email || 'N/A',
+                    secondaryMobile: doc.data().secondaryMobile || 'N/A',
+                    gasConnection: doc.data().gasConnection || 'N/A'
                 }));
                 localStorage.setItem('membersCache', JSON.stringify(members));
                 renderMembers(members);
@@ -211,7 +210,9 @@
                         <h3>${member.memberName}</h3>
                         <p><strong>House Name:</strong> ${member.homeName}</p>
                         <p><strong>Primary Phone:</strong> ${member.primaryMobile}</p>
+                        <p><strong>Secondary Phone:</strong> ${member.secondaryMobile}</p>
                         <p><strong>Email:</strong> ${member.email}</p>
+                        <p><strong>Gas Connection:</strong> ${member.gasConnection}</p>
                     </div>
                 `;
                 membersList.appendChild(card);
