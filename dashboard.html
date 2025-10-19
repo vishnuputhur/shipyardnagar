@@ -25,32 +25,16 @@
             display: flex;
             gap: 10px;
             margin-bottom: 20px;
-            flex-wrap: wrap;
         }
 
         /* Form Styling */
         .card {
             margin-top: 20px;
-            padding: 15px;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-        }
-
-        .card:hover {
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
         }
 
         /* Table Styling */
         #subscriptionTable {
             margin-top: 20px;
-            overflow-x: auto;
-        }
-
-        #subscriptionTable th, #subscriptionTable td {
-            padding: 10px;
-            text-align: center;
-            min-width: 100px;
         }
 
         /* Loading Spinner */
@@ -66,12 +50,14 @@
     </style>
 </head>
 <body>
+    <div class="theme-toggle">
+        <button id="themeToggle">🌞</button>
+    </div>
     <header>
         <h1>Shipyard Nagar - Admin Dashboard</h1>
     </header>
     <main class="container my-4">
         <div id="loadingSpinner">⏳ Loading...</div>
-        <button class="btn btn-danger mb-3" id="logout">Logout</button>
         <div class="button-grid">
             <button class="btn btn-primary" id="addUserBtn">Add Member</button>
             <button class="btn btn-primary" id="editMemberBtn">Edit Member</button>
@@ -91,10 +77,6 @@
                     <div class="col-12 mb-3">
                         <label for="memberName" class="form-label">Name:</label>
                         <input type="text" class="form-control" id="memberName" required>
-                    </div>
-                    <div class="col-12 mb-3">
-                        <label for="homeName" class="form-label">House Name:</label>
-                        <input type="text" class="form-control" id="homeName" required>
                     </div>
                     <div class="col-12 mb-3">
                         <label for="email" class="form-label">Email:</label>
@@ -159,13 +141,14 @@
             <h2>Subscriptions</h2>
             <select id="monthSelect" class="form-select mb-3"></select>
             <button id="editMonth" class="btn btn-warning mb-3" data-editing="false">Edit Month</button>
-            <table class="table table-bordered" id="subscriptionTable">
+            <table class="table table-bordered">
                 <thead>
-                    <tr id="monthHeaders">
-                        <th>Member Name</th>
+                    <tr>
+                        <th>Name</th>
+                        <th>Paid</th>
                     </tr>
                 </thead>
-                <tbody></tbody>
+                <tbody id="subscriptionTable"></tbody>
             </table>
             <p id="totalWealthDisplay">Total Wealth: ₹0</p>
         </div>
@@ -192,15 +175,13 @@
         };
 
         // Initialize Firebase
-        let auth, db;
         try {
             firebase.initializeApp(firebaseConfig);
-            auth = firebase.auth();
-            db = firebase.firestore();
+            const auth = firebase.auth();
+            const db = firebase.firestore();
             console.log('Firebase initialized successfully');
         } catch (error) {
             alert('Firebase Initialization Error: ' + error.message);
-            console.error('Firebase Init Error:', error);
         }
 
         // DOM Content Loaded
@@ -453,7 +434,7 @@
                                         paid: true,
                                         date: new Date().toISOString().split('T')[0],
                                         amount: 200
-                                    }, { merge: true });
+                                    });
                                     await db.collection('transactions').add({
                                         type: 'income',
                                         memberId: memberId,
@@ -468,7 +449,8 @@
                                             paid: false,
                                             date: null,
                                             amount: 0
-                                        }, { merge: true });
+                                        });
+                                        // Optionally remove the transaction if tracked
                                         const transactions = await db.collection('transactions')
                                             .where('memberId', '==', memberId)
                                             .where('head', '==', `Monthly Subscription - ${month}`).get();
@@ -486,7 +468,7 @@
                                 loadingSpinner.style.display = 'none';
                             }
                         }
-                    }, { once: false });
+                    });
                 };
 
                 // Refresh Total
