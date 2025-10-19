@@ -79,18 +79,6 @@
             box-shadow: var(--shadow);
             border: 1px solid rgba(255, 255, 255, 0.2);
             transition: all 0.3s ease;
-            position: relative;
-        }
-
-        .member-card::before {
-            content: '';
-            position: absolute;
-            top: -8px;
-            left: -10px;
-            right: -10px;
-            height: 4px;
-            background: var(--gradient);
-            border-radius: 2px;
         }
 
         .member-card:hover {
@@ -101,10 +89,14 @@
         .member-card h3 {
             font-size: 1.3rem;
             margin-bottom: 15px;
-            color: var(--primary-orange);
-            font-weight: 600;
+            color: #1e3a8a; /* Dark blue color */
+            font-weight: 700; /* Bold */
             border-bottom: 2px solid var(--orange-light);
             padding-bottom: 8px;
+        }
+
+        [data-theme="dark"] .member-card h3 {
+            color: #60a5fa; /* Lighter blue for dark theme */
         }
 
         .member-card p {
@@ -129,10 +121,6 @@
 
         [data-theme="dark"] .member-card {
             background: var(--card-bg);
-        }
-
-        [data-theme="dark"] .member-card h3 {
-            color: var(--orange-light);
         }
 
         [data-theme="dark"] .member-card p {
@@ -171,17 +159,17 @@
             text-align: center;
         }
 
-        /* Simple Theme Toggle */
+        /* Larger Theme Toggle */
         .theme-toggle-btn {
             background: transparent;
             border: 1px solid #ccc;
             border-radius: 20px;
-            padding: 3px 6px;
+            padding: 5px 10px; /* Larger padding */
             color: #666;
-            font-size: 0.6rem;
+            font-size: 0.8rem; /* Larger font */
             transition: all 0.3s ease;
             cursor: pointer;
-            height: 20px;
+            height: 25px; /* Larger height */
         }
 
         [data-theme="dark"] .theme-toggle-btn {
@@ -205,28 +193,6 @@
             font-size: 2rem;
             color: var(--primary-orange);
             z-index: 1000;
-        }
-
-        /* Back Button */
-        .back-btn {
-            position: fixed;
-            top: 15px;
-            left: 15px;
-            z-index: 1000;
-            background: var(--gradient);
-            border: none;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            color: white;
-            font-size: 1.2rem;
-            box-shadow: var(--shadow);
-            transition: all 0.3s ease;
-        }
-
-        .back-btn:hover {
-            transform: scale(1.1);
-            box-shadow: var(--shadow-hover);
         }
 
         /* Responsive */
@@ -263,11 +229,6 @@
 <body>
     <!-- Header Image - Fixed at top -->
     <img src="assets/head.png" alt="Header" class="header-image">
-    
-    <!-- Back Button -->
-    <button class="back-btn" onclick="window.location.href='index.html'">
-        <i class="fas fa-arrow-left"></i>
-    </button>
     
     <main class="container">
         <h1 class="page-title">Our Members</h1>
