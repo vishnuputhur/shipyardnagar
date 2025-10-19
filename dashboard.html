@@ -10,7 +10,7 @@
     <style>
         /* Footer Fixed at Bottom */
         footer {
-            position: fixed;
+            position: fix;ed;
             bottom: 0;
             width: 100%;
             text-align: center;
@@ -415,8 +415,32 @@
                         editMonthBtn.textContent = isEditing ? 'Edit Month' : 'Save Month';
                         loadSubscriptions(); // Reload to update checkboxes
                     });
+                };
 
-                    // Handle checkbox changes
+                // Render Subscription Table
+                const renderSubscriptionTable = async (members) => {
+                    const subscriptionTableBody = document.querySelector('#subscriptionTable tbody');
+                    subscriptionTableBody.innerHTML = '';
+                    const startMonth = new Date(2025, 9, 1); // Oct 2025
+                    const currentMonth = new Date(); // Current date
+                    const months = [];
+                    for (let d = new Date(startMonth); d <= currentMonth; d.setMonth(d.getMonth() + 1)) {
+                        months.push(d.toISOString().slice(0, 7));
+                    }
+
+                    for (const member of members) {
+                        const row = document.createElement('tr');
+                        let cells = `<td>${member.memberName}</td>`;
+                        for (const month of months) {
+                            const contributionDoc = await db.collection('contributions').doc(member.id).collection('months').doc(month).get();
+                            const paid = contributionDoc.exists ? contributionDoc.data().paid : false;
+                            cells += `<td><input type="checkbox" class="contribution-check" data-member="${member.id}" data-month="${month}" ${paid ? 'checked' : ''} ${document.getElementById('editMonth').dataset.editing === 'true' ? '' : 'disabled'}></td>`;
+                        }
+                        row.innerHTML = cells;
+                        subscriptionTableBody.appendChild(row);
+                    }
+
+                    // Add event listener for checkbox changes after rendering
                     subscriptionTableBody.addEventListener('change', async (e) => {
                         if (e.target.classList.contains('contribution-check')) {
                             const memberId = e.target.dataset.member;
@@ -445,7 +469,6 @@
                                             date: null,
                                             amount: 0
                                         });
-                                        // Optionally remove the transaction if tracked
                                         const transactions = await db.collection('transactions')
                                             .where('memberId', '==', memberId)
                                             .where('head', '==', `Monthly Subscription - ${month}`).get();
@@ -463,34 +486,6 @@
                                 loadingSpinner.style.display = 'none';
                             }
                         }
-                    });
-
-                    // Handle month selection change
-                    monthSelect.addEventListener('change', () => {
-                        loadSubscriptions(); // Reload table for new month
-                    });
-                };
-
-                // Render Subscription Table
-                const renderSubscriptionTable = (members) => {
-                    const subscriptionTableBody = document.querySelector('#subscriptionTable tbody');
-                    subscriptionTableBody.innerHTML = '';
-                    const startMonth = new Date(2025, 9, 1); // Oct 2025
-                    const currentMonth = new Date(); // Current date
-                    const months = [];
-                    for (let d = new Date(startMonth); d <= currentMonth; d.setMonth(d.getMonth() + 1)) {
-                        months.push(d.toISOString().slice(0, 7));
-                    }
-                    members.forEach(member => {
-                        const row = document.createElement('tr');
-                        let cells = `<td>${member.memberName}</td>`;
-                        months.forEach(async (month) => {
-                            const contributionDoc = await db.collection('contributions').doc(member.id).collection('months').doc(month).get();
-                            const paid = contributionDoc.exists ? contributionDoc.data().paid : false;
-                            cells += `<td><input type="checkbox" class="contribution-check" data-member="${member.id}" data-month="${month}" ${paid ? 'checked' : ''} ${document.getElementById('editMonth').dataset.editing === 'true' ? '' : 'disabled'}></td>`;
-                        });
-                        row.innerHTML = cells;
-                        subscriptionTableBody.appendChild(row);
                     });
                 };
 
