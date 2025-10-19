@@ -4,85 +4,346 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shipyard Nagar - Home</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Footer Fixed at Bottom */
+        :root {
+            --primary-orange: #FF6B35;
+            --orange-light: #FF8C42;
+            --orange-dark: #E55A2B;
+            --gradient: linear-gradient(135deg, #FF6B35 0%, #FF8C42 50%, #FFA726 100%);
+            --shadow: 0 8px 25px rgba(255, 107, 53, 0.15);
+            --shadow-hover: 0 12px 35px rgba(255, 107, 53, 0.25);
+            --card-bg: rgba(255, 255, 255, 0.95);
+        }
+
+        [data-theme="dark"] {
+            --card-bg: rgba(45, 45, 45, 0.95);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding-bottom: 60px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><polygon fill="%23ffffff10" points="0,1000 1000,0 1000,1000"/></svg>');
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* Header Styling */
+        header {
+            margin-top: 4mm;
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        header h1 {
+            font-weight: 700;
+            font-size: 1.8rem;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 2px 10px rgba(255, 107, 53, 0.3);
+            margin: 0;
+        }
+
+        /* Logo Container */
+        .logo-container {
+            text-align: center;
+            margin: 10px 0 25px 0;
+        }
+
+        .logo-container img {
+            max-height: 120px;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            border: 3px solid white;
+            transform: perspective(1000px) rotateX(5deg);
+            transition: all 0.3s ease;
+        }
+
+        .logo-container img:hover {
+            transform: perspective(1000px) rotateX(0deg) scale(1.05);
+            box-shadow: var(--shadow-hover);
+        }
+
+        /* Main Card */
+        .main-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 30px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transform: perspective(1000px) rotateY(0deg);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .main-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient);
+        }
+
+        .main-card:hover {
+            transform: perspective(1000px) rotateY(-2deg) translateY(-5px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        /* Welcome Text */
+        .welcome-text h2 {
+            color: var(--primary-orange);
+            font-weight: 600;
+            margin-bottom: 10px;
+            font-size: 1.5rem;
+        }
+
+        .user-greeting {
+            font-size: 1.3rem;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        [data-theme="dark"] .user-greeting {
+            color: #fff;
+        }
+
+        .wealth-info, .due-info {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 12px 15px;
+            border-radius: 15px;
+            margin: 8px 0;
+            border-left: 4px solid var(--primary-orange);
+            font-weight: 500;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="dark"] .wealth-info, 
+        [data-theme="dark"] .due-info {
+            background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+            color: #fff;
+        }
+
+        /* Button Grid */
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .app-btn {
+            background: var(--gradient);
+            border: none;
+            border-radius: 15px;
+            padding: 18px 10px;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            transform: perspective(500px) rotateX(0deg);
+        }
+
+        .app-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: 0.5s;
+        }
+
+        .app-btn:hover {
+            transform: perspective(500px) rotateX(5deg) translateY(-3px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .app-btn:hover::before {
+            left: 100%;
+        }
+
+        .app-btn i {
+            font-size: 1.3rem;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .admin-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin-top: 15px;
+            grid-column: span 2;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 1000;
+        }
+
+        .theme-toggle-btn {
+            background: var(--gradient);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            color: white;
+            font-size: 1.2rem;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle-btn:hover {
+            transform: rotate(15deg) scale(1.1);
+            box-shadow: var(--shadow-hover);
+        }
+
+        /* Footer */
         footer {
             position: fixed;
             bottom: 0;
             width: 100%;
             text-align: center;
-            padding: 10px;
-            background: #f8f8f8;
-            color: #333;
+            padding: 8px;
+            background: rgba(248, 248, 248, 0.9);
+            backdrop-filter: blur(10px);
+            color: #666;
+            font-size: 0.8rem;
             z-index: 1000;
+            border-top: 1px solid rgba(255, 107, 53, 0.2);
         }
 
-        /* Button Grid Layout */
-        .button-grid {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-            flex-wrap: wrap;
+        [data-theme="dark"] footer {
+            background: rgba(45, 45, 45, 0.9);
+            color: #ccc;
         }
 
-        /* Admin Tab Styling */
-        #adminTab {
-            display: none;
-            margin-top: 20px;
+        /* 3D Effects */
+        .floating {
+            animation: floating 3s ease-in-out infinite;
         }
 
-        /* Theme Toggle */
-        .theme-toggle {
-            position: absolute;
-            top: 10px;
-            right: 10px;
+        @keyframes floating {
+            0%, 100% { transform: translateY(0px) rotateY(0deg); }
+            50% { transform: translateY(-10px) rotateY(5deg); }
         }
 
-        /* Button Styling */
-        button {
-            transition: transform 0.1s ease;
-        }
-        button:hover {
-            transform: scale(1.05);
+        /* Responsive */
+        @media (max-width: 576px) {
+            .button-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            
+            .admin-btn {
+                grid-column: span 1;
+            }
+            
+            header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .main-card {
+                padding: 20px;
+                margin: 0 10px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="theme-toggle">
-        <button id="themeToggle" class="btn btn-outline-secondary">🌞</button>
+        <button id="themeToggle" class="theme-toggle-btn">🌞</button>
     </div>
+    
     <header>
-        <h1>Shipyard Nagar Residential Association</h1>
+        <h1 class="floating">Shipyard Nagar</h1>
     </header>
-    <main class="container my-4">
+    
+    <main class="container">
         <div class="logo-container">
-            <img src="assets/logo.jpg" alt="Shipyard Nagar Logo" class="img-fluid">
+            <img src="assets/logo.jpg" alt="Shipyard Nagar Logo" class="img-fluid floating">
         </div>
-        <div class="row">
-            <div class="col-12">
-                <div class="card">
-                    <h2>Welcome</h2>
-                    <p id="greeting">Hi, <span id="user-name">Guest</span> & family!</p>
-                    <p id="totalWealth">Our Total Wealth: ₹0</p>
-                    <p id="monthlyDue">Your Monthly Due: 0 months (₹0)</p>
-                    <div class="button-grid">
-                        <button id="chittiBtn" class="btn btn-primary">Chitti</button>
-                        <button id="loanBtn" class="btn btn-primary">Loan</button>
-                        <button id="memberListBtn" class="btn btn-primary">Member List</button>
-                        <button id="subscriptionBtn" class="btn btn-primary">Subscription</button>
-                        <button id="profileBtn" class="btn btn-primary">Profile</button>
+        
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-8 col-lg-6">
+                <div class="main-card">
+                    <div class="welcome-text">
+                        <h2>Welcome Home</h2>
+                        <p class="user-greeting">Hi, <span id="user-name">Guest</span> & family! 👋</p>
+                        
+                        <div class="wealth-info">
+                            <i class="fas fa-coins me-2"></i>
+                            <span id="totalWealth">Our Total Wealth: ₹0</span>
+                        </div>
+                        
+                        <div class="due-info">
+                            <i class="fas fa-calendar-alt me-2"></i>
+                            <span id="monthlyDue">Your Monthly Due: 0 months (₹0)</span>
+                        </div>
                     </div>
-                    <div id="adminTab">
-                        <button id="adminBtn" class="btn btn-primary mt-2">Admin</button>
+                    
+                    <div class="button-grid">
+                        <button id="chittiBtn" class="app-btn">
+                            <i class="fas fa-hand-holding-usd"></i>
+                            Chitti
+                        </button>
+                        <button id="loanBtn" class="app-btn">
+                            <i class="fas fa-university"></i>
+                            Loan
+                        </button>
+                        <button id="memberListBtn" class="app-btn">
+                            <i class="fas fa-users"></i>
+                            Members
+                        </button>
+                        <button id="subscriptionBtn" class="app-btn">
+                            <i class="fas fa-credit-card"></i>
+                            Subscription
+                        </button>
+                        <button id="profileBtn" class="app-btn">
+                            <i class="fas fa-user-circle"></i>
+                            Profile
+                        </button>
+                        
+                        <div id="adminTab" style="display: none;">
+                            <button id="adminBtn" class="app-btn admin-btn">
+                                <i class="fas fa-cog"></i>
+                                Admin Dashboard
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </main>
-    <footer class="bg-light text-center py-2">
+    
+    <footer>
         <p>Powered by VTSoft 2025</p>
     </footer>
 
@@ -117,7 +378,6 @@
 
             // ✅ UI elements
             const userNameEl = document.getElementById('user-name');
-            const greeting = document.getElementById('greeting');
             const totalWealth = document.getElementById('totalWealth');
             const monthlyDue = document.getElementById('monthlyDue');
             const adminTab = document.getElementById('adminTab');
