@@ -46,23 +46,23 @@
             z-index: -1;
         }
 
-        /* Header Image - Fixed positioning */
+        /* Header Image - Fit to screen width */
         .header-image {
             width: 100%;
-            height: 120px;
+            height: auto;
+            max-height: 150px;
             object-fit: cover;
-            margin-top: 4mm; /* 4mm space from top */
             display: block;
         }
 
-        /* Logo Container - Original size */
+        /* Logo Container - Bigger size */
         .logo-container {
             text-align: center;
-            margin: 15px 0 20px 0;
+            margin: 10px 0 15px 0;
         }
 
         .logo-container img {
-            max-height: 120px; /* Original size */
+            max-height: 140px; /* Bigger logo */
             border-radius: 20px;
             box-shadow: var(--shadow);
             border: 3px solid white;
@@ -126,7 +126,7 @@
             color: #fff;
         }
 
-        /* Button Grid - 35% smaller */
+        /* Button Grid */
         .button-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -184,7 +184,7 @@
             grid-column: span 2;
         }
 
-        /* Footer - Fixed at very bottom with theme toggle */
+        /* Footer */
         footer {
             position: fixed;
             bottom: 0;
@@ -213,7 +213,7 @@
             text-align: center;
         }
 
-        /* Simple Theme Toggle in Footer */
+        /* Simple Theme Toggle */
         .theme-toggle-btn {
             background: transparent;
             border: 1px solid #ccc;
@@ -248,12 +248,11 @@
             }
             
             .header-image {
-                height: 100px;
-                margin-top: 4mm;
+                max-height: 120px;
             }
             
             .logo-container img {
-                max-height: 120px; /* Keep original size */
+                max-height: 130px;
             }
             
             .main-card {
@@ -277,7 +276,7 @@
     </style>
 </head>
 <body>
-    <!-- Header Image with 4mm top space -->
+    <!-- Header Image - Fit to screen -->
     <img src="assets/head.png" alt="Header" class="header-image">
     
     <main class="container">
@@ -302,7 +301,7 @@
                         </div>
                     </div>
                     
-                    <!-- Reordered buttons as requested -->
+                    <!-- Reordered buttons -->
                     <div class="button-grid">
                         <button id="profileBtn" class="app-btn">
                             <i class="fas fa-user-circle"></i>
@@ -337,7 +336,7 @@
         </div>
     </main>
     
-    <!-- Footer with theme toggle on right side -->
+    <!-- Footer -->
     <footer>
         <div class="footer-text">
             <p>Powered by VTSoft 2025</p>
@@ -464,7 +463,7 @@
                 }
             }
 
-            // ✅ Navigation buttons - Reordered as requested
+            // ✅ Navigation buttons
             if (profileBtn) {
                 profileBtn.addEventListener('click', () => {
                     window.location.href = 'profile.html';
@@ -496,7 +495,7 @@
                 });
             }
 
-            // ✅ Theme Toggle - Simple button in footer
+            // ✅ Theme Toggle
             const themeToggle = document.getElementById('themeToggle');
             if (themeToggle) {
                 themeToggle.addEventListener('click', () => {
