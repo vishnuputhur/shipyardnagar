@@ -59,10 +59,10 @@
             z-index: 999;
         }
 
-        /* Page Title */
+        /* Page Title - Less gap after header */
         .page-title {
             text-align: center;
-            margin: 160px 0 25px 0;
+            margin: 120px 0 20px 0; /* Reduced margin */
             color: white;
             font-weight: 600;
             font-size: 1.8rem;
@@ -80,11 +80,18 @@
             margin-bottom: 20px;
         }
 
-        .profile-card h2 {
-            color: var(--primary-orange);
-            font-weight: 600;
-            margin-bottom: 20px;
+        .member-name {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #1e3a8a;
             text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--orange-light);
+        }
+
+        [data-theme="dark"] .member-name {
+            color: #60a5fa;
         }
 
         .profile-info {
@@ -105,20 +112,6 @@
 
         [data-theme="dark"] .profile-value {
             color: #e0e0e0;
-        }
-
-        .member-name {
-            font-size: 1.4rem;
-            font-weight: 700;
-            color: #1e3a8a;
-            text-align: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid var(--orange-light);
-        }
-
-        [data-theme="dark"] .member-name {
-            color: #60a5fa;
         }
 
         /* Buttons */
@@ -251,17 +244,17 @@
             text-align: center;
         }
 
-        /* Larger Theme Toggle */
+        /* Larger Sun Button */
         .theme-toggle-btn {
             background: transparent;
             border: 1px solid #ccc;
             border-radius: 20px;
-            padding: 5px 10px;
+            padding: 6px 12px; /* Larger padding */
             color: #666;
-            font-size: 0.8rem;
+            font-size: 1rem; /* Larger font */
             transition: all 0.3s ease;
             cursor: pointer;
-            height: 25px;
+            height: 30px; /* Larger height */
         }
 
         [data-theme="dark"] .theme-toggle-btn {
@@ -282,7 +275,7 @@
             }
             
             .page-title {
-                margin: 140px 0 20px 0;
+                margin: 100px 0 15px 0; /* Further reduced for mobile */
                 font-size: 1.5rem;
             }
             
@@ -314,7 +307,6 @@
             <div class="col-12 col-md-8 col-lg-6">
                 <!-- Profile Display -->
                 <div class="profile-card">
-                    <h2>Profile Information</h2>
                     <div class="member-name" id="memberName">Loading...</div>
                     
                     <div class="profile-info">
@@ -521,10 +513,15 @@
                 }
             });
 
-            // Edit Profile Button
+            // Edit Profile Button with auto scroll
             editProfileBtn.addEventListener('click', () => {
                 if (editForm) {
                     editForm.style.display = 'block';
+                    // Auto scroll to edit form
+                    editForm.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'start' 
+                    });
                 } else {
                     console.error('Edit form element not found');
                 }
