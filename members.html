@@ -62,37 +62,39 @@
         /* Page Title - Reduced gap */
         .page-title {
             text-align: center;
-            margin: 110px 0 20px 0; /* Reduced from 160px to 110px */
+            margin: 110px 0 20px 0;
             color: white;
             font-weight: 600;
             font-size: 1.8rem;
             text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
         }
 
-        /* Member Card Style - Improved layout */
+        /* Member Card Style - 7% smaller */
         .member-card {
             background: var(--card-bg);
             backdrop-filter: blur(20px);
             border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
+            padding: 18px; /* Reduced padding */
+            margin-bottom: 18px; /* Reduced margin */
             box-shadow: var(--shadow);
             border: 1px solid rgba(255, 255, 255, 0.2);
             transition: all 0.3s ease;
+            transform: scale(0.93); /* 7% smaller */
+            transform-origin: center top;
         }
 
         .member-card:hover {
             box-shadow: var(--shadow-hover);
-            transform: translateY(-3px);
+            transform: scale(0.93) translateY(-3px);
         }
 
         .member-card h3 {
-            font-size: 1.3rem;
-            margin-bottom: 15px;
+            font-size: 1.2rem; /* Slightly smaller */
+            margin-bottom: 12px; /* Reduced */
             color: #1e3a8a;
-            font-weight: 600; /* Reduced from 700 to 600 */
+            font-weight: 600;
             border-bottom: 2px solid var(--orange-light);
-            padding-bottom: 8px;
+            padding-bottom: 6px; /* Reduced */
         }
 
         [data-theme="dark"] .member-card h3 {
@@ -100,25 +102,38 @@
         }
 
         .member-card p {
-            margin: 8px 0;
-            font-size: 0.9rem;
+            margin: 6px 0; /* Reduced */
+            font-size: 0.85rem; /* Slightly smaller */
             color: #333;
             display: flex;
             align-items: center;
+            justify-content: space-between; /* Right align values */
         }
 
-        /* Changed from bold to normal font weight */
         .member-card p strong {
             color: var(--primary-orange);
-            min-width: 140px;
+            min-width: 120px; /* Reduced */
             display: inline-block;
-            font-weight: 500; /* Changed from bold to medium */
+            font-weight: 500;
+            text-align: left;
+        }
+
+        .member-card .detail-value {
+            color: #333;
+            text-align: right;
+            flex: 1;
+            margin-left: 10px;
+            word-break: break-word;
+        }
+
+        [data-theme="dark"] .member-card .detail-value {
+            color: #e0e0e0;
         }
 
         .member-card i {
             color: var(--primary-orange);
-            margin-right: 8px;
-            width: 16px;
+            margin-right: 6px; /* Reduced */
+            width: 14px; /* Smaller */
         }
 
         [data-theme="dark"] .member-card {
@@ -199,7 +214,7 @@
 
         /* Bottom gap for last card */
         .bottom-gap {
-            height: 50px; /* Gap after last card */
+            height: 50px;
         }
 
         /* Responsive */
@@ -209,22 +224,26 @@
             }
             
             .page-title {
-                margin: 100px 0 15px 0; /* Further reduced for mobile */
+                margin: 100px 0 15px 0;
                 font-size: 1.5rem;
             }
             
             .member-card {
                 padding: 15px;
-                margin: 0 10px 15px 10px;
+                margin: 0 8px 15px 8px; /* Reduced side margins */
+                transform: scale(0.95); /* Less scaling on mobile */
+            }
+            
+            .member-card:hover {
+                transform: scale(0.95) translateY(-3px);
             }
             
             .member-card p {
-                font-size: 0.85rem;
+                font-size: 0.8rem; /* Smaller on mobile */
             }
             
             .member-card p strong {
-                min-width: 120px;
-                font-weight: 500; /* Consistent medium weight */
+                min-width: 100px; /* Smaller on mobile */
             }
             
             footer {
@@ -233,20 +252,20 @@
             }
             
             .bottom-gap {
-                height: 40px; /* Smaller gap for mobile */
+                height: 40px;
             }
         }
 
-        /* Improved grid layout for better spacing */
+        /* Improved grid layout */
         @media (min-width: 768px) {
             .member-card {
-                margin-bottom: 25px;
+                margin-bottom: 20px;
             }
         }
 
         @media (min-width: 992px) {
             .member-card {
-                margin-bottom: 30px;
+                margin-bottom: 22px;
             }
         }
     </style>
@@ -375,11 +394,11 @@
                 card.innerHTML = `
                     <div class="card-body">
                         <h3>${member.memberName}</h3>
-                        <p><i class="fas fa-home"></i><strong>House Name:</strong> ${member.homeName}</p>
-                        <p><i class="fas fa-phone"></i><strong>Primary Phone:</strong> ${member.primaryMobile}</p>
-                        <p><i class="fas fa-mobile-alt"></i><strong>Secondary Phone:</strong> ${member.secondaryMobile}</p>
-                        <p><i class="fas fa-envelope"></i><strong>Email:</strong> ${member.email}</p>
-                        <p><i class="fas fa-fire"></i><strong>Gas Connection:</strong> ${member.gasConnection}</p>
+                        <p><i class="fas fa-home"></i><strong>House Name:</strong> <span class="detail-value">${member.homeName}</span></p>
+                        <p><i class="fas fa-phone"></i><strong>Primary Phone:</strong> <span class="detail-value">${member.primaryMobile}</span></p>
+                        <p><i class="fas fa-mobile-alt"></i><strong>Secondary Phone:</strong> <span class="detail-value">${member.secondaryMobile}</span></p>
+                        <p><i class="fas fa-envelope"></i><strong>Email:</strong> <span class="detail-value">${member.email}</span></p>
+                        <p><i class="fas fa-fire"></i><strong>Gas Connection:</strong> <span class="detail-value">${member.gasConnection}</span></p>
                     </div>
                 `;
                 membersList.appendChild(card);
