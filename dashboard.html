@@ -437,6 +437,7 @@
                                         head: `Monthly Subscription - ${month}`,
                                         date: new Date().toISOString().split('T')[0]
                                     });
+                                    alert('Subscription marked! ₹200 added to total.');
                                 } else {
                                     if (confirm('Are you sure you want to remove this payment?')) {
                                         await db.collection('contributions').doc(memberId).collection('months').doc(month).set({
@@ -444,6 +445,11 @@
                                             date: null,
                                             amount: 0
                                         });
+                                        // Optionally remove the transaction if tracked
+                                        const transactions = await db.collection('transactions')
+                                            .where('memberId', '==', memberId)
+                                            .where('head', '==', `Monthly Subscription - ${month}`).get();
+                                        transactions.forEach(doc => doc.ref.delete());
                                     } else {
                                         e.target.checked = true;
                                     }
@@ -469,15 +475,15 @@
                 const renderSubscriptionTable = (members) => {
                     const subscriptionTableBody = document.querySelector('#subscriptionTable tbody');
                     subscriptionTableBody.innerHTML = '';
+                    const startMonth = new Date(2025, 9, 1); // Oct 2025
+                    const currentMonth = new Date(); // Current date
+                    const months = [];
+                    for (let d = new Date(startMonth); d <= currentMonth; d.setMonth(d.getMonth() + 1)) {
+                        months.push(d.toISOString().slice(0, 7));
+                    }
                     members.forEach(member => {
                         const row = document.createElement('tr');
                         let cells = `<td>${member.memberName}</td>`;
-                        const startMonth = new Date(2025, 9, 1); // Oct 2025
-                        const currentMonth = new Date(); // Current date
-                        const months = [];
-                        for (let d = new Date(startMonth); d <= currentMonth; d.setMonth(d.getMonth() + 1)) {
-                            months.push(d.toISOString().slice(0, 7));
-                        }
                         months.forEach(async (month) => {
                             const contributionDoc = await db.collection('contributions').doc(member.id).collection('months').doc(month).get();
                             const paid = contributionDoc.exists ? contributionDoc.data().paid : false;
