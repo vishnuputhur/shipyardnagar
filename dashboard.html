@@ -10,7 +10,7 @@
     <style>
         /* Footer Fixed at Bottom */
         footer {
-            position: fix;ed;
+            position: fixed;
             bottom: 0;
             width: 100%;
             text-align: center;
@@ -375,7 +375,7 @@
                     // Load Cached Data
                     const cachedMembers = JSON.parse(localStorage.getItem('membersCache') || '[]');
                     if (cachedMembers.length > 0) {
-                        renderSubscriptionTable(cachedMembers);
+                        await renderSubscriptionTable(cachedMembers);
                     }
 
                     // Refresh from Firebase
@@ -386,7 +386,7 @@
                             memberName: doc.data().memberName || 'Unknown'
                         }));
                         localStorage.setItem('membersCache', JSON.stringify(members));
-                        renderSubscriptionTable(members);
+                        await renderSubscriptionTable(members);
                     } catch (error) {
                         console.error('Error fetching members for subscriptions:', error);
                         if (cachedMembers.length === 0) {
@@ -431,16 +431,17 @@
                     for (const member of members) {
                         const row = document.createElement('tr');
                         let cells = `<td>${member.memberName}</td>`;
-                        for (const month of months) {
+                        const monthData = await Promise.all(months.map(async (month) => {
                             const contributionDoc = await db.collection('contributions').doc(member.id).collection('months').doc(month).get();
                             const paid = contributionDoc.exists ? contributionDoc.data().paid : false;
-                            cells += `<td><input type="checkbox" class="contribution-check" data-member="${member.id}" data-month="${month}" ${paid ? 'checked' : ''} ${document.getElementById('editMonth').dataset.editing === 'true' ? '' : 'disabled'}></td>`;
-                        }
+                            return `<td><input type="checkbox" class="contribution-check" data-member="${member.id}" data-month="${month}" ${paid ? 'checked' : ''} ${document.getElementById('editMonth').dataset.editing === 'true' ? '' : 'disabled'}></td>`;
+                        }));
+                        cells += monthData.join('');
                         row.innerHTML = cells;
                         subscriptionTableBody.appendChild(row);
                     }
 
-                    // Add event listener for checkbox changes after rendering
+                    // Add event listener for checkbox changes
                     subscriptionTableBody.addEventListener('change', async (e) => {
                         if (e.target.classList.contains('contribution-check')) {
                             const memberId = e.target.dataset.member;
@@ -486,7 +487,7 @@
                                 loadingSpinner.style.display = 'none';
                             }
                         }
-                    });
+                    }, { once: false }); // Allow multiple event listeners
                 };
 
                 // Refresh Total
