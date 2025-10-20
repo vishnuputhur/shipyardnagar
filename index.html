@@ -121,6 +121,17 @@
             color: #fff;
         }
 
+        /* Due Status Styles */
+        .due-status-good {
+            color: #22c55e; /* Green color */
+            font-weight: 600;
+        }
+
+        .due-status-pending {
+            color: #ef4444; /* Red color */
+            font-weight: 600;
+        }
+
         /* Button Grid */
         .button-grid {
             display: grid;
@@ -177,6 +188,32 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             margin-top: 10px;
             grid-column: span 2;
+        }
+
+        /* Profile Incomplete Warning */
+        .profile-warning {
+            position: fixed;
+            top: 10px;
+            left: 100%;
+            background: linear-gradient(90deg, #ef4444, #dc2626);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 500;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+            z-index: 1001;
+            animation: scrollWarning 15s linear infinite;
+        }
+
+        @keyframes scrollWarning {
+            0% {
+                left: 100%;
+            }
+            100% {
+                left: -100%;
+            }
         }
 
         /* Footer - Reduced height */
@@ -272,12 +309,22 @@
                 padding: 3px 10px;
                 height: 28px;
             }
+
+            .profile-warning {
+                font-size: 0.7rem;
+                padding: 6px 12px;
+            }
         }
     </style>
 </head>
 <body>
     <!-- Header Image - Fixed at top -->
     <img src="assets/head.png" alt="Header" class="header-image">
+    
+    <!-- Profile Incomplete Warning -->
+    <div id="profileWarning" class="profile-warning" style="display: none;">
+        <i class="fas fa-exclamation-triangle me-1"></i> Please complete your profile
+    </div>
     
     <main class="container">
         <div class="logo-container">
@@ -297,7 +344,7 @@
                         
                         <div class="due-info">
                             <i class="fas fa-calendar-alt me-2"></i>
-                            <span id="monthlyDue">Your Monthly Due: 0 months (₹0)</span>
+                            <span id="monthlyDue">Your Monthly Due: Checking...</span>
                         </div>
                     </div>
                     
@@ -310,6 +357,14 @@
                         <button id="subscriptionBtn" class="app-btn">
                             <i class="fas fa-credit-card"></i>
                             Subscription
+                        </button>
+                        <button id="passwordBtn" class="app-btn">
+                            <i class="fas fa-key"></i>
+                            Change Password
+                        </button>
+                        <button id="expensesBtn" class="app-btn">
+                            <i class="fas fa-receipt"></i>
+                            Expenses
                         </button>
                         <button id="memberListBtn" class="app-btn">
                             <i class="fas fa-users"></i>
@@ -384,6 +439,9 @@
             const memberListBtn = document.getElementById('memberListBtn');
             const subscriptionBtn = document.getElementById('subscriptionBtn');
             const profileBtn = document.getElementById('profileBtn');
+            const expensesBtn = document.getElementById('expensesBtn');
+            const passwordBtn = document.getElementById('passwordBtn');
+            const profileWarning = document.getElementById('profileWarning');
 
             // ✅ Auth State Listener
             auth.onAuthStateChanged((user) => {
@@ -401,6 +459,9 @@
                                 } else {
                                     adminTab.style.display = 'none';
                                 }
+
+                                // Check if profile is complete
+                                checkProfileComplete(data);
 
                                 // Calculate and display total wealth
                                 calculateTotalWealth();
@@ -424,6 +485,27 @@
                 }
             });
 
+            // ✅ Check Profile Complete
+            function checkProfileComplete(userData) {
+                // Check if required profile fields are filled
+                const requiredFields = ['memberName', 'phone', 'address'];
+                let isComplete = true;
+                
+                for (let field of requiredFields) {
+                    if (!userData[field] || userData[field].trim() === '') {
+                        isComplete = false;
+                        break;
+                    }
+                }
+                
+                // Show warning if profile is incomplete
+                if (!isComplete) {
+                    profileWarning.style.display = 'block';
+                } else {
+                    profileWarning.style.display = 'none';
+                }
+            }
+
             // ✅ Calculate Total Wealth
             async function calculateTotalWealth() {
                 try {
@@ -445,21 +527,40 @@
             // ✅ Calculate Monthly Due
             async function calculateMonthlyDue(userId) {
                 try {
-                    const startMonth = new Date(2025, 9, 1); // Oct 2025
-                    const currentMonth = new Date(2025, 9, 18); // Oct 18, 2025
-                    const months = [];
-                    for (let d = new Date(startMonth); d <= currentMonth; d.setMonth(d.getMonth() + 1)) {
-                        months.push(d.toISOString().slice(0, 7));
+                    const userDoc = await db.collection('users').doc(userId).get();
+                    if (!userDoc.exists) {
+                        monthlyDue.textContent = 'Your Monthly Due: Not available';
+                        return;
                     }
-                    let dueMonths = 0;
-                    for (const month of months) {
-                        const contributionDoc = await db.collection('contributions').doc(userId).collection('months').doc(month).get();
-                        if (!contributionDoc.exists || !contributionDoc.data()?.paid) dueMonths++;
+
+                    const userData = userDoc.data();
+                    const lastPaidMonth = userData.lastPaidMonth; // Expected format: "YYYY-MM"
+                    
+                    const currentDate = new Date();
+                    const currentMonth = currentDate.getMonth(); // 0-11 (Jan-Dec)
+                    const currentYear = currentDate.getFullYear();
+                    
+                    const monthNames = ["January", "February", "March", "April", "May", "June",
+                        "July", "August", "September", "October", "November", "December"];
+                    
+                    if (lastPaidMonth) {
+                        const [lastYear, lastMonth] = lastPaidMonth.split('-').map(Number);
+                        
+                        // Check if last paid month is current month
+                        if (lastYear === currentYear && lastMonth - 1 === currentMonth) {
+                            monthlyDue.innerHTML = `<span class="due-status-good">Good, you have no Due</span>`;
+                        } else {
+                            const dueMonthName = monthNames[currentMonth];
+                            monthlyDue.innerHTML = `<span class="due-status-pending">${dueMonthName} Due Pending</span>`;
+                        }
+                    } else {
+                        // If no payment history, show current month as due
+                        const dueMonthName = monthNames[currentMonth];
+                        monthlyDue.innerHTML = `<span class="due-status-pending">${dueMonthName} Due Pending</span>`;
                     }
-                    monthlyDue.textContent = `Your Monthly Due: ${dueMonths} months (₹${dueMonths * 200})`;
                 } catch (error) {
                     console.error('Error calculating monthly due:', error);
-                    monthlyDue.textContent = 'Your Monthly Due: 0 months (₹0)';
+                    monthlyDue.textContent = 'Your Monthly Due: Error checking due';
                 }
             }
 
@@ -492,6 +593,16 @@
             if (adminBtn) {
                 adminBtn.addEventListener('click', () => {
                     window.location.href = 'dashboard.html';
+                });
+            }
+            if (expensesBtn) {
+                expensesBtn.addEventListener('click', () => {
+                    window.location.href = 'wealth-user.html';
+                });
+            }
+            if (passwordBtn) {
+                passwordBtn.addEventListener('click', () => {
+                    window.location.href = 'pass.html';
                 });
             }
 
