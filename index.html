@@ -190,30 +190,47 @@
             grid-column: span 2;
         }
 
-        /* Profile Incomplete Warning */
+        /* Profile Incomplete Warning - Fixed position near profile button */
         .profile-warning {
-            position: fixed;
-            top: 10px;
-            left: 100%;
+            position: absolute;
+            top: 50%;
+            right: -10px;
+            transform: translateY(-50%);
             background: linear-gradient(90deg, #ef4444, #dc2626);
             color: white;
-            padding: 8px 15px;
-            border-radius: 20px;
+            padding: 6px 12px;
+            border-radius: 15px;
             font-weight: 500;
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             white-space: nowrap;
             box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
             z-index: 1001;
-            animation: scrollWarning 15s linear infinite;
+            animation: scrollWarning 8s linear infinite;
+            display: none;
         }
 
         @keyframes scrollWarning {
             0% {
-                left: 100%;
+                transform: translateY(-50%) translateX(100%);
+                opacity: 0;
+            }
+            10% {
+                transform: translateY(-50%) translateX(0);
+                opacity: 1;
+            }
+            90% {
+                transform: translateY(-50%) translateX(0);
+                opacity: 1;
             }
             100% {
-                left: -100%;
+                transform: translateY(-50%) translateX(-100%);
+                opacity: 0;
             }
+        }
+
+        /* Profile button container with relative positioning */
+        .profile-btn-container {
+            position: relative;
         }
 
         /* Footer - Reduced height */
@@ -311,8 +328,8 @@
             }
 
             .profile-warning {
-                font-size: 0.7rem;
-                padding: 6px 12px;
+                font-size: 0.65rem;
+                padding: 5px 10px;
             }
         }
     </style>
@@ -320,11 +337,6 @@
 <body>
     <!-- Header Image - Fixed at top -->
     <img src="assets/head.png" alt="Header" class="header-image">
-    
-    <!-- Profile Incomplete Warning -->
-    <div id="profileWarning" class="profile-warning" style="display: none;">
-        <i class="fas fa-exclamation-triangle me-1"></i> Please complete your profile
-    </div>
     
     <main class="container">
         <div class="logo-container">
@@ -348,19 +360,20 @@
                         </div>
                     </div>
                     
-                    <!-- Reordered buttons -->
+                    <!-- Reordered buttons with Password button at the end -->
                     <div class="button-grid">
-                        <button id="profileBtn" class="app-btn">
-                            <i class="fas fa-user-circle"></i>
-                            Profile
-                        </button>
+                        <div class="profile-btn-container">
+                            <button id="profileBtn" class="app-btn">
+                                <i class="fas fa-user-circle"></i>
+                                Profile
+                            </button>
+                            <div id="profileWarning" class="profile-warning">
+                                <i class="fas fa-exclamation-triangle me-1"></i> Complete Profile
+                            </div>
+                        </div>
                         <button id="subscriptionBtn" class="app-btn">
                             <i class="fas fa-credit-card"></i>
                             Subscription
-                        </button>
-                        <button id="passwordBtn" class="app-btn">
-                            <i class="fas fa-key"></i>
-                            Change Password
                         </button>
                         <button id="expensesBtn" class="app-btn">
                             <i class="fas fa-receipt"></i>
@@ -377,6 +390,10 @@
                         <button id="loanBtn" class="app-btn">
                             <i class="fas fa-university"></i>
                             Loan
+                        </button>
+                        <button id="passwordBtn" class="app-btn">
+                            <i class="fas fa-key"></i>
+                            Change Password
                         </button>
                         
                         <div id="adminTab" style="display: none;">
@@ -485,20 +502,30 @@
                 }
             });
 
-            // ✅ Check Profile Complete
+            // ✅ Check Profile Complete - FIXED
             function checkProfileComplete(userData) {
                 // Check if required profile fields are filled
-                const requiredFields = ['memberName', 'phone', 'address'];
-                let isComplete = true;
-                
-                for (let field of requiredFields) {
-                    if (!userData[field] || userData[field].trim() === '') {
-                        isComplete = false;
-                        break;
-                    }
-                }
-                
-                // Show warning if profile is incomplete
+                // More comprehensive check
+                const isComplete = userData.memberName && 
+                                 userData.memberName.trim() !== '' &&
+                                 userData.phone && 
+                                 userData.phone.trim() !== '' &&
+                                 userData.address && 
+                                 userData.address.trim() !== '' &&
+                                 userData.dateOfBirth && 
+                                 userData.occupation &&
+                                 userData.occupation.trim() !== '';
+
+                console.log('Profile completeness check:', {
+                    memberName: userData.memberName,
+                    phone: userData.phone,
+                    address: userData.address,
+                    dateOfBirth: userData.dateOfBirth,
+                    occupation: userData.occupation,
+                    isComplete: isComplete
+                });
+
+                // Show warning only if profile is incomplete
                 if (!isComplete) {
                     profileWarning.style.display = 'block';
                 } else {
@@ -524,12 +551,12 @@
                 }
             }
 
-            // ✅ Calculate Monthly Due
+            // ✅ Calculate Monthly Due - FIXED
             async function calculateMonthlyDue(userId) {
                 try {
                     const userDoc = await db.collection('users').doc(userId).get();
                     if (!userDoc.exists) {
-                        monthlyDue.textContent = 'Your Monthly Due: Not available';
+                        monthlyDue.innerHTML = 'Your Monthly Due: Not available';
                         return;
                     }
 
@@ -537,25 +564,25 @@
                     const lastPaidMonth = userData.lastPaidMonth; // Expected format: "YYYY-MM"
                     
                     const currentDate = new Date();
-                    const currentMonth = currentDate.getMonth(); // 0-11 (Jan-Dec)
+                    const currentMonth = currentDate.getMonth() + 1; // 1-12 (Jan-Dec)
                     const currentYear = currentDate.getFullYear();
+                    const currentMonthFormatted = `${currentYear}-${currentMonth.toString().padStart(2, '0')}`;
                     
                     const monthNames = ["January", "February", "March", "April", "May", "June",
                         "July", "August", "September", "October", "November", "December"];
                     
-                    if (lastPaidMonth) {
-                        const [lastYear, lastMonth] = lastPaidMonth.split('-').map(Number);
-                        
-                        // Check if last paid month is current month
-                        if (lastYear === currentYear && lastMonth - 1 === currentMonth) {
-                            monthlyDue.innerHTML = `<span class="due-status-good">Good, you have no Due</span>`;
-                        } else {
-                            const dueMonthName = monthNames[currentMonth];
-                            monthlyDue.innerHTML = `<span class="due-status-pending">${dueMonthName} Due Pending</span>`;
-                        }
+                    console.log('Due calculation:', {
+                        lastPaidMonth: lastPaidMonth,
+                        currentMonthFormatted: currentMonthFormatted,
+                        currentMonthName: monthNames[currentMonth - 1]
+                    });
+
+                    if (lastPaidMonth === currentMonthFormatted) {
+                        // User has paid for current month
+                        monthlyDue.innerHTML = `<span class="due-status-good">Good, you have no Due</span>`;
                     } else {
-                        // If no payment history, show current month as due
-                        const dueMonthName = monthNames[currentMonth];
+                        // User has not paid for current month
+                        const dueMonthName = monthNames[currentMonth - 1];
                         monthlyDue.innerHTML = `<span class="due-status-pending">${dueMonthName} Due Pending</span>`;
                     }
                 } catch (error) {
