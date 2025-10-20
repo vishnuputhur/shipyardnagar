@@ -546,9 +546,22 @@
                 return;
             }
 
-            // Open UPI payment with correct beneficiary name and member number
-            const upiUri = `upi://pay?pa=9037383927@upi&pn=VISHNU T&am=${amount}&tn=Subscription_${currentMemberNumber}&cu=INR`;
-            window.location.href = upiUri;
+            // UPI Payment setup from reference code
+            const upiID = '9037383927@upi';
+            const payeeName = 'Shipyard Nagar';
+            const upiURL = `upi://pay?pa=${encodeURIComponent(upiID)}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR&tn=MemberNo:${currentMemberNumber}`;
+
+            try {
+                window.location.href = upiURL;
+                console.log('Attempting to trigger UPI:', upiURL);
+                setTimeout(() => {
+                    window.location.href = 'home.html';
+                }, 100);
+            } catch (error) {
+                console.error('UPI redirect error:', error);
+                alert('UPI app not triggered. Ensure a UPI app is installed.');
+                window.location.href = 'home.html';
+            }
         });
 
         // Theme Toggle
