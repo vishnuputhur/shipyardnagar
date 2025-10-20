@@ -3,33 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shipyard Nagar - Monthly Subscription</title>
+    <title>Shipyard Nagar - My Subscription</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Footer Fixed at Bottom */
+        footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+            padding: 10px;
+            background: #f8f8f8;
+            color: #333;
+            z-index: 1000;
+        }
+
+        /* Loading Spinner */
+        #loadingSpinner {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2rem;
+            color: #0288d1;
+        }
+
+        /* Card Styling */
+        .card {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Table Styling */
+        .table {
+            margin-top: 20px;
+            overflow-x: auto;
+        }
+
+        .table th, .table td {
+            padding: 10px;
+            text-align: center;
+            min-width: 100px;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+        }
+
+        /* Dark theme basics */
+        [data-theme="dark"] {
+            background-color: #333;
+            color: #fff;
+        }
+
+        [data-theme="dark"] .card {
+            background-color: #444;
+            color: #fff;
+        }
+
+        [data-theme="dark"] .table {
+            color: #fff;
+        }
+
+        [data-theme="dark"] footer {
+            background: #222;
+            color: #fff;
+        }
+    </style>
 </head>
 <body>
     <div class="theme-toggle">
         <button id="themeToggle">🌞</button>
     </div>
     <header>
-        <h1>Shipyard Nagar - Monthly Subscription</h1>
+        <h1>Shipyard Nagar - My Subscription</h1>
     </header>
     <main class="container my-4">
+        <div id="loadingSpinner">⏳ Loading...</div>
         <button class="btn btn-danger mb-3" id="logout">Logout</button>
+        <button class="btn btn-primary mb-3" id="backToHome">Back to Home</button>
+
+        <!-- Subscription Payment Section -->
         <div class="card">
             <h2>Pay Monthly Subscription</h2>
+            <p id="dueInfo" class="mb-3">Due Amount: ₹0 (0 months pending)</p>
             <form id="paymentForm" class="p-3">
                 <div class="mb-3">
-                    <label for="monthSelect" class="form-label">Select Month:</label>
-                    <select id="monthSelect" class="form-select">
-                        <option value="2025-10">October 2025</option>
-                        <option value="2025-11">November 2025</option>
-                    </select>
-                </div>
-                <div class="mb-3">
                     <label for="amount" class="form-label">Amount (₹):</label>
-                    <input type="number" class="form-control" id="amount" value="200" readonly>
+                    <input type="number" class="form-control" id="amount" value="0" readonly>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Payment Method:</label>
@@ -42,6 +116,8 @@
                 <button type="submit" class="btn btn-primary">Pay Now</button>
             </form>
         </div>
+
+        <!-- Payment History Section -->
         <div class="card">
             <h2>Payment History</h2>
             <table class="table table-bordered">
@@ -60,9 +136,197 @@
     <footer class="bg-light text-center py-2">
         <p>Powered by VTSoft 2025</p>
     </footer>
+
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-    <script src="js/app.js"></script>
+
+    <script>
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyBWswawf9tpxNwVU0BaJ6FCwCvgcjUQXlA",
+            authDomain: "shipyard-nagar.firebaseapp.com",
+            projectId: "shipyard-nagar",
+            storageBucket: "shipyard-nagar.firebasestorage.app",
+            messagingSenderId: "552855824221",
+            appId: "1:552855824221:web:f709da953077475be9eab4",
+            measurementId: "G-V8CQ4YCCQ5"
+        };
+
+        // Initialize Firebase
+        let auth, db;
+        try {
+            firebase.initializeApp(firebaseConfig);
+            auth = firebase.auth();
+            db = firebase.firestore();
+            console.log('Firebase initialized successfully');
+        } catch (error) {
+            alert('Firebase Initialization Error: ' + error.message);
+            console.error('Firebase Init Error:', error);
+        }
+
+        // DOM Content Loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const logoutBtn = document.getElementById('logout');
+            const backToHomeBtn = document.getElementById('backToHome');
+            const paymentForm = document.getElementById('paymentForm');
+            const contributionTable = document.getElementById('contributionTable');
+            const amountInput = document.getElementById('amount');
+            const dueInfo = document.getElementById('dueInfo');
+            const themeToggle = document.getElementById('themeToggle');
+
+            let currentUser = null;
+            let dueAmount = 0;
+            let unpaidMonths = 0;
+            let memberNumber = '';
+
+            // Theme Toggle
+            if (themeToggle) {
+                themeToggle.addEventListener('click', () => {
+                    const currentTheme = document.documentElement.getAttribute('data-theme');
+                    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+                    document.documentElement.setAttribute('data-theme', newTheme);
+                    themeToggle.textContent = newTheme === 'light' ? '🌞' : '🌙';
+                });
+            }
+
+            // Logout
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', () => {
+                    auth.signOut().then(() => {
+                        window.location.href = 'login.html';
+                    }).catch(error => {
+                        alert('Logout Error: ' + error.message);
+                    });
+                });
+            }
+
+            // Back to Home
+            if (backToHomeBtn) {
+                backToHomeBtn.addEventListener('click', () => {
+                    window.location.href = 'home.html';
+                });
+            }
+
+            // Auth State
+            auth.onAuthStateChanged(async (user) => {
+                if (!user) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                loadingSpinner.style.display = 'block';
+
+                try {
+                    const userDoc = await db.collection('users').doc(user.uid).get();
+                    if (!userDoc.exists) {
+                        alert('User data not found. Redirecting to login...');
+                        window.location.href = 'login.html';
+                        return;
+                    }
+
+                    currentUser = user;
+                    memberNumber = userDoc.data().memberNumber || 'Unknown';
+
+                    await loadSubscriptions();
+                } catch (error) {
+                    alert('Error loading user data: ' + error.message);
+                    console.error('Error:', error);
+                } finally {
+                    loadingSpinner.style.display = 'none';
+                }
+            });
+
+            // Generate Months
+            const generateMonths = (start, end) => {
+                const months = [];
+                let current = new Date(start + '-01');
+                const endDate = new Date(end + '-01');
+                while (current <= endDate) {
+                    months.push(current.toISOString().slice(0, 7));
+                    current.setMonth(current.getMonth() + 1);
+                }
+                return months;
+            };
+
+            // Get Month Name
+            const getMonthName = (monthString) => {
+                const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+                const monthIndex = parseInt(monthString.split('-')[1]) - 1;
+                return months[monthIndex] + ' ' + monthString.split('-')[0];
+            };
+
+            // Load Subscriptions
+            const loadSubscriptions = async () => {
+                const currentDate = new Date('2025-10-20'); // Fixed for testing; use new Date() for production
+                const currentMonth = currentDate.toISOString().slice(0, 7);
+                const startMonth = '2025-10';
+                const allMonths = generateMonths(startMonth, currentMonth);
+
+                try {
+                    const contributionsSnap = await db.collection('contributions').doc(currentUser.uid).collection('months').get();
+                    const paidData = {};
+                    contributionsSnap.forEach(doc => {
+                        paidData[doc.id] = doc.data();
+                    });
+
+                    let unpaid = [];
+                    contributionTable.innerHTML = '';
+
+                    allMonths.forEach(month => {
+                        const data = paidData[month] || { paid: false, amount: 0, date: '' };
+                        const status = data.paid ? 'Paid' : 'Pending';
+                        const amount = data.paid ? '₹200' : '₹0';
+                        const date = data.date || '-';
+
+                        contributionTable.innerHTML += `
+                            <tr>
+                                <td>${getMonthName(month)}</td>
+                                <td>${status}</td>
+                                <td>${amount}</td>
+                                <td>${date}</td>
+                            </tr>
+                        `;
+
+                        if (!data.paid) {
+                            unpaid.push(month);
+                        }
+                    });
+
+                    unpaidMonths = unpaid.length;
+                    dueAmount = unpaidMonths * 200;
+                    amountInput.value = dueAmount;
+                    dueInfo.textContent = `Due Amount: ₹${dueAmount} (${unpaidMonths} months pending)`;
+                } catch (error) {
+                    alert('Error loading subscriptions: ' + error.message);
+                    console.error('Error:', error);
+                }
+            };
+
+            // Payment Form Submit
+            if (paymentForm) {
+                paymentForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    if (dueAmount <= 0) {
+                        alert('No due amount to pay!');
+                        return;
+                    }
+
+                    const method = document.getElementById('paymentMethod').value;
+
+                    if (method === 'upi') {
+                        const upiUri = `upi://pay?pa=9037383927@upi&pn=ShipyardNagar&am=${dueAmount}&tn=Subscription_${memberNumber}&cu=INR`;
+                        window.location.href = upiUri;
+                    } else if (method === 'bank') {
+                        alert('Bank Transfer Details: Please transfer to Account XYZ, IFSC: ABC123. Notify admin after payment.');
+                    } else if (method === 'cash') {
+                        alert('Please pay cash to the admin and get confirmation.');
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>
