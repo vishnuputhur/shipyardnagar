@@ -477,13 +477,13 @@
                                     adminTab.style.display = 'none';
                                 }
 
-                                // Check if profile is complete
+                                // Check if profile is complete - FIXED
                                 checkProfileComplete(data);
 
                                 // Calculate and display total wealth
                                 calculateTotalWealth();
                                 
-                                // Calculate and display monthly due
+                                // Calculate and display monthly due - FIXED with subscription page logic
                                 calculateMonthlyDue(user.uid);
                                 
                             } else {
@@ -502,26 +502,19 @@
                 }
             });
 
-            // ✅ Check Profile Complete - FIXED
+            // ✅ Check Profile Complete - FIXED based on profile.html
             function checkProfileComplete(userData) {
-                // Check if required profile fields are filled
-                // More comprehensive check
-                const isComplete = userData.memberName && 
-                                 userData.memberName.trim() !== '' &&
-                                 userData.phone && 
-                                 userData.phone.trim() !== '' &&
-                                 userData.address && 
-                                 userData.address.trim() !== '' &&
-                                 userData.dateOfBirth && 
-                                 userData.occupation &&
-                                 userData.occupation.trim() !== '';
+                // Check the specific fields that are required from profile.html
+                const isComplete = userData.homeName && 
+                                 userData.homeName.trim() !== '' &&
+                                 userData.homeName !== 'N/A' &&
+                                 userData.gasConnection && 
+                                 userData.gasConnection.trim() !== '' &&
+                                 userData.gasConnection !== 'N/A';
 
                 console.log('Profile completeness check:', {
-                    memberName: userData.memberName,
-                    phone: userData.phone,
-                    address: userData.address,
-                    dateOfBirth: userData.dateOfBirth,
-                    occupation: userData.occupation,
+                    homeName: userData.homeName,
+                    gasConnection: userData.gasConnection,
                     isComplete: isComplete
                 });
 
@@ -551,39 +544,49 @@
                 }
             }
 
-            // ✅ Calculate Monthly Due - FIXED
+            // ✅ Calculate Monthly Due - FIXED using subscription page logic
             async function calculateMonthlyDue(userId) {
                 try {
-                    const userDoc = await db.collection('users').doc(userId).get();
-                    if (!userDoc.exists) {
-                        monthlyDue.innerHTML = 'Your Monthly Due: Not available';
-                        return;
-                    }
-
-                    const userData = userDoc.data();
-                    const lastPaidMonth = userData.lastPaidMonth; // Expected format: "YYYY-MM"
-                    
                     const currentDate = new Date();
-                    const currentMonth = currentDate.getMonth() + 1; // 1-12 (Jan-Dec)
-                    const currentYear = currentDate.getFullYear();
-                    const currentMonthFormatted = `${currentYear}-${currentMonth.toString().padStart(2, '0')}`;
+                    const currentMonth = currentDate.toISOString().slice(0, 7); // YYYY-MM
+                    const startMonth = '2025-10';
                     
-                    const monthNames = ["January", "February", "March", "April", "May", "June",
-                        "July", "August", "September", "October", "November", "December"];
-                    
-                    console.log('Due calculation:', {
-                        lastPaidMonth: lastPaidMonth,
-                        currentMonthFormatted: currentMonthFormatted,
-                        currentMonthName: monthNames[currentMonth - 1]
+                    // Generate all months from start to current
+                    const generateMonths = (start, end) => {
+                        const months = [];
+                        let current = new Date(start + '-01');
+                        const endDate = new Date(end + '-01');
+                        while (current <= endDate) {
+                            months.push(current.toISOString().slice(0, 7));
+                            current.setMonth(current.getMonth() + 1);
+                        }
+                        return months;
+                    };
+
+                    const allMonths = generateMonths(startMonth, currentMonth);
+
+                    const contributionsSnap = await db.collection('contributions').doc(userId).collection('months').get();
+                    const paidData = {};
+                    contributionsSnap.forEach(doc => {
+                        paidData[doc.id] = doc.data();
                     });
 
-                    if (lastPaidMonth === currentMonthFormatted) {
-                        // User has paid for current month
+                    let unpaidMonths = 0;
+                    allMonths.forEach(month => {
+                        const data = paidData[month] || { paid: false };
+                        if (!data.paid) {
+                            unpaidMonths++;
+                        }
+                    });
+
+                    const monthNames = ["January", "February", "March", "April", "May", "June",
+                        "July", "August", "September", "October", "November", "December"];
+                    const currentMonthName = monthNames[new Date().getMonth()];
+
+                    if (unpaidMonths === 0) {
                         monthlyDue.innerHTML = `<span class="due-status-good">Good, you have no Due</span>`;
                     } else {
-                        // User has not paid for current month
-                        const dueMonthName = monthNames[currentMonth - 1];
-                        monthlyDue.innerHTML = `<span class="due-status-pending">${dueMonthName} Due Pending</span>`;
+                        monthlyDue.innerHTML = `<span class="due-status-pending">${currentMonthName} Due Pending</span>`;
                     }
                 } catch (error) {
                     console.error('Error calculating monthly due:', error);
