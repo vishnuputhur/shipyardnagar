@@ -4,20 +4,136 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shipyard Nagar - Admin Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Footer Fixed at Bottom */
+        :root {
+            --primary-orange: #FF6B35;
+            --orange-light: #FF8C42;
+            --orange-dark: #E55A2B;
+            --gradient: linear-gradient(135deg, #FF6B35 0%, #FF8C42 50%, #FFA726 100%);
+            --shadow: 0 8px 25px rgba(255, 107, 53, 0.15);
+            --shadow-hover: 0 12px 35px rgba(255, 107, 53, 0.25);
+            --card-bg: rgba(255, 255, 255, 0.95);
+        }
+
+        [data-theme="dark"] {
+            --card-bg: rgba(45, 45, 45, 0.95);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding-bottom: 0;
+            position: relative;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><polygon fill="%23ffffff10" points="0,1000 1000,0 1000,1000"/></svg>');
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* Header Image - Fixed at top */
+        .header-image {
+            width: 100%;
+            height: auto;
+            max-height: 150px;
+            object-fit: cover;
+            display: block;
+            position: fixed;
+            top: 3mm;
+            left: 0;
+            z-index: 999;
+        }
+
+        /* Main Card - Reduced top gap */
+        .main-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 50px;
+            position: relative;
+            margin-top: 120px;
+        }
+
+        /* Page Title */
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e3a8a;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        [data-theme="dark"] .page-title {
+            color: #60a5fa;
+        }
+
+        /* Footer - Reduced height */
         footer {
             position: fixed;
             bottom: 0;
             width: 100%;
-            text-align: center;
-            padding: 10px;
-            background: #f8f8f8;
-            color: #333;
+            background: rgba(248, 248, 248, 0.9);
+            backdrop-filter: blur(10px);
+            color: #666;
+            font-size: 0.7rem;
             z-index: 1000;
+            border-top: 1px solid rgba(255, 107, 53, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 3px 15px;
+            height: 30px;
+        }
+
+        [data-theme="dark"] footer {
+            background: rgba(45, 45, 45, 0.9);
+            color: #ccc;
+        }
+
+        .footer-text {
+            flex: 1;
+            text-align: center;
+        }
+
+        /* Theme Toggle - Slightly larger */
+        .theme-toggle-btn {
+            background: transparent;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            padding: 4px 8px;
+            color: #666;
+            font-size: 0.75rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            height: 24px;
+        }
+
+        [data-theme="dark"] .theme-toggle-btn {
+            border-color: #666;
+            color: #ccc;
+        }
+
+        .theme-toggle-btn:hover {
+            background: var(--gradient);
+            color: white;
+            border-color: var(--primary-orange);
         }
 
         /* Button Grid Layout */
@@ -98,200 +214,277 @@
             margin: 15px 0;
             border: 1px solid #ffeaa7;
         }
+
+        /* Admin buttons */
+        .admin-btn {
+            background: var(--gradient);
+            border: none;
+            border-radius: 12px;
+            padding: 12px 20px;
+            color: white;
+            font-weight: 500;
+            font-size: 0.9rem;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .admin-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: 0.5s;
+        }
+
+        .admin-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .admin-btn:hover::before {
+            left: 100%;
+        }
+
+        /* Responsive */
+        @media (max-width: 576px) {
+            .header-image {
+                max-height: 120px;
+            }
+            
+            .main-card {
+                padding: 15px;
+                margin: 100px 10px 50px 10px;
+            }
+            
+            .button-grid {
+                flex-direction: column;
+            }
+            
+            .admin-btn {
+                width: 100%;
+            }
+            
+            footer {
+                padding: 3px 10px;
+                height: 28px;
+            }
+        }
     </style>
 </head>
 <body>
-    <header>
-        <h1>Shipyard Nagar - Admin Dashboard</h1>
-    </header>
-    <main class="container my-4">
-        <div id="loadingSpinner">⏳ Loading...</div>
-        <button class="btn btn-danger mb-3" id="logout">Logout</button>
-        <div class="button-grid">
-            <button class="btn btn-primary" id="addUserBtn">Add Member</button>
-            <button class="btn btn-primary" id="editMemberBtn">Edit Member</button>
-            <button class="btn btn-primary" id="subscriptionBtn">Subscriptions</button>
-            <button class="btn btn-secondary" id="refreshTotal">Refresh Total</button>
-        </div>
+    <!-- Header Image - Fixed at top -->
+    <img src="assets/head.png" alt="Header" class="header-image">
+    
+    <main class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-10 col-lg-8">
+                <div class="main-card">
+                    <div class="page-title">
+                        Admin Dashboard
+                    </div>
+                    
+                    <!-- Navigation Buttons -->
+                    <div class="button-grid">
+                        <button class="admin-btn" id="addUserBtn">
+                            <i class="fas fa-user-plus me-2"></i>
+                            Add Member
+                        </button>
+                        <button class="admin-btn" id="editMemberBtn">
+                            <i class="fas fa-user-edit me-2"></i>
+                            Edit Member
+                        </button>
+                        <button class="admin-btn" id="subscriptionBtn">
+                            <i class="fas fa-credit-card me-2"></i>
+                            Subscriptions
+                        </button>
+                        <button class="admin-btn" id="refreshTotal">
+                            <i class="fas fa-sync-alt me-2"></i>
+                            Refresh Total
+                        </button>
+                        <button class="admin-btn" id="logout" style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);">
+                            <i class="fas fa-sign-out-alt me-2"></i>
+                            Logout
+                        </button>
+                    </div>
 
-       <!-- Add Member Form -->
-    <div class="card" id="addUserSection" style="display: none;">
-        <h2>Add Member</h2>
-        <form id="addUserForm" class="p-3">
-            <div class="row">
-                <div class="col-12 mb-3">
-                    <label for="memberNumber" class="form-label">Member Number:</label>
-                    <input type="text" class="form-control" id="memberNumber" required>
-                </div>
-                <div class="col-12 mb-3">
-                    <label for="memberName" class="form-label">Name:</label>
-                    <input type="text" class="form-control" id="memberName" required>
-                </div>
-                <div class="col-12 mb-3">
-                    <label for="homeName" class="form-label">House Name:</label>
-                    <input type="text" class="form-control" id="homeName" required>
-                </div>
-                <div class="col-12 mb-3">
-                    <label for="email" class="form-label">Email:</label>
-                    <input type="email" class="form-control" id="email" required>
-                </div>
-                <div class="col-12 mb-3">
-                    <label for="password" class="form-label">Password:</label>
-                    <input type="password" class="form-control" id="password" required>
-                </div>
-                <div class="col-12 mb-3">
-                    <label for="primaryMobile" class="form-label">Primary Mobile:</label>
-                    <input type="text" class="form-control" id="primaryMobile" required>
-                </div>
-                <div class="col-12 mb-3">
-                    <label>
-                        <input type="checkbox" id="isAdmin"> Admin
-                    </label>
-                </div>
-            </div>
-            <button type="submit" class="btn btn-primary">Add Member</button>
-        </form>
-    </div>
+                    <!-- Add Member Form -->
+                    <div class="card" id="addUserSection" style="display: none;">
+                        <h2>Add Member</h2>
+                        <form id="addUserForm" class="p-3">
+                            <div class="row">
+                                <div class="col-12 col-md-6 mb-3">
+                                    <label for="memberNumber" class="form-label">Member Number:</label>
+                                    <input type="text" class="form-control" id="memberNumber" required>
+                                </div>
+                                <div class="col-12 col-md-6 mb-3">
+                                    <label for="memberName" class="form-label">Name:</label>
+                                    <input type="text" class="form-control" id="memberName" required>
+                                </div>
+                                <div class="col-12 col-md-6 mb-3">
+                                    <label for="email" class="form-label">Email:</label>
+                                    <input type="email" class="form-control" id="email" required>
+                                </div>
+                                <div class="col-12 col-md-6 mb-3">
+                                    <label for="password" class="form-label">Password:</label>
+                                    <input type="password" class="form-control" id="password" required>
+                                </div>
+                                <div class="col-12 col-md-6 mb-3">
+                                    <label for="primaryMobile" class="form-label">Primary Mobile:</label>
+                                    <input type="text" class="form-control" id="primaryMobile" required>
+                                </div>
+                                <div class="col-12 mb-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="isAdmin">
+                                        <label class="form-check-label" for="isAdmin">
+                                            Admin User
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="submit" class="admin-btn" style="width: 100%;">
+                                <i class="fas fa-save me-2"></i>
+                                Add Member
+                            </button>
+                        </form>
+                    </div>
 
-    <!-- Edit Member Form -->
-    <div class="card" id="editMemberSection" style="display: none;">
-        <h2>Edit Member</h2>
-        <div class="p-3">
-            <label for="editMemberNumber" class="form-label">Member Number:</label>
-            <input type="text" class="form-control mb-3" id="editMemberNumber" required>
-            <button class="btn btn-warning mb-3" id="loadEditMember">Load Member</button>
-        </div>
-        <form id="editMemberForm" class="p-3" style="display: none;">
-            <div class="row">
-                <div class="col-12 mb-3">
-                    <label for="editName" class="form-label">Name:</label>
-                    <input type="text" class="form-control" id="editName" required>
-                </div>
-                <div class="col-12 mb-3">
-                    <label for="editHomeName" class="form-label">House Name:</label>
-                    <input type="text" class="form-control" id="editHomeName" required>
-                </div>
-                <div class="col-12 mb-3">
-                    <label for="editEmail" class="form-label">Email:</label>
-                    <input type="email" class="form-control" id="editEmail" required>
-                </div>
-                <div class="col-12 mb-3">
-                    <label for="editPrimaryMobile" class="form-label">Primary Mobile:</label>
-                    <input type="text" class="form-control" id="editPrimaryMobile" required>
-                </div>
-                <div class="col-12 mb-3">
-                    <label>
-                        <input type="checkbox" id="editIsAdmin"> Admin
-                    </label>
-                </div>
-            </div>
-            <button type="submit" class="btn btn-primary">Update Member</button>
-        </form>
-    </div>
+                    <!-- Edit Member Form -->
+                    <div class="card" id="editMemberSection" style="display: none;">
+                        <h2>Edit Member</h2>
+                        <div class="p-3">
+                            <label for="editMemberNumber" class="form-label">Member Number:</label>
+                            <input type="text" class="form-control mb-3" id="editMemberNumber" required>
+                            <button class="admin-btn mb-3" id="loadEditMember" style="width: 100%;">
+                                <i class="fas fa-search me-2"></i>
+                                Load Member
+                            </button>
+                        </div>
+                        <form id="editMemberForm" class="p-3" style="display: none;">
+                            <div class="row">
+                                <div class="col-12 col-md-6 mb-3">
+                                    <label for="editName" class="form-label">Name:</label>
+                                    <input type="text" class="form-control" id="editName" required>
+                                </div>
+                                <div class="col-12 col-md-6 mb-3">
+                                    <label for="editEmail" class="form-label">Email:</label>
+                                    <input type="email" class="form-control" id="editEmail" required>
+                                </div>
+                                <div class="col-12 col-md-6 mb-3">
+                                    <label for="editPrimaryMobile" class="form-label">Primary Mobile:</label>
+                                    <input type="text" class="form-control" id="editPrimaryMobile" required>
+                                </div>
+                                <div class="col-12 mb-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="editIsAdmin">
+                                        <label class="form-check-label" for="editIsAdmin">
+                                            Admin User
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="submit" class="admin-btn" style="width: 100%;">
+                                <i class="fas fa-save me-2"></i>
+                                Update Member
+                            </button>
+                        </form>
+                    </div>
 
-    <!-- Subscriptions Section -->
-    <div class="card" id="subscriptionSection" style="display: none;">
-        <h2>Subscriptions</h2>
-        
-        <!-- Mobile-friendly month selection -->
-        <div class="month-selection-section">
-            <label class="form-label"><strong>Select Month to View:</strong></label>
-            <div class="month-buttons" id="monthButtons">
-                <!-- Month buttons will be populated here -->
-            </div>
-        </div>
+                    <!-- Subscriptions Section -->
+                    <div class="card" id="subscriptionSection" style="display: none;">
+                        <h2>Subscriptions</h2>
+                        
+                        <!-- Mobile-friendly month selection -->
+                        <div class="month-selection-section">
+                            <label class="form-label"><strong>Select Month to View:</strong></label>
+                            <div class="month-buttons" id="monthButtons">
+                                <!-- Month buttons will be populated here -->
+                            </div>
+                        </div>
 
-        <!-- Wealth Edit Section -->
-        <div class="wealth-edit-section">
-            <h5>Wealth Management</h5>
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="input-group mb-3">
-                        <input type="number" class="form-control" id="wealthAmount" placeholder="Amount">
-                        <button class="btn btn-success" id="addWealth">Add Income</button>
+                        <!-- Wealth Edit Section -->
+                        <div class="wealth-edit-section">
+                            <h5>Wealth Management</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="input-group mb-3">
+                                        <input type="number" class="form-control" id="wealthAmount" placeholder="Amount">
+                                        <button class="admin-btn" id="addWealth" style="border-radius: 0 10px 10px 0;">Add Income</button>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="input-group mb-3">
+                                        <input type="number" class="form-control" id="expenseAmount" placeholder="Amount">
+                                        <button class="admin-btn" id="addExpense" style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); border-radius: 0 10px 10px 0;">Add Expense</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="transactionDescription" placeholder="Description">
+                                <button class="admin-btn" id="resetWealth" style="background: linear-gradient(135deg, #fd7e14 0%, #e55a2b 100%); border-radius: 0 10px 10px 0;">Reset Wealth</button>
+                            </div>
+                        </div>
+
+                        <div class="table-container mt-4">
+                            <table class="table table-bordered" id="subscriptionTable">
+                                <thead>
+                                    <tr id="monthHeaders">
+                                        <th>Member Name</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                        <p id="totalWealthDisplay" class="fw-bold fs-5 mt-3">Total Wealth: ₹0</p>
                     </div>
                 </div>
-                <div class="col-md-6">
-                    <div class="input-group mb-3">
-                        <input type="number" class="form-control" id="expenseAmount" placeholder="Amount">
-                        <button class="btn btn-danger" id="addExpense">Add Expense</button>
-                    </div>
-                </div>
-            </div>
-            <div class="input-group">
-                <input type="text" class="form-control" id="transactionDescription" placeholder="Description">
-                <button class="btn btn-warning" id="resetWealth">Reset Wealth</button>
             </div>
         </div>
+    </main>
+    
+    <!-- Footer -->
+    <footer>
+        <div class="footer-text">
+            <p>Powered by VTSoft 2025</p>
+        </div>
+        <button id="themeToggle" class="theme-toggle-btn">🌞</button>
+    </footer>
 
-        <table class="table table-bordered" id="subscriptionTable">
-            <thead>
-                <tr id="monthHeaders">
-                    <th>Member Name</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-        <p id="totalWealthDisplay" class="fw-bold fs-5">Total Wealth: ₹0</p>
-    </div>
-</main>
-<footer class="bg-light text-center py-2">
-    <p>Powered by VTSoft 2025</p>
-</footer>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+    <script>
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyBWswawf9tpxNwVU0BaJ6FCwCvgcjUQXlA",
+            authDomain: "shipyard-nagar.firebaseapp.com",
+            projectId: "shipyard-nagar",
+            storageBucket: "shipyard-nagar.firebasestorage.app",
+            messagingSenderId: "552855824221",
+            appId: "1:552855824221:web:f709da953077475be9eab4",
+            measurementId: "G-V8CQ4YCCQ5"
+        };
 
-<script>
-    // Firebase Config
-    const firebaseConfig = {
-        apiKey: "AIzaSyBWswawf9tpxNwVU0BaJ6FCwCvgcjUQXlA",
-        authDomain: "shipyard-nagar.firebaseapp.com",
-        projectId: "shipyard-nagar",
-        storageBucket: "shipyard-nagar.firebasestorage.app",
-        messagingSenderId: "552855824221",
-        appId: "1:552855824221:web:f709da953077475be9eab4",
-        measurementId: "G-V8CQ4YCCQ5"
-    };
+        // Initialize Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
 
-    // Initialize Firebase
-    let auth, db;
-    try {
-        firebase.initializeApp(firebaseConfig);
-        auth = firebase.auth();
-        db = firebase.firestore();
-        console.log('Firebase initialized successfully');
-    } catch (error) {
-        alert('Firebase Initialization Error: ' + error.message);
-        console.error('Firebase Init Error:', error);
-    }
+        const auth = firebase.auth();
+        const db = firebase.firestore();
 
-    // DOM Content Loaded
-    document.addEventListener('DOMContentLoaded', () => {
-        const loadingSpinner = document.getElementById('loadingSpinner');
-        loadingSpinner.style.display = 'block';
-
-        // Auth State Check
-        auth.onAuthStateChanged(async (user) => {
-            if (!user) {
-                alert('No user logged in. Redirecting to login...');
-                window.location.href = 'login.html';
-                return;
-            }
-
-            const userDoc = await db.collection('users').doc(user.uid).get();
-            if (!userDoc.exists || userDoc.data().role !== 'admin') {
-                console.log('User data:', userDoc.data());
-                alert('Permission denied. Only admins can access this dashboard. Redirecting to login...');
-                window.location.href = 'login.html';
-                return;
-            }
-
-            // Hide loading spinner
-            loadingSpinner.style.display = 'none';
-
+        // DOM Content Loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            
             // UI Elements
             const addUserSection = document.getElementById('addUserSection');
             const editMemberSection = document.getElementById('editMemberSection');
@@ -311,180 +504,203 @@
             let currentMembers = [];
             let allMonths = [];
             let selectedMonth = '';
+            let currentAdmin = null;
+
+            // Auth State Check
+            auth.onAuthStateChanged(async (user) => {
+                if (!user) {
+                    alert('No user logged in. Redirecting to login...');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const userDoc = await db.collection('users').doc(user.uid).get();
+                if (!userDoc.exists || userDoc.data().role !== 'admin') {
+                    alert('Permission denied. Only admins can access this dashboard. Redirecting to login...');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                currentAdmin = user;
+                loadingSpinner.style.display = 'none';
+
+                // Initial Load
+                refreshTotal();
+            });
 
             // Button Event Listeners
-            if (addUserBtn) {
-                addUserBtn.addEventListener('click', () => {
-                    addUserSection.style.display = 'block';
-                    editMemberSection.style.display = 'none';
-                    subscriptionSection.style.display = 'none';
-                });
-            }
+            addUserBtn.addEventListener('click', () => {
+                addUserSection.style.display = 'block';
+                editMemberSection.style.display = 'none';
+                subscriptionSection.style.display = 'none';
+            });
 
-            if (editMemberBtn) {
-                editMemberBtn.addEventListener('click', () => {
-                    addUserSection.style.display = 'none';
-                    editMemberSection.style.display = 'block';
-                    subscriptionSection.style.display = 'none';
-                });
-            }
+            editMemberBtn.addEventListener('click', () => {
+                addUserSection.style.display = 'none';
+                editMemberSection.style.display = 'block';
+                subscriptionSection.style.display = 'none';
+            });
 
-            if (subscriptionBtn) {
-                subscriptionBtn.addEventListener('click', () => {
-                    addUserSection.style.display = 'none';
-                    editMemberSection.style.display = 'none';
-                    subscriptionSection.style.display = 'block';
-                    loadSubscriptions();
-                });
-            }
+            subscriptionBtn.addEventListener('click', () => {
+                addUserSection.style.display = 'none';
+                editMemberSection.style.display = 'none';
+                subscriptionSection.style.display = 'block';
+                loadSubscriptions();
+            });
 
-            if (refreshTotalBtn) {
-                refreshTotalBtn.addEventListener('click', () => {
-                    refreshTotal();
-                });
-            }
+            refreshTotalBtn.addEventListener('click', () => {
+                refreshTotal();
+            });
 
-            if (logoutBtn) {
-                logoutBtn.addEventListener('click', () => {
-                    auth.signOut().then(() => {
-                        console.log('Logout successful');
-                        window.location.href = 'login.html';
-                    }).catch((error) => {
-                        alert('Logout Error: ' + error.message);
-                        console.error('Logout Error:', error);
-                    });
+            logoutBtn.addEventListener('click', () => {
+                auth.signOut().then(() => {
+                    window.location.href = 'login.html';
+                }).catch((error) => {
+                    alert('Logout Error: ' + error.message);
                 });
-            }
+            });
 
-            // Add Member Form Submission
+            // Add Member Form Submission - FIXED VERSION
             const addUserForm = document.getElementById('addUserForm');
-            if (addUserForm) {
-                addUserForm.addEventListener('submit', async (e) => {
-                    e.preventDefault();
-                    const memberData = {
-                        memberNumber: document.getElementById('memberNumber').value,
-                        memberName: document.getElementById('memberName').value,
-                        homeName: document.getElementById('homeName').value,
-                        email: document.getElementById('email').value,
-                        primaryMobile: document.getElementById('primaryMobile').value,
-                        role: document.getElementById('isAdmin').checked ? 'admin' : 'member'
-                    };
+            addUserForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const memberData = {
+                    memberNumber: document.getElementById('memberNumber').value,
+                    memberName: document.getElementById('memberName').value,
+                    email: document.getElementById('email').value,
+                    primaryMobile: document.getElementById('primaryMobile').value,
+                    role: document.getElementById('isAdmin').checked ? 'admin' : 'member'
+                };
+                
+                const password = document.getElementById('password').value;
+                
+                loadingSpinner.style.display = 'block';
+                
+                try {
+                    // Create user with email and password
+                    const userCredential = await auth.createUserWithEmailAndPassword(
+                        memberData.email, 
+                        password
+                    );
+                    
+                    // Store member data in Firestore
+                    await db.collection('users').doc(userCredential.user.uid).set(memberData);
+                    
+                    // IMPORTANT: Sign out the newly created user and sign back in as admin
+                    await auth.signOut();
+                    
+                    // Sign back in as admin
+                    await auth.signInWithEmailAndPassword(currentAdmin.email, prompt('Please enter your admin password to continue:'));
+                    
+                    alert('Member added successfully!');
+                    addUserForm.reset();
+                    refreshTotal();
+                } catch (error) {
+                    console.error('Error adding member:', error);
+                    alert('Error adding member: ' + error.message);
+                    
+                    // Try to sign back in as admin if there was an error
                     try {
-                        const userCredential = await auth.createUserWithEmailAndPassword(
-                            memberData.email,
-                            document.getElementById('password').value
-                        );
-                        await db.collection('users').doc(userCredential.user.uid).set(memberData);
-                        alert('Member added successfully!');
-                        addUserForm.reset();
-                        refreshTotal();
-                    } catch (error) {
-                        alert('Error adding member: ' + error.message);
+                        await auth.signInWithEmailAndPassword(currentAdmin.email, prompt('Please enter your admin password to continue:'));
+                    } catch (reAuthError) {
+                        console.error('Re-authentication failed:', reAuthError);
+                        window.location.href = 'login.html';
                     }
-                });
-            }
+                } finally {
+                    loadingSpinner.style.display = 'none';
+                }
+            });
 
             // Edit Member Functionality
             const loadEditMember = document.getElementById('loadEditMember');
-            if (loadEditMember) {
-                loadEditMember.addEventListener('click', async () => {
-                    const memberNumber = document.getElementById('editMemberNumber').value;
-                    const membersSnapshot = await db.collection('users').where('memberNumber', '==', memberNumber).get();
-                    if (!membersSnapshot.empty) {
-                        const memberData = membersSnapshot.docs[0].data();
-                        document.getElementById('editName').value = memberData.memberName || '';
-                        document.getElementById('editHomeName').value = memberData.homeName || '';
-                        document.getElementById('editEmail').value = memberData.email || '';
-                        document.getElementById('editPrimaryMobile').value = memberData.primaryMobile || '';
-                        document.getElementById('editIsAdmin').checked = memberData.role === 'admin';
-                        document.getElementById('editMemberForm').style.display = 'block';
-                    } else {
-                        alert('Member not found!');
-                    }
-                });
-            }
+            loadEditMember.addEventListener('click', async () => {
+                const memberNumber = document.getElementById('editMemberNumber').value;
+                const membersSnapshot = await db.collection('users').where('memberNumber', '==', memberNumber).get();
+                if (!membersSnapshot.empty) {
+                    const memberData = membersSnapshot.docs[0].data();
+                    document.getElementById('editName').value = memberData.memberName || '';
+                    document.getElementById('editEmail').value = memberData.email || '';
+                    document.getElementById('editPrimaryMobile').value = memberData.primaryMobile || '';
+                    document.getElementById('editIsAdmin').checked = memberData.role === 'admin';
+                    document.getElementById('editMemberForm').style.display = 'block';
+                } else {
+                    alert('Member not found!');
+                }
+            });
 
             const editMemberForm = document.getElementById('editMemberForm');
-            if (editMemberForm) {
-                editMemberForm.addEventListener('submit', async (e) => {
-                    e.preventDefault();
-                    const memberNumber = document.getElementById('editMemberNumber').value;
-                    const membersSnapshot = await db.collection('users').where('memberNumber', '==', memberNumber).get();
-                    if (!membersSnapshot.empty) {
-                        const memberDoc = membersSnapshot.docs[0];
-                        const updatedData = {
-                            memberName: document.getElementById('editName').value,
-                            homeName: document.getElementById('editHomeName').value,
-                            email: document.getElementById('editEmail').value,
-                            primaryMobile: document.getElementById('editPrimaryMobile').value,
-                            role: document.getElementById('editIsAdmin').checked ? 'admin' : 'member'
-                        };
-                        await db.collection('users').doc(memberDoc.id).update(updatedData);
-                        alert('Member updated successfully!');
-                        editMemberForm.reset();
-                        editMemberForm.style.display = 'none';
-                        refreshTotal();
-                    } else {
-                        alert('Member not found!');
-                    }
-                });
-            }
+            editMemberForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const memberNumber = document.getElementById('editMemberNumber').value;
+                const membersSnapshot = await db.collection('users').where('memberNumber', '==', memberNumber).get();
+                if (!membersSnapshot.empty) {
+                    const memberDoc = membersSnapshot.docs[0];
+                    const updatedData = {
+                        memberName: document.getElementById('editName').value,
+                        email: document.getElementById('editEmail').value,
+                        primaryMobile: document.getElementById('editPrimaryMobile').value,
+                        role: document.getElementById('editIsAdmin').checked ? 'admin' : 'member'
+                    };
+                    await db.collection('users').doc(memberDoc.id).update(updatedData);
+                    alert('Member updated successfully!');
+                    editMemberForm.reset();
+                    editMemberForm.style.display = 'none';
+                    refreshTotal();
+                } else {
+                    alert('Member not found!');
+                }
+            });
 
             // Wealth Management Functions
-            if (addWealthBtn) {
-                addWealthBtn.addEventListener('click', async () => {
-                    const amount = parseFloat(document.getElementById('wealthAmount').value);
-                    const description = document.getElementById('transactionDescription').value || 'Manual Income';
-                    
-                    if (!amount || amount <= 0) {
-                        alert('Please enter a valid amount');
-                        return;
-                    }
-                    
-                    if (confirm(`Add ₹${amount} as income?`)) {
-                        await addTransaction('income', amount, description);
-                    }
-                });
-            }
+            addWealthBtn.addEventListener('click', async () => {
+                const amount = parseFloat(document.getElementById('wealthAmount').value);
+                const description = document.getElementById('transactionDescription').value || 'Manual Income';
+                
+                if (!amount || amount <= 0) {
+                    alert('Please enter a valid amount');
+                    return;
+                }
+                
+                if (confirm(`Add ₹${amount} as income?`)) {
+                    await addTransaction('income', amount, description);
+                }
+            });
 
-            if (addExpenseBtn) {
-                addExpenseBtn.addEventListener('click', async () => {
-                    const amount = parseFloat(document.getElementById('expenseAmount').value);
-                    const description = document.getElementById('transactionDescription').value || 'Manual Expense';
-                    
-                    if (!amount || amount <= 0) {
-                        alert('Please enter a valid amount');
-                        return;
-                    }
-                    
-                    if (confirm(`Add ₹${amount} as expense?`)) {
-                        await addTransaction('expense', amount, description);
-                    }
-                });
-            }
+            addExpenseBtn.addEventListener('click', async () => {
+                const amount = parseFloat(document.getElementById('expenseAmount').value);
+                const description = document.getElementById('transactionDescription').value || 'Manual Expense';
+                
+                if (!amount || amount <= 0) {
+                    alert('Please enter a valid amount');
+                    return;
+                }
+                
+                if (confirm(`Add ₹${amount} as expense?`)) {
+                    await addTransaction('expense', amount, description);
+                }
+            });
 
-            if (resetWealthBtn) {
-                resetWealthBtn.addEventListener('click', async () => {
-                    if (confirm('Are you sure you want to reset ALL transactions? This cannot be undone!')) {
-                        loadingSpinner.style.display = 'block';
-                        try {
-                            // Delete all transactions
-                            const transactions = await db.collection('transactions').get();
-                            const batch = db.batch();
-                            transactions.forEach(doc => batch.delete(doc.ref));
-                            await batch.commit();
-                            
-                            alert('All transactions reset successfully!');
-                            await refreshTotal();
-                        } catch (error) {
-                            console.error('Error resetting transactions:', error);
-                            alert('Error: ' + error.message);
-                        } finally {
-                            loadingSpinner.style.display = 'none';
-                        }
+            resetWealthBtn.addEventListener('click', async () => {
+                if (confirm('Are you sure you want to reset ALL transactions? This cannot be undone!')) {
+                    loadingSpinner.style.display = 'block';
+                    try {
+                        // Delete all transactions
+                        const transactions = await db.collection('transactions').get();
+                        const batch = db.batch();
+                        transactions.forEach(doc => batch.delete(doc.ref));
+                        await batch.commit();
+                        
+                        alert('All transactions reset successfully!');
+                        await refreshTotal();
+                    } catch (error) {
+                        console.error('Error resetting transactions:', error);
+                        alert('Error: ' + error.message);
+                    } finally {
+                        loadingSpinner.style.display = 'none';
                     }
-                });
-            }
+                }
+            });
 
             const addTransaction = async (type, amount, description) => {
                 loadingSpinner.style.display = 'block';
@@ -516,14 +732,6 @@
 
             // Subscriptions Functionality
             const loadSubscriptions = async () => {
-                const subscriptionTableBody = document.querySelector('#subscriptionTable tbody');
-                const monthHeaders = document.getElementById('monthHeaders');
-
-                if (!subscriptionTableBody || !monthHeaders) {
-                    console.error('Required subscription elements not found');
-                    return;
-                }
-
                 loadingSpinner.style.display = 'block';
 
                 try {
@@ -535,8 +743,6 @@
                         memberNumber: doc.data().memberNumber || ''
                     }));
                     
-                    localStorage.setItem('membersCache', JSON.stringify(currentMembers));
-
                     // Generate months from Oct 2025 to Oct 2026
                     allMonths = generateMonths('2025-10', '2026-10');
                     
@@ -743,18 +949,33 @@
                         if (t.type === 'expense') totalExpense += t.amount || 0;
                     });
                     const totalWealth = totalIncome - totalExpense;
-                    document.getElementById('totalWealthDisplay').textContent = `Total Wealth: ₹${totalWealth}`;
-                    console.log('Total Wealth refreshed: ' + totalWealth);
+                    totalWealthDisplay.textContent = `Total Wealth: ₹${totalWealth}`;
                 } catch (error) {
                     console.error('Error refreshing total:', error);
-                    document.getElementById('totalWealthDisplay').textContent = 'Total Wealth: ₹0 (Error)';
+                    totalWealthDisplay.textContent = 'Total Wealth: ₹0 (Error)';
                 }
             };
 
-            // Initial Load
-            refreshTotal();
+            // Theme Toggle
+            const themeToggle = document.getElementById('themeToggle');
+            if (themeToggle) {
+                themeToggle.addEventListener('click', () => {
+                    const html = document.documentElement;
+                    const currentTheme = html.getAttribute('data-theme');
+                    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+                    html.setAttribute('data-theme', newTheme);
+                    localStorage.setItem('theme', newTheme);
+                    
+                    // Update button emoji
+                    themeToggle.textContent = newTheme === 'light' ? '🌞' : '🌙';
+                });
+
+                // Set initial theme and button
+                const savedTheme = localStorage.getItem('theme') || 'light';
+                document.documentElement.setAttribute('data-theme', savedTheme);
+                themeToggle.textContent = savedTheme === 'light' ? '🌞' : '🌙';
+            }
         });
-    });
-</script>
+    </script>
 </body>
 </html>
