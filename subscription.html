@@ -107,30 +107,6 @@
             color: var(--primary-orange);
         }
 
-        /* Due Amount Line */
-        .due-amount {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: #1e3a8a;
-            text-align: center;
-            margin: 15px 0 5px 0;
-        }
-
-        [data-theme="dark"] .due-amount {
-            color: #60a5fa;
-        }
-
-        .pending-months {
-            font-size: 0.9rem;
-            color: #666;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        [data-theme="dark"] .pending-months {
-            color: #ccc;
-        }
-
         /* Payment Form */
         .payment-form {
             margin-top: 20px;
@@ -204,6 +180,19 @@
 
         .pay-btn:hover::before {
             left: 100%;
+        }
+
+        /* Payment Note */
+        .payment-note {
+            font-size: 0.75rem;
+            color: #666;
+            text-align: center;
+            margin-top: 10px;
+            line-height: 1.4;
+        }
+
+        [data-theme="dark"] .payment-note {
+            color: #ccc;
         }
 
         /* Payment History Table */
@@ -357,12 +346,15 @@
                         My Subscription
                     </div>
                     
-                    <!-- Due Amount Section -->
-                    <div class="due-amount" id="dueAmount">
-                        Due Amount: ₹0
+                    <!-- Due Amount Section - Back to box style -->
+                    <div class="subs-info">
+                        <i class="fas fa-money-bill-wave"></i>
+                        <span id="dueInfo">Due Amount: ₹0</span>
                     </div>
-                    <div class="pending-months" id="pendingMonths">
-                        Pending: 0 months
+                    
+                    <div class="subs-info">
+                        <i class="fas fa-calendar-times"></i>
+                        <span id="pendingMonths">Pending: 0 months</span>
                     </div>
                     
                     <!-- Payment Form -->
@@ -380,6 +372,11 @@
                                 <i class="fas fa-credit-card me-2"></i>
                                 Pay via UPI
                             </button>
+                            
+                            <!-- Payment Note -->
+                            <div class="payment-note">
+                                Payment will be updated in the system within 4 hours of successful transaction
+                            </div>
                         </form>
                     </div>
                     
@@ -441,6 +438,8 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
+        let currentMemberNumber = '';
+
         // Auth State Listener
         auth.onAuthStateChanged(async (user) => {
             if (!user) {
@@ -455,7 +454,8 @@
                         return;
                     }
 
-                    await loadSubscriptions(user.uid, userDoc.data().memberNumber || 'Unknown');
+                    currentMemberNumber = userDoc.data().memberNumber || 'Unknown';
+                    await loadSubscriptions(user.uid);
                 } catch (error) {
                     alert('Error loading user data: ' + error.message);
                     console.error('Error:', error);
@@ -483,7 +483,7 @@
         };
 
         // Load Subscriptions
-        const loadSubscriptions = async (userId, memberNumber) => {
+        const loadSubscriptions = async (userId) => {
             const currentDate = new Date('2025-10-20'); // Fixed for testing; use new Date() for production
             const currentMonth = currentDate.toISOString().slice(0, 7);
             const startMonth = '2025-10';
@@ -522,7 +522,7 @@
 
                 const dueAmount = unpaidMonths.length * 200;
                 document.getElementById('amount').value = dueAmount;
-                document.getElementById('dueAmount').textContent = `Due Amount: ₹${dueAmount}`;
+                document.getElementById('dueInfo').textContent = `Due Amount: ₹${dueAmount}`;
                 
                 // Show pending months as comma separated list
                 if (unpaidMonths.length > 0) {
@@ -546,8 +546,8 @@
                 return;
             }
 
-            // Open UPI payment
-            const upiUri = `upi://pay?pa=9037383927@upi&pn=ShipyardNagar&am=${amount}&tn=Subscription&cu=INR`;
+            // Open UPI payment with correct beneficiary name and member number
+            const upiUri = `upi://pay?pa=9037383927@upi&pn=VISHNU T&am=${amount}&tn=Subscription_${currentMemberNumber}&cu=INR`;
             window.location.href = upiUri;
         });
 
