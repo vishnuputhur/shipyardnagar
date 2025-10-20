@@ -207,15 +207,6 @@
             color: white;
         }
         
-        /* Wealth edit section */
-        .wealth-edit-section {
-            background: #fff3cd;
-            padding: 15px;
-            border-radius: 10px;
-            margin: 15px 0;
-            border: 1px solid #ffeaa7;
-        }
-
         /* Admin buttons */
         .admin-btn {
             background: var(--gradient);
@@ -310,10 +301,10 @@
                             <i class="fas fa-credit-card me-2"></i>
                             Subscriptions
                         </button>
-                        <button class="admin-btn" id="refreshTotal">
-                            <i class="fas fa-sync-alt me-2"></i>
-                            Refresh Total
-                        </button>
+                        <a href="wealth-admin.html" class="admin-btn">
+                            <i class="fas fa-money-bill-wave me-2"></i>
+                            Wealth Management
+                        </a>
                         <button class="admin-btn" id="logout" style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);">
                             <i class="fas fa-sign-out-alt me-2"></i>
                             Logout
@@ -329,29 +320,6 @@
                             <label class="form-label"><strong>Select Month to View:</strong></label>
                             <div class="month-buttons" id="monthButtons">
                                 <!-- Month buttons will be populated here -->
-                            </div>
-                        </div>
-
-                        <!-- Wealth Edit Section -->
-                        <div class="wealth-edit-section">
-                            <h5>Wealth Management</h5>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="input-group mb-3">
-                                        <input type="number" class="form-control" id="wealthAmount" placeholder="Amount">
-                                        <button class="admin-btn" id="addWealth" style="border-radius: 0 10px 10px 0;">Add Income</button>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="input-group mb-3">
-                                        <input type="number" class="form-control" id="expenseAmount" placeholder="Amount">
-                                        <button class="admin-btn" id="addExpense" style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); border-radius: 0 10px 10px 0;">Add Expense</button>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="input-group">
-                                <input type="text" class="form-control" id="transactionDescription" placeholder="Description">
-                                <button class="admin-btn" id="resetWealth" style="background: linear-gradient(135deg, #fd7e14 0%, #e55a2b 100%); border-radius: 0 10px 10px 0;">Reset Wealth</button>
                             </div>
                         </div>
 
@@ -423,13 +391,9 @@
             const subscriptionSection = document.getElementById('subscriptionSection');
             const totalWealthDisplay = document.getElementById('totalWealthDisplay');
             const subscriptionBtn = document.getElementById('subscriptionBtn');
-            const refreshTotalBtn = document.getElementById('refreshTotal');
             const logoutBtn = document.getElementById('logout');
             const subscriptionTableBody = document.getElementById('subscriptionTableBody');
             const monthButtons = document.getElementById('monthButtons');
-            const addWealthBtn = document.getElementById('addWealth');
-            const addExpenseBtn = document.getElementById('addExpense');
-            const resetWealthBtn = document.getElementById('resetWealth');
 
             // Auth State Check
             auth.onAuthStateChanged(async (user) => {
@@ -458,10 +422,6 @@
                 loadSubscriptions();
             });
 
-            refreshTotalBtn.addEventListener('click', () => {
-                refreshTotal();
-            });
-
             logoutBtn.addEventListener('click', () => {
                 auth.signOut().then(() => {
                     window.location.href = 'login.html';
@@ -469,84 +429,6 @@
                     alert('Logout Error: ' + error.message);
                 });
             });
-
-            // Wealth Management Functions
-            addWealthBtn.addEventListener('click', async () => {
-                const amount = parseFloat(document.getElementById('wealthAmount').value);
-                const description = document.getElementById('transactionDescription').value || 'Manual Income';
-                
-                if (!amount || amount <= 0) {
-                    alert('Please enter a valid amount');
-                    return;
-                }
-                
-                if (confirm(`Add ₹${amount} as income?`)) {
-                    await addTransaction('income', amount, description);
-                }
-            });
-
-            addExpenseBtn.addEventListener('click', async () => {
-                const amount = parseFloat(document.getElementById('expenseAmount').value);
-                const description = document.getElementById('transactionDescription').value || 'Manual Expense';
-                
-                if (!amount || amount <= 0) {
-                    alert('Please enter a valid amount');
-                    return;
-                }
-                
-                if (confirm(`Add ₹${amount} as expense?`)) {
-                    await addTransaction('expense', amount, description);
-                }
-            });
-
-            resetWealthBtn.addEventListener('click', async () => {
-                if (confirm('Are you sure you want to reset ALL transactions? This cannot be undone!')) {
-                    loadingSpinner.style.display = 'block';
-                    try {
-                        // Delete all transactions
-                        const transactions = await db.collection('transactions').get();
-                        const batch = db.batch();
-                        transactions.forEach(doc => batch.delete(doc.ref));
-                        await batch.commit();
-                        
-                        alert('All transactions reset successfully!');
-                        await refreshTotal();
-                    } catch (error) {
-                        console.error('Error resetting transactions:', error);
-                        alert('Error: ' + error.message);
-                    } finally {
-                        loadingSpinner.style.display = 'none';
-                    }
-                }
-            });
-
-            const addTransaction = async (type, amount, description) => {
-                loadingSpinner.style.display = 'block';
-                try {
-                    await db.collection('transactions').add({
-                        type: type,
-                        amount: amount,
-                        head: description,
-                        date: new Date().toISOString().split('T')[0],
-                        description: description,
-                        manualEntry: true
-                    });
-                    
-                    alert(`${type === 'income' ? 'Income' : 'Expense'} of ₹${amount} added successfully!`);
-                    
-                    // Clear inputs
-                    document.getElementById('wealthAmount').value = '';
-                    document.getElementById('expenseAmount').value = '';
-                    document.getElementById('transactionDescription').value = '';
-                    
-                    await refreshTotal();
-                } catch (error) {
-                    console.error('Error adding transaction:', error);
-                    alert('Error: ' + error.message);
-                } finally {
-                    loadingSpinner.style.display = 'none';
-                }
-            };
 
             // Subscriptions Functionality
             const loadSubscriptions = async () => {
