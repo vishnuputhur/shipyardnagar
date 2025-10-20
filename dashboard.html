@@ -178,6 +178,7 @@
             transform: translate(-50%, -50%);
             font-size: 2rem;
             color: #0288d1;
+            z-index: 9999;
         }
         
         /* Checkbox styling */
@@ -438,7 +439,9 @@
                                         <th>Member Name</th>
                                     </tr>
                                 </thead>
-                                <tbody></tbody>
+                                <tbody id="subscriptionTableBody">
+                                    <!-- Payment history will be loaded here -->
+                                </tbody>
                             </table>
                         </div>
                         <p id="totalWealthDisplay" class="fw-bold fs-5 mt-3">Total Wealth: ₹0</p>
@@ -455,6 +458,9 @@
         </div>
         <button id="themeToggle" class="theme-toggle-btn">🌞</button>
     </footer>
+
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner">⏳ Loading...</div>
 
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
@@ -481,6 +487,11 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
+        // Global variables
+        let currentMembers = [];
+        let allMonths = [];
+        let selectedMonth = '';
+
         // DOM Content Loaded
         document.addEventListener('DOMContentLoaded', () => {
             const loadingSpinner = document.getElementById('loadingSpinner');
@@ -495,16 +506,11 @@
             const subscriptionBtn = document.getElementById('subscriptionBtn');
             const refreshTotalBtn = document.getElementById('refreshTotal');
             const logoutBtn = document.getElementById('logout');
-            const subscriptionTableBody = document.querySelector('#subscriptionTable tbody');
+            const subscriptionTableBody = document.getElementById('subscriptionTableBody');
             const monthButtons = document.getElementById('monthButtons');
             const addWealthBtn = document.getElementById('addWealth');
             const addExpenseBtn = document.getElementById('addExpense');
             const resetWealthBtn = document.getElementById('resetWealth');
-
-            let currentMembers = [];
-            let allMonths = [];
-            let selectedMonth = '';
-            let currentAdmin = null;
 
             // Auth State Check
             auth.onAuthStateChanged(async (user) => {
@@ -521,7 +527,6 @@
                     return;
                 }
 
-                currentAdmin = user;
                 loadingSpinner.style.display = 'none';
 
                 // Initial Load
@@ -578,6 +583,9 @@
                 loadingSpinner.style.display = 'block';
                 
                 try {
+                    // Store current admin user
+                    const currentUser = auth.currentUser;
+                    
                     // Create user with email and password
                     const userCredential = await auth.createUserWithEmailAndPassword(
                         memberData.email, 
@@ -587,11 +595,18 @@
                     // Store member data in Firestore
                     await db.collection('users').doc(userCredential.user.uid).set(memberData);
                     
-                    // IMPORTANT: Sign out the newly created user and sign back in as admin
+                    // Sign out the newly created user
                     await auth.signOut();
                     
-                    // Sign back in as admin
-                    await auth.signInWithEmailAndPassword(currentAdmin.email, prompt('Please enter your admin password to continue:'));
+                    // Sign back in as admin using stored credentials
+                    const adminEmail = currentUser.email;
+                    const adminPassword = prompt('Please enter your admin password to continue:');
+                    
+                    if (!adminPassword) {
+                        throw new Error('Admin password is required');
+                    }
+                    
+                    await auth.signInWithEmailAndPassword(adminEmail, adminPassword);
                     
                     alert('Member added successfully!');
                     addUserForm.reset();
@@ -602,7 +617,11 @@
                     
                     // Try to sign back in as admin if there was an error
                     try {
-                        await auth.signInWithEmailAndPassword(currentAdmin.email, prompt('Please enter your admin password to continue:'));
+                        const adminEmail = prompt('Please enter your admin email:');
+                        const adminPassword = prompt('Please enter your admin password:');
+                        if (adminEmail && adminPassword) {
+                            await auth.signInWithEmailAndPassword(adminEmail, adminPassword);
+                        }
                     } catch (reAuthError) {
                         console.error('Re-authentication failed:', reAuthError);
                         window.location.href = 'login.html';
@@ -753,6 +772,7 @@
                     if (allMonths.length > 0 && !selectedMonth) {
                         selectedMonth = allMonths[0];
                         updateMonthSelection(selectedMonth);
+                        await renderSubscriptionTableForMonth(selectedMonth);
                     }
 
                 } catch (error) {
@@ -819,7 +839,6 @@
 
             // Render table for selected month
             const renderSubscriptionTableForMonth = async (month) => {
-                const subscriptionTableBody = document.querySelector('#subscriptionTable tbody');
                 if (!subscriptionTableBody) return;
 
                 subscriptionTableBody.innerHTML = '<tr><td colspan="2">Loading...</td></tr>';
@@ -840,7 +859,7 @@
                                                data-member="${member.id}" 
                                                data-month="${month}" 
                                                ${paid ? 'checked' : ''}
-                                               onclick="handleSingleCheckbox(this)">
+                                               onchange="handleSingleCheckbox(this)">
                                     </td>
                                 </tr>
                             `);
@@ -867,75 +886,6 @@
                 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                 const monthIndex = parseInt(monthString.split('-')[1]) - 1;
                 return months[monthIndex];
-            };
-
-            // Handle single checkbox click
-            window.handleSingleCheckbox = async function(checkbox) {
-                const memberId = checkbox.dataset.member;
-                const month = checkbox.dataset.month;
-                const shouldBePaid = checkbox.checked;
-                
-                // If unchecking, show confirmation
-                if (!shouldBePaid) {
-                    if (!confirm('Are you sure you want to remove this payment? ₹200 will be deducted from total.')) {
-                        checkbox.checked = true;
-                        return;
-                    }
-                }
-
-                loadingSpinner.style.display = 'block';
-                try {
-                    if (shouldBePaid) {
-                        // Mark as paid
-                        await db.collection('contributions').doc(memberId).collection('months').doc(month).set({
-                            paid: true,
-                            date: new Date().toISOString().split('T')[0],
-                            amount: 200,
-                            memberId: memberId,
-                            month: month
-                        });
-                        
-                        await db.collection('transactions').add({
-                            type: 'income',
-                            memberId: memberId,
-                            amount: 200,
-                            head: `Monthly Subscription - ${month}`,
-                            date: new Date().toISOString().split('T')[0]
-                        });
-                        
-                        alert('Subscription marked! ₹200 added to total.');
-                    } else {
-                        // Unmark
-                        await db.collection('contributions').doc(memberId).collection('months').doc(month).set({
-                            paid: false,
-                            date: null,
-                            amount: 0,
-                            memberId: memberId,
-                            month: month
-                        }, { merge: true });
-                        
-                        // Remove transaction
-                        const transactions = await db.collection('transactions')
-                            .where('memberId', '==', memberId)
-                            .where('head', '==', `Monthly Subscription - ${month}`)
-                            .get();
-                        
-                        const batch = db.batch();
-                        transactions.forEach(doc => batch.delete(doc.ref));
-                        await batch.commit();
-                        
-                        alert('Payment removed! ₹200 deducted from total.');
-                    }
-                    
-                    await refreshTotal();
-                } catch (error) {
-                    console.error('Error updating subscription:', error);
-                    alert('Error: ' + error.message);
-                    // Revert checkbox state on error
-                    checkbox.checked = !shouldBePaid;
-                } finally {
-                    loadingSpinner.style.display = 'none';
-                }
             };
 
             // Refresh Total
@@ -976,6 +926,85 @@
                 themeToggle.textContent = savedTheme === 'light' ? '🌞' : '🌙';
             }
         });
+
+        // Handle single checkbox click - Global function
+        window.handleSingleCheckbox = async function(checkbox) {
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const memberId = checkbox.dataset.member;
+            const month = checkbox.dataset.month;
+            const shouldBePaid = checkbox.checked;
+            
+            // If unchecking, show confirmation
+            if (!shouldBePaid) {
+                if (!confirm('Are you sure you want to remove this payment? ₹200 will be deducted from total.')) {
+                    checkbox.checked = true;
+                    return;
+                }
+            }
+
+            loadingSpinner.style.display = 'block';
+            try {
+                if (shouldBePaid) {
+                    // Mark as paid
+                    await firebase.firestore().collection('contributions').doc(memberId).collection('months').doc(month).set({
+                        paid: true,
+                        date: new Date().toISOString().split('T')[0],
+                        amount: 200,
+                        memberId: memberId,
+                        month: month
+                    });
+                    
+                    await firebase.firestore().collection('transactions').add({
+                        type: 'income',
+                        memberId: memberId,
+                        amount: 200,
+                        head: `Monthly Subscription - ${month}`,
+                        date: new Date().toISOString().split('T')[0]
+                    });
+                    
+                    alert('Subscription marked! ₹200 added to total.');
+                } else {
+                    // Unmark
+                    await firebase.firestore().collection('contributions').doc(memberId).collection('months').doc(month).set({
+                        paid: false,
+                        date: null,
+                        amount: 0,
+                        memberId: memberId,
+                        month: month
+                    }, { merge: true });
+                    
+                    // Remove transaction
+                    const transactions = await firebase.firestore().collection('transactions')
+                        .where('memberId', '==', memberId)
+                        .where('head', '==', `Monthly Subscription - ${month}`)
+                        .get();
+                    
+                    const batch = firebase.firestore().batch();
+                    transactions.forEach(doc => batch.delete(doc.ref));
+                    await batch.commit();
+                    
+                    alert('Payment removed! ₹200 deducted from total.');
+                }
+                
+                // Refresh total wealth
+                let totalIncome = 0, totalExpense = 0;
+                const transactions = await firebase.firestore().collection('transactions').get();
+                transactions.forEach(doc => {
+                    const t = doc.data();
+                    if (t.type === 'income') totalIncome += t.amount || 0;
+                    if (t.type === 'expense') totalExpense += t.amount || 0;
+                });
+                const totalWealth = totalIncome - totalExpense;
+                document.getElementById('totalWealthDisplay').textContent = `Total Wealth: ₹${totalWealth}`;
+            } catch (error) {
+                console.error('Error updating subscription:', error);
+                alert('Error: ' + error.message);
+                // Revert checkbox state on error
+                checkbox.checked = !shouldBePaid;
+            } finally {
+                loadingSpinner.style.display = 'none';
+            }
+        };
     </script>
 </body>
 </html>
