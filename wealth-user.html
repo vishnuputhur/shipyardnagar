@@ -71,19 +71,6 @@
             margin-top: 120px;
         }
 
-        /* Page Title */
-        .page-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #1e3a8a;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        [data-theme="dark"] .page-title {
-            color: #60a5fa;
-        }
-
         /* Footer - Reduced height */
         footer {
             position: fixed;
@@ -134,37 +121,6 @@
             background: var(--gradient);
             color: white;
             border-color: var(--primary-orange);
-        }
-
-        /* Back Button */
-        .back-btn {
-            background: transparent;
-            border: 2px solid #6b7280;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            color: #6b7280;
-            font-size: 1.1rem;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 15px;
-            position: absolute;
-            top: 20px;
-            left: 20px;
-        }
-
-        [data-theme="dark"] .back-btn {
-            border-color: #9ca3af;
-            color: #9ca3af;
-        }
-
-        .back-btn:hover {
-            background: var(--gradient);
-            border-color: var(--primary-orange);
-            color: white;
-            transform: translateY(-2px);
         }
 
         /* Card Styling */
@@ -316,14 +272,6 @@
                 padding: 3px 10px;
                 height: 28px;
             }
-
-            .back-btn {
-                top: 15px;
-                left: 15px;
-                width: 35px;
-                height: 35px;
-                font-size: 1rem;
-            }
         }
     </style>
 </head>
@@ -335,23 +283,13 @@
         <div class="row justify-content-center">
             <div class="col-12 col-md-10 col-lg-8">
                 <div class="main-card">
-                    <!-- Back Button Only -->
-                    <button class="back-btn" onclick="goBack()">
-                        <i class="fas fa-arrow-left"></i>
-                    </button>
-
-                    <div class="page-title">
-                        Our Wealth
-                    </div>
-                    
-                    <!-- Wealth Display -->
+                    <!-- Wealth Display - No heading, no back button -->
                     <div class="wealth-display">
-                        <div class="wealth-label">OUR WEALTH</div>
                         <div class="wealth-amount" id="totalWealth">₹0</div>
                         <div class="last-updated" id="lastUpdated">Last updated: -</div>
                     </div>
 
-                    <!-- Recent Transactions -->
+                    <!-- All Transactions -->
                     <div class="card">
                         <h5>All Transactions</h5>
                         <div class="transactions-list" id="transactionsList">
@@ -399,11 +337,6 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        // Go Back Function
-        function goBack() {
-            window.history.back();
-        }
-
         // DOM Content Loaded
         document.addEventListener('DOMContentLoaded', () => {
             const loadingSpinner = document.getElementById('loadingSpinner');
@@ -429,7 +362,7 @@
             const loadWealthAndTransactions = async () => {
                 try {
                     let totalIncome = 0, totalExpense = 0;
-                    let latestTransactionDate = null;
+                    let latestUpdateDate = null;
                     
                     // Get all transactions without limit
                     const transactionsSnapshot = await db.collection('transactions')
@@ -445,7 +378,7 @@
                         return;
                     }
                     
-                    // Process transactions
+                    // Process transactions for wealth calculation
                     transactionsSnapshot.forEach(doc => {
                         const transaction = doc.data();
                         
@@ -456,15 +389,69 @@
                             totalExpense += transaction.amount || 0;
                         }
                         
-                        // Find latest transaction date
-                        const transactionDate = transaction.date;
-                        if (transactionDate) {
-                            if (!latestTransactionDate || transactionDate > latestTransactionDate) {
-                                latestTransactionDate = transactionDate;
+                        // Find latest update date (using createdAt timestamp)
+                        const transactionTimestamp = transaction.createdAt;
+                        if (transactionTimestamp) {
+                            const transactionDate = new Date(transactionTimestamp.seconds * 1000);
+                            if (!latestUpdateDate || transactionDate > latestUpdateDate) {
+                                latestUpdateDate = transactionDate;
                             }
                         }
+                    });
+
+                    // Get subscription data and include in wealth calculation
+                    try {
+                        const usersSnapshot = await db.collection('users').get();
+                        let totalSubscriptionIncome = 0;
                         
-                        // Create transaction item
+                        for (const userDoc of usersSnapshot.docs) {
+                            const userId = userDoc.id;
+                            const contributionsSnapshot = await db.collection('contributions')
+                                .doc(userId)
+                                .collection('months')
+                                .get();
+                            
+                            contributionsSnapshot.forEach(monthDoc => {
+                                const monthData = monthDoc.data();
+                                if (monthData.paid) {
+                                    totalSubscriptionIncome += 200; // Monthly subscription amount
+                                    
+                                    // Check if this subscription has a later date
+                                    if (monthData.date) {
+                                        const subscriptionDate = new Date(monthData.date);
+                                        if (!latestUpdateDate || subscriptionDate > latestUpdateDate) {
+                                            latestUpdateDate = subscriptionDate;
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                        
+                        totalIncome += totalSubscriptionIncome;
+                    } catch (subscriptionError) {
+                        console.error('Error loading subscription data:', subscriptionError);
+                    }
+                    
+                    // Update wealth display
+                    const wealth = totalIncome - totalExpense;
+                    totalWealth.textContent = `₹${wealth.toLocaleString()}`;
+                    
+                    // Update last updated date
+                    if (latestUpdateDate) {
+                        const formattedDate = latestUpdateDate.toLocaleDateString('en-IN', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric'
+                        });
+                        lastUpdated.textContent = `Last updated: ${formattedDate}`;
+                    } else {
+                        lastUpdated.textContent = 'Last updated: Never';
+                    }
+
+                    // Display all transactions
+                    transactionsSnapshot.forEach(doc => {
+                        const transaction = doc.data();
+                        
                         const transactionItem = document.createElement('div');
                         transactionItem.className = 'transaction-item';
                         
@@ -482,17 +469,6 @@
                         
                         transactionsList.appendChild(transactionItem);
                     });
-                    
-                    // Update wealth display
-                    const wealth = totalIncome - totalExpense;
-                    totalWealth.textContent = `₹${wealth.toLocaleString()}`;
-                    
-                    // Update last updated date
-                    if (latestTransactionDate) {
-                        lastUpdated.textContent = `Last updated: ${latestTransactionDate}`;
-                    } else {
-                        lastUpdated.textContent = 'Last updated: Never';
-                    }
                     
                 } catch (error) {
                     console.error('Error loading transactions:', error);
