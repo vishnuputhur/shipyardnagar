@@ -365,7 +365,7 @@
                 loadWealthAndTransactions();
             });
 
-            // Load Wealth and Transactions
+            // Load Wealth and Transactions - FIXED: Same calculation for all users
             const loadWealthAndTransactions = async () => {
                 try {
                     let totalIncome = 0, totalExpense = 0;
@@ -406,7 +406,7 @@
                         }
                     });
 
-                    // Get subscription data and include in wealth calculation
+                    // Get subscription data and include in wealth calculation - SAME FOR ALL USERS
                     try {
                         const usersSnapshot = await db.collection('users').get();
                         let totalSubscriptionIncome = 0;
@@ -439,7 +439,7 @@
                         console.error('Error loading subscription data:', subscriptionError);
                     }
                     
-                    // Update wealth display
+                    // Update wealth display - SAME FOR ALL USERS
                     const wealth = totalIncome - totalExpense;
                     totalWealth.textContent = `₹${wealth.toLocaleString()}`;
                     
