@@ -159,19 +159,21 @@
             box-shadow: var(--shadow);
         }
 
+        .balance-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
         .wealth-amount {
             font-size: 2.5rem;
             font-weight: 700;
-            margin: 10px 0;
-        }
-
-        .wealth-label {
-            font-size: 1rem;
-            opacity: 0.9;
+            margin: 5px 0;
         }
 
         .last-updated {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             opacity: 0.8;
             margin-top: 8px;
             font-style: italic;
@@ -268,6 +270,10 @@
                 font-size: 2rem;
             }
             
+            .balance-label {
+                font-size: 0.8rem;
+            }
+            
             footer {
                 padding: 3px 10px;
                 height: 28px;
@@ -283,8 +289,9 @@
         <div class="row justify-content-center">
             <div class="col-12 col-md-10 col-lg-8">
                 <div class="main-card">
-                    <!-- Wealth Display - No heading, no back button -->
+                    <!-- Wealth Display with "Our Current Balance" label -->
                     <div class="wealth-display">
+                        <div class="balance-label">Our Current Balance</div>
                         <div class="wealth-amount" id="totalWealth">₹0</div>
                         <div class="last-updated" id="lastUpdated">Last updated: -</div>
                     </div>
