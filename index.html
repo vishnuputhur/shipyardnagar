@@ -27,7 +27,7 @@
             font-family: 'Poppins', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding-bottom: 0;
+            padding-bottom: 30px; /* Added padding for footer */
             position: relative;
             overflow-x: hidden;
             margin: 0;
@@ -191,48 +191,34 @@
             grid-column: span 2;
         }
 
-        /* Profile Incomplete Warning - Fixed position near profile button */
+        /* Profile Incomplete Warning - FIXED: Positioned below profile button */
         .profile-warning {
             position: absolute;
-            top: 50%;
-            right: -10px;
-            transform: translateY(-50%);
-            background: linear-gradient(90deg, #ef4444, #dc2626);
-            color: white;
-            padding: 6px 12px;
-            border-radius: 15px;
+            bottom: -25px;
+            left: 0;
+            right: 0;
+            background: linear-gradient(90deg, #f59e0b, #eab308);
+            color: #000;
+            padding: 4px 8px;
+            border-radius: 8px;
             font-weight: 500;
-            font-size: 0.7rem;
-            white-space: nowrap;
-            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+            font-size: 0.65rem;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
             z-index: 1001;
-            animation: scrollWarning 8s linear infinite;
+            animation: blinkWarning 2s infinite;
             display: none;
         }
 
-        @keyframes scrollWarning {
-            0% {
-                transform: translateY(-50%) translateX(100%);
-                opacity: 0;
-            }
-            10% {
-                transform: translateY(-50%) translateX(0);
-                opacity: 1;
-            }
-            90% {
-                transform: translateY(-50%) translateX(0);
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(-50%) translateX(-100%);
-                opacity: 0;
-            }
+        @keyframes blinkWarning {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
         }
 
         /* Profile button container with relative positioning - FIXED */
         .profile-btn-container {
             position: relative;
-            display: contents; /* This makes the button behave like other grid items */
+            grid-column: span 1;
         }
 
         /* Make sure the profile button inside container has same styling */
@@ -241,7 +227,7 @@
             width: 100%;
         }
 
-        /* Footer - Reduced height */
+        /* Footer - Fixed position */
         footer {
             position: fixed;
             bottom: 0;
@@ -376,7 +362,7 @@
                                 Profile
                             </button>
                             <div id="profileWarning" class="profile-warning">
-                                <i class="fas fa-exclamation-triangle me-1"></i> Complete Profile
+                                <i class="fas fa-exclamation-triangle me-1"></i> Please update your profile
                             </div>
                         </div>
                         <button id="subscriptionBtn" class="app-btn">
@@ -416,7 +402,7 @@
         </div>
     </main>
     
-    <!-- Footer - Reduced height -->
+    <!-- Footer - Fixed position -->
     <footer>
         <div class="footer-text">
             <p>Powered by VTSoft 2025</p>
