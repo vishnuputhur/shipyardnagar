@@ -463,7 +463,7 @@
             }
         });
 
-        // Generate Months - FIXED: Use current date instead of fixed date
+        // Generate Months - FIXED: Generate up to December 2025 for advance payments
         const generateMonths = (start, end) => {
             const months = [];
             let current = new Date(start + '-01');
@@ -482,12 +482,11 @@
             return months[monthIndex] + ' ' + monthString.split('-')[0];
         };
 
-        // Load Subscriptions - FIXED: Use current date and include all months
+        // Load Subscriptions - FIXED: Show all months up to December 2025 for advance payments
         const loadSubscriptions = async (userId) => {
-            const currentDate = new Date(); // Use current date instead of fixed date
-            const currentMonth = currentDate.toISOString().slice(0, 7);
             const startMonth = '2025-10'; // Starting from October 2025
-            const allMonths = generateMonths(startMonth, currentMonth);
+            const endMonth = '2025-12';   // Up to December 2025 for advance payments
+            const allMonths = generateMonths(startMonth, endMonth);
 
             try {
                 const contributionsSnap = await db.collection('contributions').doc(userId).collection('months').get();
@@ -536,7 +535,7 @@
             }
         };
 
-        // Payment Form Submit - FIXED: Simple UPI URL without encoding issues
+        // Payment Form Submit - FIXED: New UPI ID and merchant name
         document.getElementById('paymentForm').addEventListener('submit', (e) => {
             e.preventDefault();
             const amount = document.getElementById('amount').value;
@@ -551,17 +550,17 @@
                 return;
             }
 
-            // Simple UPI Payment setup - FIXED: No encoding, simple parameters
-            const upiID = '9037383927@upi';
-            const payeeName = 'ShipyardNagar';
+            // UPI Payment with new details - FIXED
+            const upiID = 'vishnuputhur@sbi';
+            const payeeName = 'Mr.VishnuT';
             const transactionNote = `Member${currentMemberNumber}`;
             
-            // Simple UPI URL without complex encoding
+            // Simple UPI URL
             const upiURL = `upi://pay?pa=${upiID}&pn=${payeeName}&am=${amount}&cu=INR&tn=${transactionNote}`;
 
             console.log('UPI URL:', upiURL);
             
-            // Direct UPI trigger without page redirect
+            // Direct UPI trigger
             window.location.href = upiURL;
             
             // Stay on the same page
