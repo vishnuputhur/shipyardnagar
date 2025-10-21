@@ -132,7 +132,7 @@
             font-weight: 600;
         }
 
-        /* Button Grid */
+        /* Button Grid - FIXED: All buttons same size */
         .button-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -157,6 +157,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            width: 100%; /* Ensure full width */
         }
 
         .app-btn::before {
@@ -228,9 +229,16 @@
             }
         }
 
-        /* Profile button container with relative positioning */
+        /* Profile button container with relative positioning - FIXED */
         .profile-btn-container {
             position: relative;
+            display: contents; /* This makes the button behave like other grid items */
+        }
+
+        /* Make sure the profile button inside container has same styling */
+        .profile-btn-container .app-btn {
+            height: 65px;
+            width: 100%;
         }
 
         /* Footer - Reduced height */
