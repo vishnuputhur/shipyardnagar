@@ -362,7 +362,7 @@
             // Refresh from Firebase
             try {
                 const membersSnapshot = await db.collection('users').get();
-                const members = membersSnapshot.docs.map(doc => ({
+                let members = membersSnapshot.docs.map(doc => ({
                     memberName: doc.data().memberName || 'Unknown',
                     homeName: doc.data().homeName || 'N/A',
                     primaryMobile: doc.data().primaryMobile || 'N/A',
@@ -370,6 +370,17 @@
                     secondaryMobile: doc.data().secondaryMobile || 'N/A',
                     gasConnection: doc.data().gasConnection || 'N/A'
                 }));
+
+                // ✅ Sort members alphabetically by name (A-Z)
+                members.sort((a, b) => {
+                    const nameA = a.memberName.toUpperCase();
+                    const nameB = b.memberName.toUpperCase();
+                    if (nameA < nameB) return -1;
+                    if (nameA > nameB) return 1;
+                    return 0;
+                });
+
+                // Save sorted members to cache
                 localStorage.setItem('membersCache', JSON.stringify(members));
                 renderMembers(members);
             } catch (error) {
