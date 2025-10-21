@@ -364,8 +364,8 @@
                         <form id="paymentForm">
                             <div class="form-group">
                                 <label for="amount" class="form-label">Amount (₹)</label>
-                                <input type="number" class="form-control" id="amount" value="0" min="10" step="10">
-                                <small class="form-text text-muted">Minimum amount: ₹10</small>
+                                <input type="number" class="form-control" id="amount" value="0" min="0" step="100">
+                                <small class="form-text text-muted">You can edit the amount if needed</small>
                             </div>
                             
                             <button type="submit" class="pay-btn">
@@ -463,7 +463,7 @@
             }
         });
 
-        // Generate Months - FIXED: Generate up to December 2025 for advance payments
+        // Generate Months - FIXED: Show only actual paid months + current month for pending
         const generateMonths = (start, end) => {
             const months = [];
             let current = new Date(start + '-01');
@@ -482,18 +482,36 @@
             return months[monthIndex] + ' ' + monthString.split('-')[0];
         };
 
-        // Load Subscriptions - FIXED: Show all months up to December 2025 for advance payments
+        // Load Subscriptions - FIXED: Show actual payment history correctly
         const loadSubscriptions = async (userId) => {
+            const currentDate = new Date();
+            const currentMonth = currentDate.toISOString().slice(0, 7);
             const startMonth = '2025-10'; // Starting from October 2025
-            const endMonth = '2025-12';   // Up to December 2025 for advance payments
-            const allMonths = generateMonths(startMonth, endMonth);
 
             try {
                 const contributionsSnap = await db.collection('contributions').doc(userId).collection('months').get();
                 const paidData = {};
+                const paidMonths = [];
+                
+                // Get all paid months
                 contributionsSnap.forEach(doc => {
                     paidData[doc.id] = doc.data();
+                    if (doc.data().paid) {
+                        paidMonths.push(doc.id);
+                    }
                 });
+
+                // Find the latest paid month to determine how many months to show
+                let latestPaidMonth = startMonth;
+                paidMonths.forEach(month => {
+                    if (month > latestPaidMonth) {
+                        latestPaidMonth = month;
+                    }
+                });
+
+                // Generate months from start to either current month or latest paid month (whichever is later)
+                const endMonth = currentMonth > latestPaidMonth ? currentMonth : latestPaidMonth;
+                const allMonths = generateMonths(startMonth, endMonth);
 
                 let unpaidMonths = [];
                 const contributionTable = document.getElementById('contributionTable');
@@ -535,36 +553,32 @@
             }
         };
 
-        // Payment Form Submit - FIXED: New UPI ID and merchant name
+        // Payment Form Submit - FIXED: Original UPI logic with new UPI ID
         document.getElementById('paymentForm').addEventListener('submit', (e) => {
             e.preventDefault();
             const amount = document.getElementById('amount').value;
             
-            if (amount < 10) {
-                alert('Please enter minimum ₹10!');
-                return;
-            }
-
             if (amount <= 0) {
                 alert('Please enter a valid amount!');
                 return;
             }
 
-            // UPI Payment with new details - FIXED
+            // UPI Payment setup - FIXED: Original working logic
             const upiID = 'vishnuputhur@sbi';
             const payeeName = 'Mr.VishnuT';
-            const transactionNote = `Member${currentMemberNumber}`;
-            
-            // Simple UPI URL
-            const upiURL = `upi://pay?pa=${upiID}&pn=${payeeName}&am=${amount}&cu=INR&tn=${transactionNote}`;
+            const upiURL = `upi://pay?pa=${upiID}&pn=${payeeName}&am=${amount}&cu=INR&tn=MemberNo:${currentMemberNumber}`;
 
-            console.log('UPI URL:', upiURL);
-            
-            // Direct UPI trigger
-            window.location.href = upiURL;
-            
-            // Stay on the same page
-            return false;
+            try {
+                window.location.href = upiURL;
+                console.log('Attempting to trigger UPI:', upiURL);
+                setTimeout(() => {
+                    window.location.href = 'home.html';
+                }, 100);
+            } catch (error) {
+                console.error('UPI redirect error:', error);
+                alert('UPI app not triggered. Ensure a UPI app is installed.');
+                window.location.href = 'home.html';
+            }
         });
 
         // Theme Toggle
