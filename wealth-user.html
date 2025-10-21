@@ -365,13 +365,13 @@
                 loadWealthAndTransactions();
             });
 
-            // Load Wealth and Transactions - FIXED: Same calculation for all users
+            // Load Wealth and Transactions - FIXED: Simple calculation like home page
             const loadWealthAndTransactions = async () => {
                 try {
                     let totalIncome = 0, totalExpense = 0;
                     let latestUpdateDate = null;
                     
-                    // Get all transactions without limit
+                    // Get all transactions without limit - SIMPLE CALCULATION
                     const transactionsSnapshot = await db.collection('transactions')
                         .orderBy('createdAt', 'desc')
                         .get();
@@ -385,11 +385,11 @@
                         return;
                     }
                     
-                    // Process transactions for wealth calculation
+                    // Process transactions for wealth calculation - SIMPLE LIKE HOME PAGE
                     transactionsSnapshot.forEach(doc => {
                         const transaction = doc.data();
                         
-                        // Calculate total wealth
+                        // Calculate total wealth - SIMPLE CALCULATION
                         if (transaction.type === 'income') {
                             totalIncome += transaction.amount || 0;
                         } else if (transaction.type === 'expense') {
@@ -406,40 +406,7 @@
                         }
                     });
 
-                    // Get subscription data and include in wealth calculation - SAME FOR ALL USERS
-                    try {
-                        const usersSnapshot = await db.collection('users').get();
-                        let totalSubscriptionIncome = 0;
-                        
-                        for (const userDoc of usersSnapshot.docs) {
-                            const userId = userDoc.id;
-                            const contributionsSnapshot = await db.collection('contributions')
-                                .doc(userId)
-                                .collection('months')
-                                .get();
-                            
-                            contributionsSnapshot.forEach(monthDoc => {
-                                const monthData = monthDoc.data();
-                                if (monthData.paid) {
-                                    totalSubscriptionIncome += 200; // Monthly subscription amount
-                                    
-                                    // Check if this subscription has a later date
-                                    if (monthData.date) {
-                                        const subscriptionDate = new Date(monthData.date);
-                                        if (!latestUpdateDate || subscriptionDate > latestUpdateDate) {
-                                            latestUpdateDate = subscriptionDate;
-                                        }
-                                    }
-                                }
-                            });
-                        }
-                        
-                        totalIncome += totalSubscriptionIncome;
-                    } catch (subscriptionError) {
-                        console.error('Error loading subscription data:', subscriptionError);
-                    }
-                    
-                    // Update wealth display - SAME FOR ALL USERS
+                    // Update wealth display - SIMPLE CALCULATION
                     const wealth = totalIncome - totalExpense;
                     totalWealth.textContent = `₹${wealth.toLocaleString()}`;
                     
