@@ -136,15 +136,38 @@
             border-color: var(--primary-orange);
         }
 
-        /* Button Grid Layout */
-        .button-grid {
+        /* Back Button */
+        .back-btn {
+            background: transparent;
+            border: 2px solid #6b7280;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            color: #6b7280;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
             display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            position: absolute;
+            top: 20px;
+            left: 20px;
         }
 
-        /* Form Styling */
+        [data-theme="dark"] .back-btn {
+            border-color: #9ca3af;
+            color: #9ca3af;
+        }
+
+        .back-btn:hover {
+            background: var(--gradient);
+            border-color: var(--primary-orange);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Card Styling */
         .card {
             margin-top: 20px;
             padding: 15px;
@@ -169,53 +192,11 @@
             z-index: 9999;
         }
 
-        /* Admin buttons */
-        .admin-btn {
-            background: var(--gradient);
-            border: none;
-            border-radius: 12px;
-            padding: 12px 20px;
-            color: white;
-            font-weight: 500;
-            font-size: 0.9rem;
-            box-shadow: var(--shadow);
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-            flex: 1;
-            min-width: 120px;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .admin-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            transition: 0.5s;
-        }
-
-        .admin-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-hover);
-            color: white;
-        }
-
-        .admin-btn:hover::before {
-            left: 100%;
-        }
-
         /* Wealth Display */
         .wealth-display {
             background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%);
             color: white;
-            padding: 20px;
+            padding: 25px;
             border-radius: 15px;
             text-align: center;
             margin-bottom: 20px;
@@ -233,9 +214,16 @@
             opacity: 0.9;
         }
 
+        .last-updated {
+            font-size: 0.85rem;
+            opacity: 0.8;
+            margin-top: 8px;
+            font-style: italic;
+        }
+
         /* Transactions List */
         .transactions-list {
-            max-height: 400px;
+            max-height: 500px;
             overflow-y: auto;
         }
 
@@ -301,6 +289,14 @@
             font-size: 1rem;
         }
 
+        /* No Transactions Message */
+        .no-transactions {
+            text-align: center;
+            padding: 30px;
+            color: #666;
+            font-style: italic;
+        }
+
         /* Responsive */
         @media (max-width: 576px) {
             .header-image {
@@ -312,14 +308,6 @@
                 margin: 100px 10px 50px 10px;
             }
             
-            .button-grid {
-                flex-direction: column;
-            }
-            
-            .admin-btn {
-                width: 100%;
-            }
-            
             .wealth-amount {
                 font-size: 2rem;
             }
@@ -327,6 +315,14 @@
             footer {
                 padding: 3px 10px;
                 height: 28px;
+            }
+
+            .back-btn {
+                top: 15px;
+                left: 15px;
+                width: 35px;
+                height: 35px;
+                font-size: 1rem;
             }
         }
     </style>
@@ -339,31 +335,25 @@
         <div class="row justify-content-center">
             <div class="col-12 col-md-10 col-lg-8">
                 <div class="main-card">
+                    <!-- Back Button Only -->
+                    <button class="back-btn" onclick="goBack()">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+
                     <div class="page-title">
                         Our Wealth
                     </div>
                     
-                    <!-- Navigation Buttons -->
-                    <div class="button-grid">
-                        <a href="home.html" class="admin-btn">
-                            <i class="fas fa-arrow-left me-2"></i>
-                            Back to Home
-                        </a>
-                        <button class="admin-btn" id="logout" style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);">
-                            <i class="fas fa-sign-out-alt me-2"></i>
-                            Logout
-                        </button>
-                    </div>
-
                     <!-- Wealth Display -->
                     <div class="wealth-display">
                         <div class="wealth-label">OUR WEALTH</div>
                         <div class="wealth-amount" id="totalWealth">₹0</div>
+                        <div class="last-updated" id="lastUpdated">Last updated: -</div>
                     </div>
 
                     <!-- Recent Transactions -->
                     <div class="card">
-                        <h5>Recent Transactions (Last 15)</h5>
+                        <h5>All Transactions</h5>
                         <div class="transactions-list" id="transactionsList">
                             <!-- Transactions will be loaded here -->
                         </div>
@@ -409,12 +399,17 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
+        // Go Back Function
+        function goBack() {
+            window.history.back();
+        }
+
         // DOM Content Loaded
         document.addEventListener('DOMContentLoaded', () => {
             const loadingSpinner = document.getElementById('loadingSpinner');
-            const logoutBtn = document.getElementById('logout');
             const transactionsList = document.getElementById('transactionsList');
             const totalWealth = document.getElementById('totalWealth');
+            const lastUpdated = document.getElementById('lastUpdated');
 
             // Auth State Check
             auth.onAuthStateChanged(async (user) => {
@@ -427,56 +422,49 @@
                 loadingSpinner.style.display = 'none';
                 
                 // Load initial data
-                loadWealth();
-                loadTransactions();
+                loadWealthAndTransactions();
             });
 
-            // Logout
-            logoutBtn.addEventListener('click', () => {
-                auth.signOut().then(() => {
-                    window.location.href = 'login.html';
-                }).catch((error) => {
-                    alert('Logout Error: ' + error.message);
-                });
-            });
-
-            // Load Wealth
-            const loadWealth = async () => {
+            // Load Wealth and Transactions
+            const loadWealthAndTransactions = async () => {
                 try {
                     let totalIncome = 0, totalExpense = 0;
-                    const transactions = await db.collection('transactions').get();
+                    let latestTransactionDate = null;
                     
-                    transactions.forEach(doc => {
-                        const t = doc.data();
-                        if (t.type === 'income') totalIncome += t.amount || 0;
-                        if (t.type === 'expense') totalExpense += t.amount || 0;
-                    });
-                    
-                    const wealth = totalIncome - totalExpense;
-                    totalWealth.textContent = `₹${wealth.toLocaleString()}`;
-                } catch (error) {
-                    console.error('Error loading wealth:', error);
-                    totalWealth.textContent = '₹0 (Error)';
-                }
-            };
-
-            // Load Transactions
-            const loadTransactions = async () => {
-                try {
+                    // Get all transactions without limit
                     const transactionsSnapshot = await db.collection('transactions')
                         .orderBy('createdAt', 'desc')
-                        .limit(15)
                         .get();
                     
                     transactionsList.innerHTML = '';
                     
                     if (transactionsSnapshot.empty) {
-                        transactionsList.innerHTML = '<div class="text-center p-3">No transactions found</div>';
+                        transactionsList.innerHTML = '<div class="no-transactions">No transactions found</div>';
+                        totalWealth.textContent = '₹0';
+                        lastUpdated.textContent = 'Last updated: Never';
                         return;
                     }
                     
+                    // Process transactions
                     transactionsSnapshot.forEach(doc => {
                         const transaction = doc.data();
+                        
+                        // Calculate total wealth
+                        if (transaction.type === 'income') {
+                            totalIncome += transaction.amount || 0;
+                        } else if (transaction.type === 'expense') {
+                            totalExpense += transaction.amount || 0;
+                        }
+                        
+                        // Find latest transaction date
+                        const transactionDate = transaction.date;
+                        if (transactionDate) {
+                            if (!latestTransactionDate || transactionDate > latestTransactionDate) {
+                                latestTransactionDate = transactionDate;
+                            }
+                        }
+                        
+                        // Create transaction item
                         const transactionItem = document.createElement('div');
                         transactionItem.className = 'transaction-item';
                         
@@ -486,17 +474,31 @@
                         transactionItem.innerHTML = `
                             <div class="transaction-details">
                                 <div class="transaction-type ${typeClass}">${typeText}</div>
-                                <div class="transaction-narration">${transaction.narration}</div>
-                                <div class="transaction-date">${transaction.date}</div>
+                                <div class="transaction-narration">${transaction.narration || 'No description'}</div>
+                                <div class="transaction-date">${transaction.date || 'No date'}</div>
                             </div>
-                            <div class="transaction-amount ${typeClass}">₹${transaction.amount}</div>
+                            <div class="transaction-amount ${typeClass}">₹${transaction.amount || 0}</div>
                         `;
                         
                         transactionsList.appendChild(transactionItem);
                     });
+                    
+                    // Update wealth display
+                    const wealth = totalIncome - totalExpense;
+                    totalWealth.textContent = `₹${wealth.toLocaleString()}`;
+                    
+                    // Update last updated date
+                    if (latestTransactionDate) {
+                        lastUpdated.textContent = `Last updated: ${latestTransactionDate}`;
+                    } else {
+                        lastUpdated.textContent = 'Last updated: Never';
+                    }
+                    
                 } catch (error) {
                     console.error('Error loading transactions:', error);
-                    transactionsList.innerHTML = '<div class="text-center p-3">Error loading transactions</div>';
+                    transactionsList.innerHTML = '<div class="no-transactions">Error loading transactions</div>';
+                    totalWealth.textContent = '₹0 (Error)';
+                    lastUpdated.textContent = 'Last updated: Error';
                 }
             };
 
