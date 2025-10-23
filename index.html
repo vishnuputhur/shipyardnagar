@@ -104,6 +104,14 @@
             color: #60a5fa; /* Lighter blue for dark theme */
         }
 
+        /* Loading message style */
+        .loading-message {
+            color: #8B0000; /* Dark red color */
+            font-weight: 600;
+            font-size: 1.2rem;
+            text-align: center;
+        }
+
         .wealth-info, .due-info {
             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
             padding: 10px 12px;
@@ -341,7 +349,7 @@
             <div class="col-12 col-md-8 col-lg-6">
                 <div class="main-card">
                     <div class="welcome-text">
-                        <p class="user-greeting">Hi, <span id="user-name">Guest</span> & family! 👋</p>
+                        <p class="user-greeting">Hi, <span id="user-name" class="loading-message">Loading.. please wait</span> & family! 👋</p>
                         
                         <div class="wealth-info">
                             <i class="fas fa-coins me-2"></i>
@@ -462,6 +470,8 @@
                         .then((doc) => {
                             if (doc.exists) {
                                 const data = doc.data();
+                                // Remove loading class and set actual user name
+                                userNameEl.classList.remove('loading-message');
                                 userNameEl.textContent = data.memberName || "Guest";
                                 
                                 // Show admin button only for admin users
@@ -481,12 +491,14 @@
                                 calculateMonthlyDue(user.uid);
                                 
                             } else {
+                                userNameEl.classList.remove('loading-message');
                                 userNameEl.textContent = "Guest";
                                 adminTab.style.display = 'none';
                             }
                         })
                         .catch((error) => {
                             console.error("Error getting document:", error);
+                            userNameEl.classList.remove('loading-message');
                             userNameEl.textContent = "Guest";
                             adminTab.style.display = 'none';
                         });
