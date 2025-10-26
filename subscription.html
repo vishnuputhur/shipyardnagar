@@ -453,7 +453,7 @@
                             </div>
                             
                             <!-- Speaker Contribution Section -->
-                            <div class="speaker-contribution">
+                            <div class="speaker-contribution" id="speakerSection">
                                 <div class="speaker-header">
                                     <i class="fas fa-volume-up"></i>
                                     <span class="speaker-title">Speaker Contribution</span>
@@ -464,10 +464,6 @@
                                 <div class="speaker-option">
                                     <input type="checkbox" id="includeSpeaker" name="includeSpeaker" value="500" checked>
                                     <label for="includeSpeaker">Include speaker contribution of <span class="speaker-amount">₹500</span></label>
-                                </div>
-                                <div class="speaker-option">
-                                    <input type="checkbox" id="excludeSpeaker" name="excludeSpeaker" value="0">
-                                    <label for="excludeSpeaker">Pay monthly subscription only (<span class="speaker-amount">₹200</span>)</label>
                                 </div>
                                 <div id="speakerStatus" class="speaker-status pending">Speaker Contribution: Pending</div>
                             </div>
@@ -496,7 +492,6 @@
                                         <th>Status</th>
                                         <th>Amount</th>
                                         <th>Date</th>
-                                        <th>Speaker</th>
                                     </tr>
                                 </thead>
                                 <tbody id="contributionTable">
@@ -545,6 +540,7 @@
 
         let currentMemberNumber = '';
         let speakerPaid = false;
+        let monthlyDueAmount = 0;
 
         // Auth State Listener
         auth.onAuthStateChanged(async (user) => {
@@ -603,12 +599,17 @@
                 
                 // Update speaker status display
                 const speakerStatus = document.getElementById('speakerStatus');
+                const speakerSection = document.getElementById('speakerSection');
+                
                 if (speakerPaid) {
                     speakerStatus.textContent = 'Speaker Contribution: Paid';
                     speakerStatus.className = 'speaker-status paid';
+                    // Hide speaker options if already paid
+                    speakerSection.style.display = 'none';
                 } else {
                     speakerStatus.textContent = 'Speaker Contribution: Pending';
                     speakerStatus.className = 'speaker-status pending';
+                    speakerSection.style.display = 'block';
                 }
                 
                 const paidData = {};
@@ -653,7 +654,6 @@
                             <td class="${data.paid ? 'status-paid' : 'status-pending'}">${status}</td>
                             <td>${amount}</td>
                             <td>${date}</td>
-                            <td class="${speakerPaid ? 'status-paid' : 'status-pending'}">${speakerPaid ? 'Paid' : 'Pending'}</td>
                         </tr>
                     `;
 
@@ -662,9 +662,12 @@
                     }
                 });
 
-                const dueAmount = unpaidMonths.length * 200;
-                document.getElementById('amount').value = dueAmount;
-                document.getElementById('dueInfo').textContent = `Due Amount: ₹${dueAmount}`;
+                monthlyDueAmount = unpaidMonths.length * 200;
+                
+                // Update amount field based on speaker selection
+                updateAmountField();
+                
+                document.getElementById('dueInfo').textContent = `Due Amount: ₹${monthlyDueAmount}`;
                 
                 // Show pending months as comma separated list
                 if (unpaidMonths.length > 0) {
@@ -678,31 +681,22 @@
             }
         };
 
-        // Handle speaker contribution options
-        document.getElementById('includeSpeaker').addEventListener('change', function() {
-            if (this.checked) {
-                document.getElementById('excludeSpeaker').checked = false;
-                updateAmount();
-            }
-        });
-        
-        document.getElementById('excludeSpeaker').addEventListener('change', function() {
-            if (this.checked) {
-                document.getElementById('includeSpeaker').checked = false;
-                updateAmount();
-            }
-        });
-        
-        function updateAmount() {
-            const monthlyDue = parseInt(document.getElementById('amount').value);
+        // Update amount field based on speaker selection
+        function updateAmountField() {
             const includeSpeaker = document.getElementById('includeSpeaker').checked;
+            let totalAmount = monthlyDueAmount;
             
             if (includeSpeaker && !speakerPaid) {
-                document.getElementById('amount').value = monthlyDue + 500;
-            } else {
-                document.getElementById('amount').value = monthlyDue;
+                totalAmount += 500;
             }
+            
+            document.getElementById('amount').value = totalAmount;
         }
+
+        // Handle speaker contribution option
+        document.getElementById('includeSpeaker').addEventListener('change', function() {
+            updateAmountField();
+        });
 
         // Payment Form Submit - FIXED: No redirect, stay on same page
         document.getElementById('paymentForm').addEventListener('submit', (e) => {
