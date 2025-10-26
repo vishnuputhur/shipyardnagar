@@ -413,7 +413,6 @@
                                 <tr>
                                     <th>Member No</th>
                                     <th>Name</th>
-                                    <th>Phone</th>
                                     <th>Speaker Status</th>
                                     <th>Action</th>
                                 </tr>
@@ -541,8 +540,7 @@
                     allMembers.push({
                         id: userDoc.id,
                         memberNumber: userData.memberNumber || 'N/A',
-                        name: userData.name || 'Unknown',
-                        phone: userData.phone || 'N/A',
+                        name: userData.memberName || userData.name || 'Unknown', // Use memberName first
                         speakerPaid: userData.speakerPaid || false
                     });
                 }
@@ -575,7 +573,7 @@
             if (filteredMembers.length === 0) {
                 tableBody.innerHTML = `
                     <tr>
-                        <td colspan="5" class="text-center py-4">No members found</td>
+                        <td colspan="4" class="text-center py-4">No members found</td>
                     </tr>
                 `;
                 return;
@@ -590,7 +588,6 @@
                     <tr>
                         <td>${member.memberNumber}</td>
                         <td>${member.name}</td>
-                        <td>${member.phone}</td>
                         <td>${speakerStatus}</td>
                         <td>
                             <div class="form-check form-switch">
