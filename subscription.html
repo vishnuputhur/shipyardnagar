@@ -698,7 +698,7 @@
             updateAmountField();
         });
 
-        // Payment Form Submit - FIXED: Using your exact UPI ID format
+        // Payment Form Submit - UPDATED: Your UPI ID
         document.getElementById('paymentForm').addEventListener('submit', (e) => {
             e.preventDefault();
             const amount = document.getElementById('amount').value;
@@ -714,12 +714,14 @@
                 return;
             }
 
-            // UPI Payment setup - EXACT FORMAT AS YOU PROVIDED
+            // UPI Payment setup - YOUR UPI ID
             const upiID = 'Q343298201@ybl';
             const payeeName = 'PhonePeMerchant';
             
-            // Create UPI URL with exact parameters you provided
-            const upiURL = `upi://pay?pa=${upiID}&pn=${payeeName}&mc=0000&mode=02&purpose=00&am=${amount}`;
+            // Simple naration - member number only
+            const transactionNote = `Member${currentMemberNumber}`;
+            
+            const upiURL = `upi://pay?pa=${upiID}&pn=${payeeName}&am=${amount}&cu=INR&tn=${transactionNote}&mc=0000&mode=02&purpose=00`;
 
             console.log('Attempting to trigger UPI:', upiURL);
             
