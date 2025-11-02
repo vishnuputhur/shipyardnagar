@@ -7,7 +7,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="css/style.css">
     <style>
         :root {
             --primary-orange: #FF6B35;
@@ -69,7 +68,7 @@
             border: 1px solid rgba(255, 255, 255, 0.2);
             margin-bottom: 50px;
             position: relative;
-            margin-top: 120px; /* Reduced from 160px */
+            margin-top: 120px;
         }
 
         /* Page Title */
@@ -182,6 +181,13 @@
             left: 100%;
         }
 
+        .pay-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
         /* Payment Note */
         .payment-note {
             font-size: 0.75rem;
@@ -193,6 +199,34 @@
 
         [data-theme="dark"] .payment-note {
             color: #ccc;
+        }
+
+        /* Payment Status */
+        .payment-status {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 500;
+            display: none;
+        }
+
+        .payment-status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .payment-status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .payment-status.info {
+            background: #cce7ff;
+            color: #004085;
+            border: 1px solid #b3d7ff;
         }
 
         /* Payment History Table */
@@ -391,7 +425,7 @@
             
             .main-card {
                 padding: 15px;
-                margin: 100px 10px 50px 10px; /* Further reduced for mobile */
+                margin: 100px 10px 50px 10px;
             }
             
             .payment-table th, 
@@ -430,7 +464,7 @@
                         My Subscription
                     </div>
                     
-                    <!-- Due Amount Section - Back to box style -->
+                    <!-- Due Amount Section -->
                     <div class="subs-info">
                         <i class="fas fa-money-bill-wave"></i>
                         <span id="dueInfo">Due Amount: ₹0</span>
@@ -440,6 +474,9 @@
                         <i class="fas fa-calendar-times"></i>
                         <span id="pendingMonths">Pending: 0 months</span>
                     </div>
+                    
+                    <!-- Payment Status Message -->
+                    <div id="paymentStatus" class="payment-status"></div>
                     
                     <!-- Payment Form -->
                     <div class="payment-form">
@@ -468,7 +505,7 @@
                                 <div id="speakerStatus" class="speaker-status pending">Speaker Contribution: Pending</div>
                             </div>
                             
-                            <button type="submit" class="pay-btn">
+                            <button type="submit" class="pay-btn" id="payButton">
                                 <i class="fas fa-credit-card me-2"></i>
                                 Pay via UPI
                             </button>
@@ -541,6 +578,7 @@
         let currentMemberNumber = '';
         let speakerPaid = false;
         let monthlyDueAmount = 0;
+        let paymentInProgress = false;
 
         // Auth State Listener
         auth.onAuthStateChanged(async (user) => {
@@ -584,7 +622,7 @@
             return months[monthIndex] + ' ' + monthString.split('-')[0];
         };
 
-        // Load Subscriptions - FIXED: Show history in descending order
+        // Load Subscriptions
         const loadSubscriptions = async (userId) => {
             const currentDate = new Date();
             const currentMonth = currentDate.toISOString().slice(0, 7);
@@ -639,7 +677,7 @@
                 const contributionTable = document.getElementById('contributionTable');
                 contributionTable.innerHTML = '';
 
-                // FIXED: Show months in descending order (latest first)
+                // Show months in descending order (latest first)
                 const sortedMonths = [...allMonths].sort().reverse();
 
                 sortedMonths.forEach(month => {
@@ -698,40 +736,106 @@
             updateAmountField();
         });
 
-        // Payment Form Submit - FIXED: Using new UPI ID with exact QR format
-        document.getElementById('paymentForm').addEventListener('submit', (e) => {
+        // Show payment status message
+        function showPaymentStatus(message, type) {
+            const statusElement = document.getElementById('paymentStatus');
+            statusElement.textContent = message;
+            statusElement.className = `payment-status ${type}`;
+            statusElement.style.display = 'block';
+            
+            // Auto hide after 5 seconds for info messages
+            if (type === 'info') {
+                setTimeout(() => {
+                    statusElement.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        // Payment Form Submit - FIXED: Using simplified UPI URL without payee name
+        document.getElementById('paymentForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            
+            if (paymentInProgress) {
+                showPaymentStatus('Payment already in progress. Please wait...', 'info');
+                return;
+            }
+            
             const amount = document.getElementById('amount').value;
             const includeSpeaker = document.getElementById('includeSpeaker').checked;
             
             if (amount < 10) {
-                alert('Please enter minimum ₹10!');
+                showPaymentStatus('Please enter minimum ₹10!', 'error');
                 return;
             }
 
             if (amount <= 0) {
-                alert('Please enter a valid amount!');
+                showPaymentStatus('Please enter a valid amount!', 'error');
                 return;
             }
 
-            // UPI Payment setup - USING NEW UPI ID with exact QR format
-            const upiID = '9037383927@okbizaxis';
-            const payeeName = 'Mr  VISHNU  T'; // Double spaces as in QR code
-            
-            // Remove decimal points from amount
-            const cleanAmount = parseInt(amount);
-            
-            // Create UPI URL matching the exact QR code format
-            const upiURL = `upi://pay?pa=${encodeURIComponent(upiID)}&pn=${encodeURIComponent(payeeName)}&am=${cleanAmount}&cu=INR`;
+            // Set payment in progress
+            paymentInProgress = true;
+            const payButton = document.getElementById('payButton');
+            payButton.disabled = true;
+            payButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
 
-            console.log('Attempting to trigger UPI:', upiURL);
-            
-            // Direct UPI trigger without page redirect
-            window.location.href = upiURL;
-            
-            // Stay on the same page - no redirect to home.html
-            return false;
+            try {
+                // UPI Payment setup - USING SIMPLIFIED UPI URL
+                const upiID = '9037383927@okbizaxis';
+                
+                // Remove decimal points from amount
+                const cleanAmount = parseInt(amount);
+                
+                // Create simplified UPI URL without payee name
+                const upiURL = `upi://pay?pa=${encodeURIComponent(upiID)}&am=${cleanAmount}&cu=INR`;
+
+                console.log('Attempting to trigger UPI:', upiURL);
+                
+                // Show payment instruction
+                showPaymentStatus('Opening UPI app... Complete payment and return to this page.', 'info');
+                
+                // Store payment details for verification
+                const paymentDetails = {
+                    amount: cleanAmount,
+                    includeSpeaker: includeSpeaker,
+                    timestamp: new Date().toISOString(),
+                    status: 'initiated'
+                };
+                
+                localStorage.setItem('lastPayment', JSON.stringify(paymentDetails));
+                
+                // Set a timeout to check if payment was completed
+                setTimeout(() => {
+                    checkPaymentStatus();
+                }, 10000); // Check after 10 seconds
+                
+                // Direct UPI trigger
+                window.location.href = upiURL;
+                
+            } catch (error) {
+                console.error('Payment initiation error:', error);
+                showPaymentStatus('Error initiating payment. Please try again.', 'error');
+                paymentInProgress = false;
+                payButton.disabled = false;
+                payButton.innerHTML = '<i class="fas fa-credit-card me-2"></i>Pay via UPI';
+            }
         });
+
+        // Check payment status after returning to app
+        async function checkPaymentStatus() {
+            const payButton = document.getElementById('payButton');
+            
+            // In a real app, you would verify with your backend
+            // For now, we'll show a message asking user to confirm
+            showPaymentStatus('Please confirm if payment was successful or contact admin for verification.', 'info');
+            
+            // Reset button after delay
+            setTimeout(() => {
+                paymentInProgress = false;
+                payButton.disabled = false;
+                payButton.innerHTML = '<i class="fas fa-credit-card me-2"></i>Pay via UPI';
+            }, 5000);
+        }
 
         // Theme Toggle
         const themeToggle = document.getElementById('themeToggle');
@@ -752,6 +856,27 @@
             document.documentElement.setAttribute('data-theme', savedTheme);
             themeToggle.textContent = savedTheme === 'light' ? '🌞' : '🌙';
         }
+
+        // Check for returning from UPI payment
+        window.addEventListener('load', () => {
+            const lastPayment = localStorage.getItem('lastPayment');
+            if (lastPayment) {
+                const payment = JSON.parse(lastPayment);
+                const timeDiff = new Date() - new Date(payment.timestamp);
+                
+                // If returned within 2 minutes, show verification message
+                if (timeDiff < 120000) {
+                    showPaymentStatus('Payment verification in progress. Please wait...', 'info');
+                    
+                    // Clear the stored payment after showing message
+                    setTimeout(() => {
+                        localStorage.removeItem('lastPayment');
+                    }, 5000);
+                } else {
+                    localStorage.removeItem('lastPayment');
+                }
+            }
+        });
     </script>
 </body>
 </html>
