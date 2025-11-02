@@ -698,7 +698,7 @@
             updateAmountField();
         });
 
-        // Payment Form Submit - FIXED: Match QR code format exactly
+        // Payment Form Submit - FIXED: Using new UPI ID with exact QR format
         document.getElementById('paymentForm').addEventListener('submit', (e) => {
             e.preventDefault();
             const amount = document.getElementById('amount').value;
@@ -714,14 +714,14 @@
                 return;
             }
 
-            // UPI Payment setup - MATCH QR CODE FORMAT EXACTLY
-            const upiID = 'vishnuputhur@sbi';
-            const payeeName = 'Mr.VISHNU T'; // Single space, no double spaces
+            // UPI Payment setup - USING NEW UPI ID with exact QR format
+            const upiID = '9037383927@okbizaxis';
+            const payeeName = 'Mr  VISHNU  T'; // Double spaces as in QR code
             
-            // Remove decimal points from amount (make it integer)
+            // Remove decimal points from amount
             const cleanAmount = parseInt(amount);
             
-            // NO NARATION - Remove transaction note completely
+            // Create UPI URL matching the exact QR code format
             const upiURL = `upi://pay?pa=${encodeURIComponent(upiID)}&pn=${encodeURIComponent(payeeName)}&am=${cleanAmount}&cu=INR`;
 
             console.log('Attempting to trigger UPI:', upiURL);
