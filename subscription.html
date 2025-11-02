@@ -426,6 +426,30 @@
             transform: translateY(-2px);
         }
 
+        /* QR Code Section */
+        .qr-section {
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .qr-code {
+            max-width: 200px;
+            height: auto;
+            margin: 10px auto;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+        }
+        
+        .qr-note {
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 10px;
+        }
+
         /* Responsive */
         @media (max-width: 576px) {
             .header-image {
@@ -488,10 +512,20 @@
                     <div class="payment-form">
                         <h5 class="mb-3" style="color: #1e3a8a; font-weight: 600;">Pay Monthly Subscription</h5>
                         
+                        <!-- QR Code Section -->
+                        <div class="qr-section">
+                            <i class="fas fa-qrcode fa-2x" style="color: #28a745;"></i>
+                            <div style="font-weight: 600; margin: 10px 0; color: #155724;">Scan QR Code to Pay</div>
+                            <!-- Replace with your actual QR code image -->
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=UPI%3A%2F%2Fpay%3Fpa%3D9037383927%2540okbizaxis%26pn%3DVishnu%2520T%26am%3D200%26cu%3DINR%26tn%3DShipyard%2520Nagar%2520Subscription" 
+                                 alt="QR Code" class="qr-code">
+                            <div class="qr-note">Scan this QR code with any UPI app</div>
+                        </div>
+                        
                         <!-- UPI ID Display -->
                         <div class="upi-display">
-                            <i class="fas fa-qrcode"></i>
-                            <div class="upi-id" id="displayUpiId">vishnuputhur@sbi</div>
+                            <i class="fas fa-mobile-alt"></i>
+                            <div class="upi-id" id="displayUpiId">9037383927@okbizaxis</div>
                             <div style="font-size: 0.9rem; color: #155724;">Merchant: Vishnu T</div>
                             <button class="copy-btn" onclick="copyUpiId()">
                                 <i class="fas fa-copy me-1"></i> Copy UPI ID
@@ -522,13 +556,13 @@
                             </div>
                             
                             <button type="submit" class="pay-btn">
-                                <i class="fas fa-credit-card me-2"></i>
+                                <i class="fas fa-external-link-alt me-2"></i>
                                 Open UPI App
                             </button>
                             
                             <!-- Payment Note -->
                             <div class="payment-note">
-                                After payment, please wait for 4 hours for system update. If payment fails, try manual UPI transfer.
+                                After payment, please wait for 4 hours for system update. If payment fails, use QR code or manual UPI transfer.
                             </div>
                         </form>
                     </div>
@@ -753,7 +787,7 @@
 
         // Copy UPI ID function
         function copyUpiId() {
-            const upiId = 'vishnuputhur@sbi';
+            const upiId = '9037383927@okbizaxis';
             navigator.clipboard.writeText(upiId).then(() => {
                 alert('UPI ID copied to clipboard: ' + upiId);
             }).catch(err => {
@@ -762,7 +796,7 @@
             });
         }
 
-        // Payment Form Submit - FIXED: Improved UPI handling
+        // Payment Form Submit - FIXED: Using new UPI ID
         document.getElementById('paymentForm').addEventListener('submit', (e) => {
             e.preventDefault();
             const amount = document.getElementById('amount').value;
@@ -778,8 +812,8 @@
                 return;
             }
 
-            // UPI Payment setup - IMPROVED: Better UPI URL format
-            const upiID = 'vishnuputhur@sbi';
+            // UPI Payment setup - USING NEW UPI ID
+            const upiID = '9037383927@okbizaxis';
             const payeeName = 'Vishnu T';
             
             // Add note about speaker contribution in transaction
@@ -801,7 +835,7 @@
                 const manualPaymentMsg = `
 Payment Instructions:
 1. Open your UPI app (GPay, PhonePe, Paytm, etc.)
-2. Send ₹${amount} to: vishnuputhur@sbi
+2. Send ₹${amount} to: 9037383927@okbizaxis
 3. Add note: ${transactionNote}
 4. After payment, it will be updated in system within 4 hours
                 `;
