@@ -7,8 +7,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
     <style>
-        /* Your existing CSS styles remain the same */
         :root {
             --primary-orange: #FF6B35;
             --orange-light: #FF8C42;
@@ -34,57 +34,388 @@
             padding: 0;
         }
 
-        /* ... (rest of your CSS remains exactly the same) ... */
-        
-        /* Alternative Payment Methods */
-        .alternative-payment {
-            margin-top: 20px;
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><polygon fill="%23ffffff10" points="0,1000 1000,0 1000,1000"/></svg>');
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* Header Image - Fixed at top */
+        .header-image {
+            width: 100%;
+            height: auto;
+            max-height: 150px;
+            object-fit: cover;
+            display: block;
+            position: fixed;
+            top: 3mm;
+            left: 0;
+            z-index: 999;
+        }
+
+        /* Main Card - Reduced top gap */
+        .main-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 50px;
+            position: relative;
+            margin-top: 120px; /* Reduced from 160px */
+        }
+
+        /* Page Title */
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e3a8a;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        [data-theme="dark"] .page-title {
+            color: #60a5fa;
+        }
+
+        /* Subscription Info Cards */
+        .subs-info {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
             padding: 15px;
             border-radius: 12px;
-            background: linear-gradient(135deg, #f0fff0 0%, #e6ffe6 100%);
-            border: 1px solid #90ee90;
+            margin: 10px 0;
+            border-left: 3px solid var(--primary-orange);
+            font-weight: 500;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="dark"] .subs-info {
+            background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+            color: #fff;
+        }
+
+        .subs-info i {
+            font-size: 1.2rem;
+            margin-right: 10px;
+            color: var(--primary-orange);
+        }
+
+        /* Payment Form */
+        .payment-form {
+            margin-top: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-label {
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        [data-theme="dark"] .form-label {
+            color: #fff;
+        }
+
+        .form-control {
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            padding: 10px 15px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        [data-theme="dark"] .form-control {
+            background: #444;
+            border-color: #555;
+            color: #fff;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-orange);
+            box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.2);
+        }
+
+        /* Payment Button */
+        .pay-btn {
+            background: var(--gradient);
+            border: none;
+            border-radius: 12px;
+            padding: 12px 20px;
+            color: white;
+            font-weight: 500;
+            font-size: 1rem;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .pay-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: 0.5s;
+        }
+
+        .pay-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .pay-btn:hover::before {
+            left: 100%;
+        }
+
+        /* Payment Note */
+        .payment-note {
+            font-size: 0.75rem;
+            color: #666;
+            text-align: center;
+            margin-top: 10px;
+            line-height: 1.4;
+        }
+
+        [data-theme="dark"] .payment-note {
+            color: #ccc;
+        }
+
+        /* Payment History Table */
+        .payment-history {
+            margin-top: 30px;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .payment-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .payment-table th {
+            background: var(--gradient);
+            color: white;
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: 500;
+            font-size: 0.85rem;
+        }
+
+        .payment-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            font-size: 0.8rem;
+        }
+
+        [data-theme="dark"] .payment-table td {
+            border-bottom: 1px solid #555;
+        }
+
+        .payment-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .status-paid {
+            color: #28a745;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            color: #dc3545;
+            font-weight: 500;
+        }
+
+        /* Footer - Reduced height */
+        footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background: rgba(248, 248, 248, 0.9);
+            backdrop-filter: blur(10px);
+            color: #666;
+            font-size: 0.7rem;
+            z-index: 1000;
+            border-top: 1px solid rgba(255, 107, 53, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 3px 15px;
+            height: 30px;
+        }
+
+        [data-theme="dark"] footer {
+            background: rgba(45, 45, 45, 0.9);
+            color: #ccc;
+        }
+
+        .footer-text {
+            flex: 1;
+            text-align: center;
+        }
+
+        /* Theme Toggle - Slightly larger */
+        .theme-toggle-btn {
+            background: transparent;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            padding: 4px 8px;
+            color: #666;
+            font-size: 0.75rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            height: 24px;
+        }
+
+        [data-theme="dark"] .theme-toggle-btn {
+            border-color: #666;
+            color: #ccc;
+        }
+
+        .theme-toggle-btn:hover {
+            background: var(--gradient);
+            color: white;
+            border-color: var(--primary-orange);
         }
         
-        [data-theme="dark"] .alternative-payment {
-            background: linear-gradient(135deg, #1a3d1a 0%, #2d4a2d 100%);
-            border-color: #4a764a;
+        /* Speaker Contribution Styles */
+        .speaker-contribution {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #f0f8ff 0%, #e6f7ff 100%);
+            border: 1px solid #b3d9ff;
         }
         
-        .alternative-title {
-            font-weight: 600;
-            color: #228b22;
+        [data-theme="dark"] .speaker-contribution {
+            background: linear-gradient(135deg, #1a365d 0%, #2d3748 100%);
+            border-color: #4a5568;
+        }
+        
+        .speaker-header {
+            display: flex;
+            align-items: center;
             margin-bottom: 10px;
         }
         
-        [data-theme="dark"] .alternative-title {
-            color: #90ee90;
+        .speaker-header i {
+            font-size: 1.2rem;
+            margin-right: 10px;
+            color: #1e40af;
         }
         
-        .qr-code {
-            text-align: center;
-            margin: 15px 0;
+        .speaker-title {
+            font-weight: 600;
+            color: #1e40af;
         }
         
-        .qr-code img {
-            max-width: 200px;
-            border: 2px solid #ddd;
-            border-radius: 10px;
+        [data-theme="dark"] .speaker-title {
+            color: #60a5fa;
         }
         
-        .manual-payment {
-            margin-top: 15px;
-            padding: 12px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            border-left: 3px solid #007bff;
+        .speaker-description {
+            font-size: 0.85rem;
+            color: #4b5563;
+            margin-bottom: 10px;
         }
         
-        [data-theme="dark"] .manual-payment {
-            background: #2d3748;
-            border-left-color: #60a5fa;
+        [data-theme="dark"] .speaker-description {
+            color: #cbd5e0;
+        }
+        
+        .speaker-option {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .speaker-option input {
+            margin-right: 8px;
+        }
+        
+        .speaker-option label {
+            font-size: 0.9rem;
+            color: #374151;
+            cursor: pointer;
+        }
+        
+        [data-theme="dark"] .speaker-option label {
+            color: #e2e8f0;
+        }
+        
+        .speaker-amount {
+            font-weight: 600;
+            color: #1e40af;
+        }
+        
+        .speaker-status {
+            margin-top: 10px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .speaker-status.pending {
+            color: #dc3545;
+        }
+        
+        .speaker-status.paid {
+            color: #28a745;
         }
 
-        /* Keep all your existing CSS styles */
+        /* Responsive */
+        @media (max-width: 576px) {
+            .header-image {
+                max-height: 120px;
+            }
+            
+            .main-card {
+                padding: 15px;
+                margin: 100px 10px 50px 10px; /* Further reduced for mobile */
+            }
+            
+            .payment-table th, 
+            .payment-table td {
+                padding: 10px 8px;
+                font-size: 0.75rem;
+            }
+            
+            footer {
+                padding: 3px 10px;
+                height: 28px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .payment-table {
+                font-size: 0.7rem;
+            }
+            
+            .payment-table th, 
+            .payment-table td {
+                padding: 8px 6px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -99,7 +430,7 @@
                         My Subscription
                     </div>
                     
-                    <!-- Due Amount Section -->
+                    <!-- Due Amount Section - Back to box style -->
                     <div class="subs-info">
                         <i class="fas fa-money-bill-wave"></i>
                         <span id="dueInfo">Due Amount: ₹0</span>
@@ -109,9 +440,6 @@
                         <i class="fas fa-calendar-times"></i>
                         <span id="pendingMonths">Pending: 0 months</span>
                     </div>
-                    
-                    <!-- Payment Status Message -->
-                    <div id="paymentStatus" class="payment-status"></div>
                     
                     <!-- Payment Form -->
                     <div class="payment-form">
@@ -140,63 +468,16 @@
                                 <div id="speakerStatus" class="speaker-status pending">Speaker Contribution: Pending</div>
                             </div>
                             
-                            <!-- UPI Payment Button -->
-                            <button type="submit" class="pay-btn" id="payButton">
+                            <button type="submit" class="pay-btn">
                                 <i class="fas fa-credit-card me-2"></i>
                                 Pay via UPI
                             </button>
                             
                             <!-- Payment Note -->
                             <div class="payment-note">
-                                If UPI fails, use alternative payment methods below
+                                Payment will be updated in the system within 4 hours of successful transaction
                             </div>
                         </form>
-                        
-                        <!-- Alternative Payment Methods -->
-                        <div class="alternative-payment">
-                            <div class="alternative-title">
-                                <i class="fas fa-qrcode me-2"></i>Alternative Payment Methods
-                            </div>
-                            
-                            <!-- QR Code Payment -->
-                            <div class="qr-code">
-                                <p><strong>Scan QR Code to Pay</strong></p>
-                                <div id="qrCodeContainer">
-                                    <!-- QR code will be generated here -->
-                                    <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; text-align: center;">
-                                        <p style="margin-bottom: 10px; font-weight: 500;">UPI QR Code</p>
-                                        <div style="background: white; padding: 15px; display: inline-block; border-radius: 8px;">
-                                            <!-- Simple QR code representation -->
-                                            <div style="font-family: monospace; line-height: 1;">
-                                                <div>▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓</div>
-                                                <div>▓▓░░░░░░▓▓░░▓▓░░░░░░▓▓</div>
-                                                <div>▓▓░░▓▓░░▓▓░░▓▓░░▓▓░░▓▓</div>
-                                                <div>▓▓░░▓▓░░▓▓░░▓▓░░▓▓░░▓▓</div>
-                                                <div>▓▓░░░░░░░░░░░░░░░░░░▓▓</div>
-                                                <div>▓▓░░▓▓░░▓▓░░▓▓░░▓▓░░▓▓</div>
-                                                <div>▓▓░░░░░░▓▓░░▓▓░░░░░░▓▓</div>
-                                                <div>▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓</div>
-                                            </div>
-                                        </div>
-                                        <p style="margin-top: 10px; font-size: 0.8rem; color: #666;">
-                                            UPI ID: 9037383927@okbizaxis
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Manual Payment Instructions -->
-                            <div class="manual-payment">
-                                <p><strong>Manual Payment Instructions:</strong></p>
-                                <ol style="font-size: 0.85rem; margin-bottom: 0;">
-                                    <li>Open your UPI app (Google Pay, PhonePe, Paytm, etc.)</li>
-                                    <li>Send money to: <strong>9037383927@okbizaxis</strong></li>
-                                    <li>Enter the amount shown above</li>
-                                    <li>Add note: "Shipyard Nagar - Member [Your Number]"</li>
-                                    <li>Complete payment and screenshot the receipt</li>
-                                </ol>
-                            </div>
-                        </div>
                     </div>
                     
                     <!-- Payment History -->
@@ -260,13 +541,13 @@
         let currentMemberNumber = '';
         let speakerPaid = false;
         let monthlyDueAmount = 0;
-        let paymentInProgress = false;
 
         // Auth State Listener
         auth.onAuthStateChanged(async (user) => {
             if (!user) {
                 window.location.href = 'login.html';
             } else {
+                // Fetch user data
                 try {
                     const userDoc = await db.collection('users').doc(user.uid).get();
                     if (!userDoc.exists) {
@@ -303,24 +584,27 @@
             return months[monthIndex] + ' ' + monthString.split('-')[0];
         };
 
-        // Load Subscriptions
+        // Load Subscriptions - FIXED: Show history in descending order
         const loadSubscriptions = async (userId) => {
             const currentDate = new Date();
             const currentMonth = currentDate.toISOString().slice(0, 7);
-            const startMonth = '2025-10';
+            const startMonth = '2025-10'; // Starting from October 2025
 
             try {
                 const contributionsSnap = await db.collection('contributions').doc(userId).collection('months').get();
                 const userDoc = await db.collection('users').doc(userId).get();
                 
+                // Check if speaker contribution is paid
                 speakerPaid = userDoc.data().speakerPaid || false;
                 
+                // Update speaker status display
                 const speakerStatus = document.getElementById('speakerStatus');
                 const speakerSection = document.getElementById('speakerSection');
                 
                 if (speakerPaid) {
                     speakerStatus.textContent = 'Speaker Contribution: Paid';
                     speakerStatus.className = 'speaker-status paid';
+                    // Hide speaker options if already paid
                     speakerSection.style.display = 'none';
                 } else {
                     speakerStatus.textContent = 'Speaker Contribution: Pending';
@@ -331,6 +615,7 @@
                 const paidData = {};
                 const paidMonths = [];
                 
+                // Get all paid months
                 contributionsSnap.forEach(doc => {
                     paidData[doc.id] = doc.data();
                     if (doc.data().paid) {
@@ -338,6 +623,7 @@
                     }
                 });
 
+                // Find the latest paid month to determine how many months to show
                 let latestPaidMonth = startMonth;
                 paidMonths.forEach(month => {
                     if (month > latestPaidMonth) {
@@ -345,6 +631,7 @@
                     }
                 });
 
+                // Generate months from start to either current month or latest paid month (whichever is later)
                 const endMonth = currentMonth > latestPaidMonth ? currentMonth : latestPaidMonth;
                 const allMonths = generateMonths(startMonth, endMonth);
 
@@ -352,6 +639,7 @@
                 const contributionTable = document.getElementById('contributionTable');
                 contributionTable.innerHTML = '';
 
+                // FIXED: Show months in descending order (latest first)
                 const sortedMonths = [...allMonths].sort().reverse();
 
                 sortedMonths.forEach(month => {
@@ -375,10 +663,13 @@
                 });
 
                 monthlyDueAmount = unpaidMonths.length * 200;
+                
+                // Update amount field based on speaker selection
                 updateAmountField();
                 
                 document.getElementById('dueInfo').textContent = `Due Amount: ₹${monthlyDueAmount}`;
                 
+                // Show pending months as comma separated list
                 if (unpaidMonths.length > 0) {
                     document.getElementById('pendingMonths').textContent = `Pending: ${unpaidMonths.join(', ')}`;
                 } else {
@@ -407,123 +698,36 @@
             updateAmountField();
         });
 
-        // Show payment status message
-        function showPaymentStatus(message, type) {
-            const statusElement = document.getElementById('paymentStatus');
-            statusElement.textContent = message;
-            statusElement.className = `payment-status ${type}`;
-            statusElement.style.display = 'block';
-            
-            if (type === 'info') {
-                setTimeout(() => {
-                    statusElement.style.display = 'none';
-                }, 5000);
-            }
-        }
-
-        // Payment Form Submit - FIXED: Multiple UPI URL formats to try
-        document.getElementById('paymentForm').addEventListener('submit', async (e) => {
+        // Payment Form Submit - FIXED: Using your exact UPI ID format
+        document.getElementById('paymentForm').addEventListener('submit', (e) => {
             e.preventDefault();
-            
-            if (paymentInProgress) {
-                showPaymentStatus('Payment already in progress. Please wait...', 'info');
-                return;
-            }
-            
             const amount = document.getElementById('amount').value;
             const includeSpeaker = document.getElementById('includeSpeaker').checked;
             
             if (amount < 10) {
-                showPaymentStatus('Please enter minimum ₹10!', 'error');
+                alert('Please enter minimum ₹10!');
                 return;
             }
 
             if (amount <= 0) {
-                showPaymentStatus('Please enter a valid amount!', 'error');
+                alert('Please enter a valid amount!');
                 return;
             }
 
-            paymentInProgress = true;
-            const payButton = document.getElementById('payButton');
-            payButton.disabled = true;
-            payButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+            // UPI Payment setup - EXACT FORMAT AS YOU PROVIDED
+            const upiID = 'Q343298201@ybl';
+            const payeeName = 'PhonePeMerchant';
+            
+            // Create UPI URL with exact parameters you provided
+            const upiURL = `upi://pay?pa=${upiID}&pn=${payeeName}&mc=0000&mode=02&purpose=00&am=${amount}`;
 
-            try {
-                const upiID = '9037383927@okbizaxis';
-                const cleanAmount = parseInt(amount);
-                
-                // Try multiple UPI URL formats
-                const upiURLs = [
-                    // Format 1: Simple without payee name
-                    `upi://pay?pa=${encodeURIComponent(upiID)}&am=${cleanAmount}&cu=INR`,
-                    
-                    // Format 2: With minimal parameters
-                    `upi://pay?pa=${encodeURIComponent(upiID)}&pn=Community&am=${cleanAmount}&cu=INR`,
-                    
-                    // Format 3: With transaction note
-                    `upi://pay?pa=${encodeURIComponent(upiID)}&pn=Community&am=${cleanAmount}&cu=INR&tn=Shipyard+Nagar+Subscription`,
-                    
-                    // Format 4: Alternative syntax
-                    `upi://pay?pa=${upiID}&am=${cleanAmount}&cu=INR`
-                ];
-
-                let success = false;
-                
-                // Try each URL format
-                for (let i = 0; i < upiURLs.length; i++) {
-                    try {
-                        console.log('Trying UPI URL format:', i + 1, upiURLs[i]);
-                        
-                        // Create hidden iframe to test URL
-                        const iframe = document.createElement('iframe');
-                        iframe.style.display = 'none';
-                        iframe.src = upiURLs[i];
-                        document.body.appendChild(iframe);
-                        
-                        // Also try direct navigation
-                        setTimeout(() => {
-                            window.location.href = upiURLs[i];
-                        }, 100);
-                        
-                        success = true;
-                        break;
-                        
-                    } catch (error) {
-                        console.log(`URL format ${i + 1} failed:`, error);
-                        continue;
-                    }
-                }
-                
-                if (!success) {
-                    showPaymentStatus('Could not initiate UPI payment. Please use QR code or manual payment.', 'error');
-                } else {
-                    showPaymentStatus('Opening UPI app... If payment fails, use QR code below.', 'info');
-                    
-                    // Store payment details
-                    const paymentDetails = {
-                        amount: cleanAmount,
-                        includeSpeaker: includeSpeaker,
-                        timestamp: new Date().toISOString(),
-                        status: 'initiated'
-                    };
-                    
-                    localStorage.setItem('lastPayment', JSON.stringify(paymentDetails));
-                    
-                    // Set timeout to reset button
-                    setTimeout(() => {
-                        paymentInProgress = false;
-                        payButton.disabled = false;
-                        payButton.innerHTML = '<i class="fas fa-credit-card me-2"></i>Pay via UPI';
-                    }, 10000);
-                }
-                
-            } catch (error) {
-                console.error('Payment initiation error:', error);
-                showPaymentStatus('Error initiating payment. Please use alternative methods.', 'error');
-                paymentInProgress = false;
-                payButton.disabled = false;
-                payButton.innerHTML = '<i class="fas fa-credit-card me-2"></i>Pay via UPI';
-            }
+            console.log('Attempting to trigger UPI:', upiURL);
+            
+            // Direct UPI trigger without page redirect
+            window.location.href = upiURL;
+            
+            // Stay on the same page - no redirect to home.html
+            return false;
         });
 
         // Theme Toggle
@@ -535,41 +739,16 @@
                 const newTheme = currentTheme === 'light' ? 'dark' : 'light';
                 html.setAttribute('data-theme', newTheme);
                 localStorage.setItem('theme', newTheme);
+                
+                // Update button emoji
                 themeToggle.textContent = newTheme === 'light' ? '🌞' : '🌙';
             });
 
+            // Set initial theme and button
             const savedTheme = localStorage.getItem('theme') || 'light';
             document.documentElement.setAttribute('data-theme', savedTheme);
             themeToggle.textContent = savedTheme === 'light' ? '🌞' : '🌙';
         }
-
-        // Check for returning from UPI payment
-        window.addEventListener('load', () => {
-            const lastPayment = localStorage.getItem('lastPayment');
-            if (lastPayment) {
-                const payment = JSON.parse(lastPayment);
-                const timeDiff = new Date() - new Date(payment.timestamp);
-                
-                if (timeDiff < 120000) {
-                    showPaymentStatus('Returned from payment. If successful, it will be updated soon.', 'info');
-                    setTimeout(() => {
-                        localStorage.removeItem('lastPayment');
-                    }, 5000);
-                } else {
-                    localStorage.removeItem('lastPayment');
-                }
-            }
-        });
-
-        // Add contact information for payment issues
-        function showAdminContact() {
-            showPaymentStatus('For payment issues, contact: 9037383927 (Admin)', 'info');
-        }
-
-        // Add click event to QR code area
-        document.getElementById('qrCodeContainer').addEventListener('click', function() {
-            showPaymentStatus('UPI ID: 9037383927@okbizaxis - Use this ID in any UPI app', 'info');
-        });
     </script>
 </body>
 </html>
