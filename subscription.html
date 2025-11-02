@@ -698,42 +698,39 @@
             updateAmountField();
         });
 
-        // Payment Form Submit - FIXED: No redirect, stay on same page
-        document.getElementById('paymentForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const amount = document.getElementById('amount').value;
-            const includeSpeaker = document.getElementById('includeSpeaker').checked;
-            
-            if (amount < 10) {
-                alert('Please enter minimum ₹10!');
-                return;
-            }
+        // Payment Form Submit - FIXED: Simple naration
+document.getElementById('paymentForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const amount = document.getElementById('amount').value;
+    const includeSpeaker = document.getElementById('includeSpeaker').checked;
+    
+    if (amount < 10) {
+        alert('Please enter minimum ₹10!');
+        return;
+    }
 
-            if (amount <= 0) {
-                alert('Please enter a valid amount!');
-                return;
-            }
+    if (amount <= 0) {
+        alert('Please enter a valid amount!');
+        return;
+    }
 
-            // UPI Payment setup - FIXED: No redirect to other page
-            const upiID = 'vishnuputhur@sbi';
-            const payeeName = 'Mr.VishnuT';
-            
-            // Add note about speaker contribution in transaction
-            let transactionNote = `Mem${currentMemberNumber}`;
-            if (includeSpeaker && !Z) {
-                transactionNote += ' (Includes Speaker Contribution)';
-            }
-            
-            const upiURL = `upi://pay?pa=${upiID}&pn=${payeeName}&am=${amount}&cu=INR&tn=${transactionNote}`;
+    // UPI Payment setup - SIMPLE NARATION
+    const upiID = 'vishnuputhur@sbi';
+    const payeeName = 'Mr.VishnuT';
+    
+    // Simple naration - member number only
+    const transactionNote = `Member${currentMemberNumber}`;
+    
+    const upiURL = `upi://pay?pa=${upiID}&pn=${payeeName}&am=${amount}&cu=INR&tn=${transactionNote}`;
 
-            console.log('Attempting to trigger UPI:', upiURL);
-            
-            // Direct UPI trigger without page redirect
-            window.location.href = upiURL;
-            
-            // Stay on the same page - no redirect to home.html
-            return false;
-        });
+    console.log('Attempting to trigger UPI:', upiURL);
+    
+    // Direct UPI trigger without page redirect
+    window.location.href = upiURL;
+    
+    // Stay on the same page - no redirect to home.html
+    return false;
+});
 
         // Theme Toggle
         const themeToggle = document.getElementById('themeToggle');
