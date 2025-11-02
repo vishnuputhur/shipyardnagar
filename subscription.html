@@ -709,12 +709,12 @@
 
         // UPI Payment setup - FIXED: No redirect to other page  
         const upiID = 'vishnu.t.ptr1@ybl';  
-        const payeeName = 'Mr.VishnuT';  
+        const payeeName = 'Vishnu T';  
           
         // Add note about speaker contribution in transaction  
-        let transactionNote = `MemberNo:${currentMemberNumber}`;  
+        let transactionNote = `MemberNo${currentMemberNumber}`;  
         if (includeSpeaker && !speakerPaid) {  
-            transactionNote += ' (Includes Speaker Contribution)';  
+            transactionNote += ' Includes Speaker ';  
         }  
           
         const upiURL = `upi://pay?pa=${upiID}&pn=${payeeName}&am=${amount}&cu=INR&tn=${transactionNote}`;  
