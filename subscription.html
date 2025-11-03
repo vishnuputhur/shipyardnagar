@@ -380,25 +380,52 @@
             color: #28a745;  
         }  
 
-        /* Cred App Specific Styles */  
-        .cred-info {  
-            background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);  
-            padding: 10px;  
-            border-radius: 8px;  
-            margin: 10px 0;  
-            border-left: 3px solid #ff9800;  
-            font-size: 0.8rem;  
+        /* App Selection Styles */  
+        .app-selection {  
+            margin: 15px 0;  
+        }  
+
+        .app-options {  
+            display: flex;  
+            gap: 10px;  
+            margin-bottom: 10px;  
+        }  
+
+        .app-option {  
+            flex: 1;  
             text-align: center;  
+            padding: 10px;  
+            border: 2px solid #ddd;  
+            border-radius: 10px;  
+            cursor: pointer;  
+            transition: all 0.3s ease;  
+            background: white;  
         }  
 
-        [data-theme="dark"] .cred-info {  
-            background: linear-gradient(135deg, #5d4037 0%, #8d6e63 100%);  
-            color: #fff;  
+        [data-theme="dark"] .app-option {  
+            background: #444;  
+            border-color: #555;  
         }  
 
-        .cred-info i {  
-            color: #ff9800;  
-            margin-right: 5px;  
+        .app-option.selected {  
+            border-color: var(--primary-orange);  
+            background: rgba(255, 107, 53, 0.1);  
+        }  
+
+        .app-option i {  
+            font-size: 1.5rem;  
+            margin-bottom: 5px;  
+            display: block;  
+        }  
+
+        .app-option.cred i { color: #00D2B4; }  
+        .app-option.gpay i { color: #4285F4; }  
+        .app-option.phonepe i { color: #5F259F; }  
+        .app-option.paytm i { color: #002E6E; }  
+
+        .app-name {  
+            font-size: 0.8rem;  
+            font-weight: 500;  
         }  
 
         /* Responsive */  
@@ -409,7 +436,7 @@
 
             .main-card {  
                 padding: 15px;  
-                margin: 100px 10px 50px 10px; /* Further reduced for mobile */  
+                margin: 100px 10px 50px 10px;  
             }  
 
             .payment-table th,   
@@ -421,6 +448,15 @@
             footer {  
                 padding: 3px 10px;  
                 height: 28px;  
+            }  
+
+            .app-options {  
+                flex-wrap: wrap;  
+            }  
+
+            .app-option {  
+                flex: 1 0 45%;  
+                margin-bottom: 5px;  
             }  
         }  
 
@@ -448,7 +484,7 @@
                         My Subscription  
                     </div>  
 
-                    <!-- Due Amount Section - Back to box style -->  
+                    <!-- Due Amount Section -->  
                     <div class="subs-info">  
                         <i class="fas fa-money-bill-wave"></i>  
                         <span id="dueInfo">Due Amount: ₹0</span>  
@@ -457,12 +493,6 @@
                     <div class="subs-info">  
                         <i class="fas fa-calendar-times"></i>  
                         <span id="pendingMonths">Pending: 0 months</span>  
-                    </div>  
-
-                    <!-- Cred App Info -->  
-                    <div class="cred-info">  
-                        <i class="fab fa-google-play"></i>  
-                        Recommended: Use CRED app for instant payment  
                     </div>  
 
                     <!-- Payment Form -->  
@@ -474,6 +504,29 @@
                                 <label for="amount" class="form-label">Amount (₹)</label>  
                                 <input type="number" class="form-control" id="amount" value="0" min="10" step="10">  
                                 <small class="form-text text-muted">You can edit the amount if needed</small>  
+                            </div>  
+
+                            <!-- App Selection -->  
+                            <div class="app-selection">  
+                                <label class="form-label">Select Payment App</label>  
+                                <div class="app-options">  
+                                    <div class="app-option cred selected" data-app="cred">  
+                                        <i class="fab fa-google-play"></i>  
+                                        <div class="app-name">CRED</div>  
+                                    </div>  
+                                    <div class="app-option gpay" data-app="gpay">  
+                                        <i class="fab fa-google-pay"></i>  
+                                        <div class="app-name">GPay</div>  
+                                    </div>  
+                                    <div class="app-option phonepe" data-app="phonepe">  
+                                        <i class="fas fa-mobile-alt"></i>  
+                                        <div class="app-name">PhonePe</div>  
+                                    </div>  
+                                    <div class="app-option paytm" data-app="paytm">  
+                                        <i class="fas fa-wallet"></i>  
+                                        <div class="app-name">Paytm</div>  
+                                    </div>  
+                                </div>  
                             </div>  
 
                             <!-- Speaker Contribution Section -->  
@@ -494,13 +547,13 @@
 
                             <button type="submit" class="pay-btn">  
                                 <i class="fas fa-credit-card me-2"></i>  
-                                Pay via CRED UPI  
+                                Pay Now  
                             </button>  
 
                             <!-- Payment Note -->  
                             <div class="payment-note">  
-                                CRED app will open automatically for payment <br>  
-                                Payment will be updated in the system within 4 hours of successful transaction  
+                                Selected app will open for payment<br>  
+                                Payment will be updated within 4 hours of successful transaction  
                             </div>  
                         </form>  
                     </div>  
@@ -566,6 +619,7 @@
         let currentMemberNumber = '';  
         let speakerPaid = false;  
         let monthlyDueAmount = 0;  
+        let selectedApp = 'cred'; // Default to CRED  
 
         // Auth State Listener  
         auth.onAuthStateChanged(async (user) => {  
@@ -609,7 +663,7 @@
             return months[monthIndex] + ' ' + monthString.split('-')[0];  
         };  
 
-        // Load Subscriptions - FIXED: Show history in descending order  
+        // Load Subscriptions  
         const loadSubscriptions = async (userId) => {  
             const currentDate = new Date();  
             const currentMonth = currentDate.toISOString().slice(0, 7);  
@@ -664,7 +718,7 @@
                 const contributionTable = document.getElementById('contributionTable');  
                 contributionTable.innerHTML = '';  
 
-                // FIXED: Show months in descending order (latest first)  
+                // Show months in descending order (latest first)  
                 const sortedMonths = [...allMonths].sort().reverse();  
 
                 sortedMonths.forEach(month => {  
@@ -723,7 +777,21 @@
             updateAmountField();  
         });  
 
-        // Payment Form Submit - CRED App Integration  
+        // App Selection  
+        document.querySelectorAll('.app-option').forEach(option => {  
+            option.addEventListener('click', function() {  
+                // Remove selected class from all options  
+                document.querySelectorAll('.app-option').forEach(opt => {  
+                    opt.classList.remove('selected');  
+                });  
+                // Add selected class to clicked option  
+                this.classList.add('selected');  
+                // Update selected app  
+                selectedApp = this.getAttribute('data-app');  
+            });  
+        });  
+
+        // Payment Form Submit  
         document.getElementById('paymentForm').addEventListener('submit', (e) => {  
             e.preventDefault();  
             const amount = document.getElementById('amount').value;  
@@ -739,7 +807,7 @@
                 return;  
             }  
 
-            // UPI Payment setup for Cred App  
+            // UPI Payment setup  
             const upiID = 'vishnuputhur@sbi';  
             const payeeName = 'Vishnu T';  
 
@@ -749,25 +817,14 @@
                 transactionNote += ' Includes Speaker ';  
             }  
 
-            // Method 1: Try Cred deep link first  
-            const credURL = `credpay://pay?pa=${upiID}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR&tn=${encodeURIComponent(transactionNote)}`;  
-
-            // Method 2: Standard UPI link as fallback  
+            // Standard UPI URL  
             const upiURL = `upi://pay?pa=${upiID}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR&tn=${encodeURIComponent(transactionNote)}`;  
 
-            console.log('Attempting to trigger CRED app:', credURL);  
+            console.log(`Attempting to pay with ${selectedApp}:`, upiURL);  
 
-            // Try to open Cred app first  
-            window.location.href = credURL;  
-
-            // Fallback mechanism - if Cred not installed, try standard UPI after delay  
-            setTimeout(() => {  
-                // If we're still on the same page after 500ms, Cred app is not available  
-                if (!document.hidden && document.visibilityState !== 'hidden') {  
-                    console.log('CRED app not available, falling back to standard UPI');  
-                    window.location.href = upiURL;  
-                }  
-            }, 500);  
+            // For all apps, we use the standard UPI link  
+            // Each app will handle it based on user's default app selection  
+            window.location.href = upiURL;  
 
             return false;  
         });  
