@@ -698,6 +698,16 @@
             }
         };
 
+        // Format date to dd-mm-yy
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = String(date.getFullYear()).slice(-2);
+            return `${day}-${month}-${year}`;
+        }
+
         // Generate Report PDF
         async function generateReport() {
             const loadingSpinner = document.getElementById('loadingSpinner');
@@ -725,6 +735,11 @@
                     '2026-01', '2026-02', '2026-03', '2026-04'
                 ];
 
+                // Get current month for pending calculations
+                const today = new Date();
+                const currentMonth = today.toISOString().slice(0, 7);
+                const currentMonthIndex = reportMonths.indexOf(currentMonth);
+
                 // Load payment data for all members and months
                 const paymentData = [];
                 
@@ -743,7 +758,7 @@
                             if (contributionDoc.exists && contributionDoc.data().paid) {
                                 memberPayments.push({
                                     paid: true,
-                                    date: contributionDoc.data().date || 'Paid'
+                                    date: formatDate(contributionDoc.data().date) || 'Paid'
                                 });
                             } else {
                                 memberPayments.push({
@@ -785,13 +800,13 @@
                 doc.setTextColor(0, 0, 128); // Dark blue
                 doc.setFont(undefined, 'bold');
                 doc.text('Shipyard Nagar', pageWidth / 2, yPos, { align: 'center' });
-                yPos += 10;
+                yPos += 5; // 5mm gap
                 
                 // Add address (50% size of main heading)
                 doc.setFontSize(12);
                 doc.setTextColor(0, 0, 0);
                 doc.setFont(undefined, 'normal');
-                doc.text('Nettoor 682040', pageWidth / 2, yPos, { align: 'center' });
+                doc.text('Nettoor, 682040', pageWidth / 2, yPos, { align: 'center' });
                 yPos += 8;
                 
                 // Add subheading
@@ -829,47 +844,61 @@
                         paymentData[i] = emptyPayments;
                     }
                     
+                    // For pending months, show "Pending" text
                     const row = {
                         number: (i + 1).toString(),
                         name: member.memberName,
-                        oct25: payments[0]?.paid ? payments[0].date : '',
-                        nov25: payments[1]?.paid ? payments[1].date : '',
-                        dec25: payments[2]?.paid ? payments[2].date : '',
-                        jan26: payments[3]?.paid ? payments[3].date : '',
-                        feb26: payments[4]?.paid ? payments[4].date : '',
-                        mar26: payments[5]?.paid ? payments[5].date : '',
-                        apr26: payments[6]?.paid ? payments[6].date : ''
+                        oct25: payments[0]?.paid ? payments[0].date : 
+                              (currentMonthIndex >= 0 ? 'Pending' : ''),
+                        nov25: payments[1]?.paid ? payments[1].date : 
+                              (currentMonthIndex >= 1 ? 'Pending' : ''),
+                        dec25: payments[2]?.paid ? payments[2].date : 
+                              (currentMonthIndex >= 2 ? 'Pending' : ''),
+                        jan26: payments[3]?.paid ? payments[3].date : 
+                              (currentMonthIndex >= 3 ? 'Pending' : ''),
+                        feb26: payments[4]?.paid ? payments[4].date : 
+                              (currentMonthIndex >= 4 ? 'Pending' : ''),
+                        mar26: payments[5]?.paid ? payments[5].date : 
+                              (currentMonthIndex >= 5 ? 'Pending' : ''),
+                        apr26: payments[6]?.paid ? payments[6].date : 
+                              (currentMonthIndex >= 6 ? 'Pending' : '')
                     };
                     
                     tableData.push(row);
                 }
                 
-                // Define table styles
+                // Define table styles - centered on page
+                const tableWidth = 180; // Width of table in mm
+                const tableStartX = (pageWidth - tableWidth) / 2; // Center the table
+                
                 const tableStyles = {
                     theme: 'grid',
+                    startY: yPos,
+                    margin: { left: tableStartX, right: tableStartX },
                     headStyles: {
                         fillColor: [173, 216, 230], // Light blue
                         textColor: 0,
-                        fontStyle: 'bold'
+                        fontStyle: 'bold',
+                        halign: 'center'
                     },
                     bodyStyles: {
-                        textColor: 0
+                        textColor: 0,
+                        halign: 'center'
                     },
                     alternateRowStyles: {
                         fillColor: [240, 240, 240]
                     },
                     columnStyles: {
-                        number: { cellWidth: 10 },
-                        name: { cellWidth: 40 },
-                        oct25: { cellWidth: 20 },
-                        nov25: { cellWidth: 20 },
-                        dec25: { cellWidth: 20 },
-                        jan26: { cellWidth: 20 },
-                        feb26: { cellWidth: 20 },
-                        mar26: { cellWidth: 20 },
-                        apr26: { cellWidth: 20 }
+                        number: { cellWidth: 10, halign: 'center' },
+                        name: { cellWidth: 35, halign: 'left' },
+                        oct25: { cellWidth: 18, halign: 'center' },
+                        nov25: { cellWidth: 18, halign: 'center' },
+                        dec25: { cellWidth: 18, halign: 'center' },
+                        jan26: { cellWidth: 18, halign: 'center' },
+                        feb26: { cellWidth: 18, halign: 'center' },
+                        mar26: { cellWidth: 18, halign: 'center' },
+                        apr26: { cellWidth: 18, halign: 'center' }
                     },
-                    margin: { top: yPos, right: margin, bottom: margin + 20, left: margin },
                     didDrawCell: function(data) {
                         // Check if this is a body cell (not header)
                         if (data.section === 'body') {
@@ -884,34 +913,19 @@
                                 const payment = paymentData[rowIndex] && paymentData[rowIndex][paymentIndex] ? 
                                     paymentData[rowIndex][paymentIndex] : { paid: false, date: '' };
                                 
-                                // If payment is not made and the month is in the past, color cell light red
-                                if (!payment.paid) {
-                                    const monthStr = colIndex.replace(/([a-z])(\d+)/i, '$1 $2');
-                                    const monthYear = monthStr.split(' ');
-                                    const monthNames = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
-                                    const monthIndex = monthNames.indexOf(monthYear[0].toLowerCase());
-                                    const year = parseInt('20' + monthYear[1]);
-                                    
-                                    const today = new Date();
-                                    const currentYear = today.getFullYear();
-                                    const currentMonth = today.getMonth();
-                                    
-                                    // If the report month is in the past
-                                    if (year < currentYear || (year === currentYear && monthIndex < currentMonth)) {
-                                        doc.setFillColor(255, 200, 200); // Light red
-                                        doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'F');
-                                        doc.setTextColor(0, 0, 0);
-                                        if (data.cell.text) {
-                                            doc.text(data.cell.text, data.cell.x + 2, data.cell.y + data.cell.height / 2 + 2);
-                                        }
-                                    }
-                                } else {
+                                // If payment is not made and the month is current or past, color cell light red
+                                if (!payment.paid && paymentIndex <= currentMonthIndex) {
+                                    doc.setFillColor(255, 200, 200); // Light red
+                                    doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'F');
+                                    doc.setTextColor(139, 0, 0); // Dark red text for "Pending"
+                                    doc.text('Pending', data.cell.x + data.cell.width / 2, data.cell.y + data.cell.height / 2 + 3, { align: 'center' });
+                                } else if (payment.paid) {
                                     // Payment is made, use white background with dark green text
                                     doc.setFillColor(255, 255, 255);
                                     doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'F');
                                     doc.setTextColor(0, 100, 0); // Dark green
                                     if (data.cell.text) {
-                                        doc.text(data.cell.text, data.cell.x + 2, data.cell.y + data.cell.height / 2 + 2);
+                                        doc.text(data.cell.text, data.cell.x + data.cell.width / 2, data.cell.y + data.cell.height / 2 + 3, { align: 'center' });
                                     }
                                 }
                             }
@@ -923,11 +937,11 @@
                 doc.autoTable(columns, tableData, tableStyles);
                 
                 // Add date and treasurer signature
-                const finalY = doc.lastAutoTable.finalY + 10;
+                const finalY = Math.min(doc.lastAutoTable.finalY + 10, pageHeight - margin - 10);
                 
-                // Current date
+                // Current date in dd-mm-yy format
                 const today = new Date();
-                const dateStr = today.toLocaleDateString();
+                const dateStr = formatDate(today.toISOString());
                 doc.setFontSize(10);
                 doc.setTextColor(0, 0, 0);
                 doc.setFont(undefined, 'normal');
