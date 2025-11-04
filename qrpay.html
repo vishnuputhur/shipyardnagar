@@ -4,39 +4,54 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>UPI Payment</title>
-  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+  <!-- ശരിയായ version (global QRCode expose ചെയ്യുന്നു) -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
   <style>
     body { margin: 0; background: #fff; }
   </style>
 </head>
 <body>
   <script>
-    (function(){
-      const urlParams = new URLSearchParams(window.location.search);
-      const amount = urlParams.get('amount') || '200';
-      
-      const upiId = 'vishnuputhur@sbi';
-      const upiURI = `upi://pay?pa=${upiId}&pn=ShipyardNagar&am=${amount}&cu=INR`;
-      
-      // Generate QR immediately
-      QRCode.toDataURL(upiURI, { width: 300, margin: 1 }, function(err, qrDataUrl) {
-        if (err) return;
-        
-        // Convert to blob and share immediately
-        fetch(qrDataUrl)
-          .then(res => res.blob())
-          .then(blob => {
-            const file = new File([blob], `payment.png`, { type: "image/png" });
-            
-            if (navigator.share && navigator.canShare({ files: [file] })) {
-              navigator.share({
-                files: [file],
-                title: "UPI Payment",
-                text: "Scan to pay"
-              });
-            }
+    (async () => {
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const amount = urlParams.get('amount') || '200';
+
+        if (isNaN(amount) || amount <= 0) {
+          alert("തുക സാധുവല്ല");
+          return;
+        }
+
+        const upiId = 'vishnuputhur@sbi';
+        // @ encode ചെയ്യുക!
+        const upiURI = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=ShipyardNagar&am=${amount}&cu=INR`;
+
+        // window.QRCode.toDataURL (async/await)
+        const qrDataUrl = await window.QRCode.toDataURL(upiURI, {
+          width: 400,
+          margin: 2
+        });
+
+        // Blob → File
+        const blob = await (await fetch(qrDataUrl)).blob();
+        const file = new File([blob], `Pay_Rs${amount}.png`, { type: 'image/png' });
+
+        // Share (mobile only)
+        if (navigator.share && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            files: [file],
+            title: `₹${amount} പേമെന്റ്`,
+            text: `₹${amount} അടയ്ക്കാൻ ഈ QR സ്കാൻ ചെയ്യുക`
           });
-      });
+          setTimeout(() => window.close(), 1000);
+        } else {
+          alert("ഷെയർ ചെയ്യാൻ കഴിയില്ല. മൊബൈൽ ബ്രൗസറിൽ തുറക്കുക");
+        }
+
+      } catch (err) {
+        console.error("QR Error:", err);
+        alert("QR ജനറേഷൻ പരാജയപ്പെട്ടു");
+      }
     })();
   </script>
 </body>
