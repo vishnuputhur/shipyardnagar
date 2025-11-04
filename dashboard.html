@@ -399,7 +399,6 @@
             const totalWealthDisplay = document.getElementById('totalWealthDisplay');
             const subscriptionBtn = document.getElementById('subscriptionBtn');
             const reportBtn = document.getElementById('reportBtn');
-            const logoutBtn = document.getElementById('logout');
             const subscriptionTableBody = document.getElementById('subscriptionTableBody');
             const monthButtons = document.getElementById('monthButtons');
 
@@ -447,18 +446,26 @@
                         memberNumber: doc.data().memberNumber || ''
                     }));
                     
+                    // Sort members by member number (SN01 to SN22)
+                    currentMembers.sort((a, b) => {
+                        const numA = parseInt(a.memberNumber.replace('SN', ''));
+                        const numB = parseInt(b.memberNumber.replace('SN', ''));
+                        return numA - numB;
+                    });
+                    
                     // Generate months from Oct 2025 to Oct 2026
                     allMonths = generateMonths('2025-10', '2026-10');
                     
                     // Create month buttons
                     createMonthButtons(allMonths);
                     
-                    // Select first month by default
-                    if (allMonths.length > 0 && !selectedMonth) {
-                        selectedMonth = allMonths[0];
-                        updateMonthSelection(selectedMonth);
-                        await renderSubscriptionTableForMonth(selectedMonth);
-                    }
+                    // Select current month by default
+                    const today = new Date();
+                    const currentMonth = today.toISOString().slice(0, 7);
+                    selectedMonth = allMonths.includes(currentMonth) ? currentMonth : allMonths[0];
+                    
+                    updateMonthSelection(selectedMonth);
+                    await renderSubscriptionTableForMonth(selectedMonth);
 
                 } catch (error) {
                     console.error('Error in loadSubscriptions:', error);
@@ -705,8 +712,12 @@
                     memberNumber: doc.data().memberNumber || ''
                 }));
 
-                // Sort members alphabetically by name
-                members.sort((a, b) => a.memberName.localeCompare(b.memberName));
+                // Sort members by member number (SN01 to SN22)
+                members.sort((a, b) => {
+                    const numA = parseInt(a.memberNumber.replace('SN', ''));
+                    const numB = parseInt(b.memberNumber.replace('SN', ''));
+                    return numA - numB;
+                });
 
                 // Define report months (Oct 2025 to Apr 2026)
                 const reportMonths = [
