@@ -698,7 +698,7 @@
             updateAmountField();
         });
 
-        // Pay Button Click Handler - NEW: Redirect to QR page
+        // Pay Button Click Handler - UPDATED for WebView to Chrome
         document.getElementById('payButton').addEventListener('click', function() {
             const amount = document.getElementById('amount').value;
             
@@ -712,11 +712,21 @@
                 return;
             }
 
-            // Redirect to QR page with amount and member number
-            const qrPageUrl = `https://vishnuputhur.github.io/shipyardnagar/qrpay.html?amount=${amount}&member=${currentMemberNumber}`;
+            // WebView to Chrome opening - multiple methods
+            const qrPageUrl = `https://vishnuputhur.github.io/shipyardnagar/qrpay.html?amount=${amount}`;
             
-            // Open in browser (Chrome)
-            window.open(qrPageUrl, '_system');
+            // Method 1: Try intent for WebView
+            window.location.href = `intent://vishnuputhur.github.io/shipyardnagar/qrpay.html?amount=${amount}#Intent;package=com.android.chrome;end`;
+            
+            // Method 2: Fallback - direct URL
+            setTimeout(() => {
+                window.open(qrPageUrl, '_system');
+            }, 100);
+            
+            // Method 3: Ultimate fallback
+            setTimeout(() => {
+                window.location.href = qrPageUrl;
+            }, 500);
         });
 
         // Theme Toggle
