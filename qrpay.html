@@ -1,79 +1,65 @@
 <!DOCTYPE html>
 <html lang="ml">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UPI Payment</title>
-    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
-    <style>
-        body {
-            margin: 0;
-            background: #fff;
-            overflow: hidden;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UPI Payment Share</title>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+  <style>
+    body { margin: 0; background: white; display: flex; justify-content: center; align-items: center; height: 100vh; }
+  </style>
 </head>
 <body>
-<script>
-window.onload = async function () {
-    try {
-        // 🔹 Read URL parameters
-        const urlParams = new URLSearchParams(window.location.search);
-        const amount = urlParams.get("amount") || "100";
-        const member = urlParams.get("member") || "1";
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const amount = urlParams.get('amount');
+    const member = urlParams.get('member');
+    const upiId = "vishnuputhur@sbi"; // 👈 നിങ്ങളുടെ UPI ID
 
-        // 🔹 Your UPI ID
-        const upiId = "vishnuputhur@sbi";
+    async function createAndShare() {
+      try {
+        if (!amount || isNaN(amount)) return alert("Invalid amount");
 
-        // 🔹 Construct valid UPI payment URL
-        const upiURL = `upi://pay?pa=${upiId}&pn=ShipyardNagar&am=${amount}&cu=INR&tn=Member${member}`;
+        // ✅ UPI link
+        const upiLink = `upi://pay?pa=${upiId}&pn=ShipyardNagar&am=${amount}&cu=INR&tn=Member${member}`;
 
-        console.log("Generating QR for:", upiURL);
+        // ✅ QR Data URL
+        const qrDataUrl = await QRCode.toDataURL(upiLink, { width: 400, margin: 1 });
 
-        // 🔹 Generate QR image as DataURL (callback style for max support)
-        QRCode.toDataURL(upiURL, { width: 400, margin: 1 }, async function (err, qrDataUrl) {
-            if (err) {
-                console.error("QR Generation Error:", err);
-                alert("QR Code generation failed 😔");
-                window.close();
-                return;
-            }
+        // ✅ convert to blob + file
+        const blob = await (await fetch(qrDataUrl)).blob();
+        const file = new File([blob], `UPI_Payment_${amount}.png`, { type: "image/png" });
 
-            console.log("QR generated successfully");
+        // ✅ share (if supported)
+        if (navigator.share && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            files: [file],
+            title: "UPI Payment QR",
+            text: `Scan this QR to pay ₹${amount}`
+          });
+          window.close();
+        } else {
+          // fallback → show QR for manual share/download
+          const img = document.createElement("img");
+          img.src = qrDataUrl;
+          img.alt = "QR Code";
+          img.style.width = "90%";
+          document.body.appendChild(img);
 
-            // 🔹 Convert base64 → blob
-            const response = await fetch(qrDataUrl);
-            const blob = await response.blob();
-            const file = new File([blob], `upi_payment_${amount}.png`, { type: "image/png" });
-
-            // 🔹 Try sharing QR image
-            if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                console.log("Sharing QR...");
-                await navigator.share({
-                    files: [file],
-                    title: "UPI Payment - Shipyard Nagar",
-                    text: `Scan this QR to pay ₹${amount}`
-                });
-                console.log("Share success");
-                setTimeout(() => window.close(), 1000);
-            } else {
-                console.log("Share not supported, downloading...");
-                const a = document.createElement("a");
-                a.href = qrDataUrl;
-                a.download = `upi_payment_${amount}.png`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                setTimeout(() => window.close(), 2000);
-            }
-        });
-
-    } catch (e) {
-        console.error("Unexpected error:", e);
-        alert("QR generation failed!");
-        setTimeout(() => window.close(), 2000);
+          const msg = document.createElement("p");
+          msg.innerText = "QR code ready — long-press to share or save.";
+          msg.style.textAlign = "center";
+          msg.style.fontFamily = "sans-serif";
+          msg.style.marginTop = "10px";
+          document.body.appendChild(msg);
+        }
+      } catch (e) {
+        console.error(e);
+        alert("QR generation failed 😔");
+      }
     }
-};
-</script>
+
+    createAndShare();
+  </script>
 </body>
 </html>
