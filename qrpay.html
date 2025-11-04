@@ -1,81 +1,109 @@
 <!DOCTYPE html>
 <html lang="ml">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>UPI Payment</title>
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>QR Pay</title>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
   <style>
-    body { margin: 0; background: #fff; }
+    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; margin:0;
+           display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh;
+           background:#faf8e3; color:#111; }
+    .card { background:#fff; border-radius:12px; padding:18px; box-shadow:0 8px 30px rgba(0,0,0,0.08); text-align:center; width:92%; max-width:420px; }
+    h1{font-size:1.05rem;margin:0 0 10px}
+    p.small{font-size:0.85rem;color:#444;margin:6px 0 12px}
+    canvas{width:280px;height:280px; border-radius:8px; background:#fff}
+    .controls{display:flex; gap:8px; justify-content:center; margin-top:12px}
+    button{padding:10px 14px;border-radius:10px;border:0;background:#2e7d32;color:#fff;font-weight:600;cursor:pointer}
+    a.download{background:#1565c0}
+    .note{font-size:0.78rem;color:#666;margin-top:10px}
   </style>
 </head>
 <body>
-  <script>
-    (async () => {
-      try {
-        const amount = new URLSearchParams(location.search).get('amount');
-        if (!amount || isNaN(amount) || amount <= 0) {
-          alert("തുക സാധുവല്ല. ?amount=100");
-          return;
-        }
+  <div class="card">
+    <h1>മാസവരി അടയ്ക്കുക</h1>
+    <p class="small">QR സ്കാൻ ചെയ്ത് പേയ് ചെയ്യുക (amount URL query ഉപയോഗിക്കുന്നു)</p>
 
-        const upiId = "vishnuputhur@sbi";
-        const upiLink = `upi://pay?pa=${upiId}&pn=ShipyardNagar&am=${amount}&cu=INR`;
+    <!-- QR will be injected here -->
+    <div id="qrHolder" aria-hidden="false"></div>
 
-        console.log('Generating QR for amount:', amount);
+    <div class="controls">
+      <button id="downloadBtn">Download QR</button>
+      <button id="copyBtn">Copy UPI Text</button>
+    </div>
 
-        // QR Code ജനറേറ്റ് ചെയ്യുക - FIXED: window.QRCode → QRCode
-        const qrDataUrl = await QRCode.toDataURL(upiLink, {
-          width: 512,
-          margin: 2,
-          color: { dark: '#000', light: '#fff' }
-        });
+    <p class="note">ഒരു ഡിവൈസിലാണെങ്കിൽ: GPay/PhonePe → Scan from gallery → ഈ ചിത്രം സെലക്ട് ചെയ്ത് പണം അയക്കുക.<br>
+    അല്ലെങ്കിൽ മറ്റൊരു ഫോൺ ഉപയോഗിച്ച് screen-ലുള്ള QR സ്കാൻ ചെയ്യുക.</p>
+  </div>
 
-        console.log('QR generated successfully');
+<script>
+(async function(){
+  // URL param amount (default 200)
+  const params = new URLSearchParams(window.location.search);
+  const amount = params.get('amount') || '200';
 
-        // Convert to blob for sharing
-        const response = await fetch(qrDataUrl);
-        const blob = await response.blob();
-        const file = new File([blob], `payment_${amount}.png`, { type: "image/png" });
+  // YOUR UPI ID (change if needed)
+  const upiId = '9037383927@ybl'; // <-- set your UPI id here
+  const payerName = 'Shipyard Nagar'; // display name
+  const note = 'Monthly Payment';
 
-        // Auto share
-        if (navigator.share && navigator.canShare({ files: [file] })) {
-          await navigator.share({
-            files: [file],
-            title: "UPI Payment - Shipyard Nagar",
-            text: `Scan this QR to pay ₹${amount}`
-          });
-          
-          // Close after successful share
-          setTimeout(() => {
-            window.close();
-          }, 1000);
-          
-        } else {
-          // Fallback - download QR
-          const link = document.createElement('a');
-          link.href = qrDataUrl;
-          link.download = `shipyard_payment_${amount}.png`;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          
-          // Close after download
-          setTimeout(() => {
-            window.close();
-          }, 2000);
-        }
+  if (!amount || isNaN(amount) || Number(amount) < 1) {
+    alert('Invalid amount. Use ?amount=200 in URL');
+    return;
+  }
 
-      } catch (err) {
-        console.error("QR generation error:", err);
-        alert("QR പരാജയപ്പെട്ടു: " + err.message);
-        
-        // Close on error too
-        setTimeout(() => {
-          window.close();
-        }, 3000);
-      }
-    })();
-  </script>
+  // Construct UPI URI (do not over-encode)
+  const upiURI = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(payerName)}&am=${encodeURIComponent(amount)}&cu=INR&tn=${encodeURIComponent(note)}`;
+
+  // Create canvas and generate QR using callback style
+  const canvas = document.createElement('canvas');
+  canvas.width = 400;
+  canvas.height = 400;
+
+  const holder = document.getElementById('qrHolder');
+  holder.innerHTML = ''; // clear
+  holder.appendChild(canvas);
+
+  QRCode.toCanvas(canvas, upiURI, { width: 400, margin: 1 }, function(err) {
+    if (err) {
+      console.error('QR gen error', err);
+      holder.innerHTML = '<p style="color:#b00020">QR generation failed. Check console.</p>';
+      return;
+    }
+    // Scale canvas visually for mobile
+    canvas.style.width = '280px';
+    canvas.style.height = '280px';
+  });
+
+  // Download button
+  document.getElementById('downloadBtn').addEventListener('click', function(){
+    try {
+      const dataUrl = canvas.toDataURL('image/png');
+      const a = document.createElement('a');
+      a.href = dataUrl;
+      a.download = `upi_qr_${amount}.png`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    } catch(e){
+      alert('Download not supported in this environment.');
+      console.error(e);
+    }
+  });
+
+  // Copy UPI text (for manual paste)
+  document.getElementById('copyBtn').addEventListener('click', async function(){
+    const text = `upi://${upiURI.slice(6)}`; // keep as upi://...
+    try {
+      await navigator.clipboard.writeText(text);
+      alert('UPI text copied to clipboard. Paste in UPI app if needed.');
+    } catch (e) {
+      // fallback
+      prompt('Copy this UPI text:', text);
+    }
+  });
+
+})();
+</script>
 </body>
 </html>
