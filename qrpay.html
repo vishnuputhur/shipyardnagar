@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>UPI Share</title>
-  <!-- ശരിയായ QRCode.js version -->
+  <title>GPay QR</title>
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
   <style>
     body { margin: 0; background: #fff; }
@@ -14,48 +13,61 @@
   <script>
     (async () => {
       try {
-        // URL-ൽ നിന്ന് amount മാത്രം എടുക്കുക
         const amount = new URLSearchParams(location.search).get('amount');
-        
-        // amount ഇല്ലെങ്കിൽ അല്ലെങ്കിൽ സാധുവല്ലെങ്കിൽ
         if (!amount || isNaN(amount) || amount <= 0) {
-          alert("തുക സാധുവല്ല. ഉദാ: ?amount=100");
+          alert("തുക സാധുവല്ല. ?amount=100");
           return;
         }
 
-        // നിങ്ങളുടെ UPI ID
         const upiId = "vishnuputhur@sbi";
-
-        // UPI link - amount മാത്രം, member ഇല്ല
         const upiLink = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=ShipyardNagar&am=${amount}&cu=INR`;
 
         // QR Code ജനറേറ്റ് ചെയ്യുക
         const qrDataUrl = await window.QRCode.toDataURL(upiLink, {
           width: 512,
           margin: 2,
-          color: { dark: '#000000', light: '#FFFFFF' }
+          color: { dark: '#000', light: '#fff' }
         });
 
-        // Data URL → Blob → File
-        const blob = await (await fetch(qrDataUrl)).blob();
-        const file = new File([blob], `Pay_Rs${amount}.png`, { type: 'image/png' });
+        // Canvas-ൽ QR വരയ്ക്കുക (അദൃശ്യമായി)
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+        img.onload = () => {
+          canvas.width = img.width;
+          canvas.height = img.height;
+          ctx.drawImage(img, 0, 0);
 
-        // Share API (mobile only)
-        if (navigator.share && navigator.canShare({ files: [file] })) {
-          await navigator.share({
-            files: [file],
-            title: `₹${amount} പേമെന്റ്`,
-            text: `₹${amount} അടയ്ക്കാൻ ഈ QR സ്കാൻ ചെയ്യുക`
-          });
-          // ഷെയർ ചെയ്താൽ പേജ് അടയ്ക്കുക
-          setTimeout(() => window.close(), 1000);
-        } else {
-          alert("ഷെയർ ചെയ്യാൻ കഴിയില്ല. മൊബൈൽ ബ്രൗസറിൽ തുറക്കുക.");
-        }
+          // GPay-ലേക്ക് ഓപ്പൺ ചെയ്യാൻ intent URL
+          const gpayIntent = `intent://scan/#Intent;scheme=upi;package=com.google.android.apps.nbu.paisa.user;end`;
+
+          // QR കാണിക്കാതെ, GPay തുറക്കാൻ ശ്രമിക്കുക
+          // ഈ intent GPay-യിൽ QR സ്കാൻ മോഡ് തുറക്കും
+          window.location = gpayIntent;
+
+          // 2 സെക്കൻഡ് കഴിഞ്ഞാൽ fallback: QR image കാണിക്കുക
+          setTimeout(() => {
+            const qrImg = document.createElement('img');
+            qrImg.src = qrDataUrl;
+            qrImg.style.maxWidth = '90%';
+            qrImg.style.margin = '20px';
+            qrImg.style.border = '1px solid #ccc';
+            qrImg.style.borderRadius = '12px';
+            document.body.appendChild(qrImg);
+
+            const p = document.createElement('p');
+            p.innerText = 'GPay തുറന്നില്ലെങ്കിൽ ഈ QR സ്കാൻ ചെയ്യുക';
+            p.style.textAlign = 'center';
+            p.style.fontFamily = 'sans-serif';
+            p.style.color = '#d00';
+            document.body.appendChild(p);
+          }, 2000);
+        };
+        img.src = qrDataUrl;
 
       } catch (err) {
-        console.error("QR Error:", err);
-        alert("QR ജനറേഷൻ പരാജയപ്പെട്ടു");
+        console.error(err);
+        alert("QR പരാജയപ്പെട്ടു");
       }
     })();
   </script>
