@@ -150,7 +150,7 @@
             background: var(--gradient);
             border: none;
             border-radius: 12px;
-            padding: 12px 20px;
+            padding: 14px 20px;
             color: white;
             font-weight: 500;
             font-size: 1rem;
@@ -159,26 +159,10 @@
             position: relative;
             overflow: hidden;
             width: 100%;
-            margin-top: 10px;
+            margin-top: 8px;
         }
 
-        .cred-btn {
-            background: linear-gradient(135deg, #00B2A9 0%, #007E7A 100%);
-            border: none;
-            border-radius: 12px;
-            padding: 12px 20px;
-            color: white;
-            font-weight: 500;
-            font-size: 1rem;
-            box-shadow: var(--shadow);
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-            width: 100%;
-            margin-top: 10px;
-        }
-
-        .pay-btn::before, .cred-btn::before {
+        .pay-btn::before {
             content: '';
             position: absolute;
             top: 0;
@@ -189,13 +173,24 @@
             transition: 0.5s;
         }
 
-        .pay-btn:hover, .cred-btn:hover {
+        .pay-btn:hover {
             transform: translateY(-2px);
             box-shadow: var(--shadow-hover);
         }
 
-        .pay-btn:hover::before, .cred-btn:hover::before {
+        .pay-btn:hover::before {
             left: 100%;
+        }
+
+        .pay-btn .app-name {
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .pay-btn .pay-text {
+            font-size: 0.85rem;
+            font-style: italic;
+            opacity: 0.9;
         }
 
         /* Payment Note */
@@ -209,24 +204,6 @@
 
         [data-theme="dark"] .payment-note {
             color: #ccc;
-        }
-
-        /* Green Notice */
-        .green-notice {
-            background: #e8f5e8;
-            border: 1px solid #28a745;
-            border-radius: 8px;
-            padding: 12px;
-            margin-top: 15px;
-            text-align: center;
-            font-size: 0.85rem;
-            color: #155724;
-        }
-
-        [data-theme="dark"] .green-notice {
-            background: #1e3a1e;
-            border-color: #38a169;
-            color: #9ae6b4;
         }
 
         /* Payment History Table */
@@ -504,24 +481,19 @@
                             
                             <!-- GPay Button -->
                             <button type="button" class="pay-btn" id="gpayButton">
-                                <i class="fab fa-google-pay me-2"></i>
-                                Pay By GPay
+                                <span class="pay-text">Pay by</span><br>
+                                <span class="app-name">GPay</span>
                             </button>
                             
                             <!-- CRED Button -->
-                            <button type="button" class="cred-btn" id="credButton">
-                                <i class="fas fa-gem me-2"></i>
-                                Pay By CRED
+                            <button type="button" class="pay-btn" id="credButton">
+                                <span class="pay-text">Pay by</span><br>
+                                <span class="app-name">CRED</span>
                             </button>
-                            
-                            <!-- Green Notice -->
-                            <div class="green-notice">
-                                <strong>📱 Take GPay app for easy payment</strong>
-                            </div>
                             
                             <!-- Payment Note -->
                             <div class="payment-note">
-                                Payment will be processed via UPI. Make sure to pay the exact amount shown above.
+                                Payment will be updated in the system within 4 hours of successful transaction
                             </div>
                         </form>
                     </div>
@@ -771,7 +743,7 @@
             }, 1000);
         });
 
-        // CRED Button Click Handler
+        // CRED Button Click Handler - UPI link
         document.getElementById('credButton').addEventListener('click', function() {
             const amount = document.getElementById('amount').value;
             
@@ -785,12 +757,12 @@
                 return;
             }
 
-            // CRED pay// link
+            // UPI link for CRED
             const upiId = 'vishnuputhur@sbi';
-            const credLink = `pay://pay?pa=${upiId}&pn=ShipyardNagar&am=${amount}&cu=INR`;
+            const upiLink = `upi://pay?pa=${upiId}&pn=ShipyardNagar&am=${amount}&cu=INR`;
             
-            // Open CRED directly
-            window.location.href = credLink;
+            // Open UPI link directly
+            window.location.href = upiLink;
         });
 
         // Theme Toggle
