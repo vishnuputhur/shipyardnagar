@@ -1,74 +1,212 @@
 <!DOCTYPE html>
-<html lang="ml">
+<html lang="en" data-theme="light">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>UPI Payment</title>
-  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
-  <style>
-    body { 
-      margin: 0; 
-      background: #fff; 
-      text-align: center;
-      padding: 20px;
-      font-family: Arial;
-    }
-    canvas {
-      width: 250px;
-      height: 250px;
-      margin: 20px auto;
-      display: block;
-    }
-    .msg {
-      color: #333;
-      margin: 10px 0;
-    }
-    button {
-      background: #0078d7;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 8px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UPI Payment - Shipyard Nagar</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+    <style>
+        :root {
+            --primary-orange: #FF6B35;
+            --orange-light: #FF8C42;
+            --orange-dark: #E55A2B;
+            --gradient: linear-gradient(135deg, #FF6B35 0%, #FF8C42 50%, #FFA726 100%);
+            --shadow: 0 8px 25px rgba(255, 107, 53, 0.15);
+            --shadow-hover: 0 12px 35px rgba(255, 107, 53, 0.25);
+            --card-bg: rgba(255, 255, 255, 0.95);
+        }
+
+        [data-theme="dark"] {
+            --card-bg: rgba(45, 45, 45, 0.95);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .main-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .page-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #1e3a8a;
+            margin-bottom: 15px;
+        }
+
+        [data-theme="dark"] .page-title {
+            color: #60a5fa;
+        }
+
+        .amount-display {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #059669;
+            margin-bottom: 20px;
+        }
+
+        canvas {
+            width: 220px;
+            height: 220px;
+            margin: 15px auto;
+            display: block;
+            border-radius: 12px;
+            background: #fff;
+            padding: 10px;
+        }
+
+        .pay-btn {
+            background: var(--gradient);
+            border: none;
+            border-radius: 12px;
+            padding: 14px 25px;
+            color: white;
+            font-weight: 500;
+            font-size: 1rem;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+            margin-top: 15px;
+            cursor: pointer;
+        }
+
+        .pay-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .pay-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: 0.5s;
+        }
+
+        .pay-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .pay-btn:hover:not(:disabled)::before {
+            left: 100%;
+        }
+
+        .instruction {
+            font-size: 0.75rem;
+            color: #666;
+            text-align: center;
+            margin-top: 12px;
+            line-height: 1.4;
+        }
+
+        [data-theme="dark"] .instruction {
+            color: #ccc;
+        }
+
+        .footer {
+            margin-top: 20px;
+            font-size: 0.7rem;
+            color: #666;
+        }
+
+        [data-theme="dark"] .footer {
+            color: #ccc;
+        }
+    </style>
 </head>
 <body>
-  <div class="msg">UPI Payment - ₹<span id="amt">0</span></div>
-  <canvas id="qrCanvas"></canvas>
-  <div class="msg">👇 Press below to share QR 👇</div>
-  <button id="shareBtn">Share Now</button>
+    <div class="main-card">
+        <div class="page-title">
+            UPI Payment
+        </div>
+        
+        <div class="amount-display">
+            Amount: ₹<span id="amt">0</span>
+        </div>
+        
+        <canvas id="qrCanvas"></canvas>
+        
+        <button class="pay-btn" id="openGpayBtn" disabled>
+            <i class="fas fa-external-link-alt me-2"></i>
+            Open GPay
+        </button>
+        
+        <div class="instruction">
+            Select GPay in the app list
+        </div>
+        
+        <div class="footer">
+            Powered by VTSoft 2025
+        </div>
+    </div>
 
-  <script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const amount = urlParams.get('amount') || '200';
-    document.getElementById('amt').textContent = amount;
-    const upiId = 'vishnuputhur@sbi';
-    const upiURI = `upi://pay?pa=${upiId}&pn=ShipyardNagar&am=${amount}&cu=INR`;
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const amount = urlParams.get('amount') || '200';
+        document.getElementById('amt').textContent = amount;
+        
+        const upiId = 'vishnuputhur@sbi';
+        const upiURI = `upi://pay?pa=${upiId}&pn=ShipyardNagar&am=${amount}&cu=INR`;
 
-    const canvas = document.getElementById('qrCanvas');
-    const shareBtn = document.getElementById('shareBtn');
+        const canvas = document.getElementById('qrCanvas');
+        const openGpayBtn = document.getElementById('openGpayBtn');
 
-    QRCode.toCanvas(canvas, upiURI, { width: 250, margin: 1 }, function(err) {
-      if (err) return console.error(err);
-      shareBtn.disabled = false;
-    });
+        // Generate QR Code
+        QRCode.toCanvas(canvas, upiURI, { width: 250, margin: 1 }, function(err) {
+            if (err) {
+                console.error('QR error:', err);
+                return;
+            }
+            openGpayBtn.disabled = false;
+        });
 
-    shareBtn.addEventListener('click', () => {
-      canvas.toBlob(blob => {
-        const file = new File([blob], `payment_${amount}.png`, { type: 'image/png' });
-        if (navigator.share && navigator.canShare({ files: [file] })) {
-          navigator.share({
-            files: [file],
-            title: "UPI Payment - Shipyard Nagar",
-            text: `Pay ₹${amount}`
-          });
-        } else {
-          alert("Sharing not supported on this device/browser.");
-        }
-      });
-    });
-  </script>
+        // Open GPay and close page
+        openGpayBtn.addEventListener('click', () => {
+            canvas.toBlob(blob => {
+                const file = new File([blob], `payment_${amount}.png`, { type: 'image/png' });
+                
+                if (navigator.share && navigator.canShare({ files: [file] })) {
+                    navigator.share({
+                        files: [file],
+                        title: "UPI Payment - Shipyard Nagar",
+                        text: `Pay ₹${amount}`
+                    }).then(() => {
+                        // Close page after successful share
+                        setTimeout(() => {
+                            window.close();
+                        }, 1000);
+                    }).catch(() => {
+                        // If share cancelled, don't close
+                    });
+                } else {
+                    alert("Sharing not supported on this device/browser.");
+                }
+            });
+        });
+    </script>
 </body>
 </html>
