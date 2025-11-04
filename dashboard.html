@@ -7,6 +7,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- jsPDF library for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <style>
         :root {
             --primary-orange: #FF6B35;
@@ -309,9 +312,9 @@
                             <i class="fas fa-star me-2"></i>
                             Special Pay
                         </a>
-                        <button class="admin-btn" id="logout" style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);">
-                            <i class="fas fa-sign-out-alt me-2"></i>
-                            Logout
+                        <button class="admin-btn" id="reportBtn">
+                            <i class="fas fa-file-pdf me-2"></i>
+                            Report
                         </button>
                     </div>
 
@@ -395,6 +398,7 @@
             const subscriptionSection = document.getElementById('subscriptionSection');
             const totalWealthDisplay = document.getElementById('totalWealthDisplay');
             const subscriptionBtn = document.getElementById('subscriptionBtn');
+            const reportBtn = document.getElementById('reportBtn');
             const logoutBtn = document.getElementById('logout');
             const subscriptionTableBody = document.getElementById('subscriptionTableBody');
             const monthButtons = document.getElementById('monthButtons');
@@ -426,12 +430,8 @@
                 loadSubscriptions();
             });
 
-            logoutBtn.addEventListener('click', () => {
-                auth.signOut().then(() => {
-                    window.location.href = 'login.html';
-                }).catch((error) => {
-                    alert('Logout Error: ' + error.message);
-                });
+            reportBtn.addEventListener('click', () => {
+                generateReport();
             });
 
             // Subscriptions Functionality
@@ -690,6 +690,237 @@
                 loadingSpinner.style.display = 'none';
             }
         };
+
+        // Generate Report PDF
+        async function generateReport() {
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            loadingSpinner.style.display = 'block';
+            
+            try {
+                // Load members from Firebase
+                const membersSnapshot = await firebase.firestore().collection('users').get();
+                let members = membersSnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    memberName: doc.data().memberName || 'Unknown',
+                    memberNumber: doc.data().memberNumber || ''
+                }));
+
+                // Sort members alphabetically by name
+                members.sort((a, b) => a.memberName.localeCompare(b.memberName));
+
+                // Define report months (Oct 2025 to Apr 2026)
+                const reportMonths = [
+                    '2025-10', '2025-11', '2025-12', 
+                    '2026-01', '2026-02', '2026-03', '2026-04'
+                ];
+
+                // Load payment data for all members and months
+                const paymentData = [];
+                
+                for (const member of members) {
+                    const memberPayments = [];
+                    
+                    for (const month of reportMonths) {
+                        try {
+                            const contributionDoc = await firebase.firestore()
+                                .collection('contributions')
+                                .doc(member.id)
+                                .collection('months')
+                                .doc(month)
+                                .get();
+                            
+                            if (contributionDoc.exists && contributionDoc.data().paid) {
+                                memberPayments.push({
+                                    paid: true,
+                                    date: contributionDoc.data().date || 'Paid'
+                                });
+                            } else {
+                                memberPayments.push({
+                                    paid: false,
+                                    date: ''
+                                });
+                            }
+                        } catch (error) {
+                            console.error(`Error loading payment data for ${member.memberName}, ${month}:`, error);
+                            memberPayments.push({
+                                paid: false,
+                                date: ''
+                            });
+                        }
+                    }
+                    
+                    paymentData.push(memberPayments);
+                }
+
+                // Create PDF
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF('p', 'mm', 'letter');
+                
+                // Set margins and create border
+                const margin = 6; // 6mm margin
+                const pageWidth = doc.internal.pageSize.getWidth();
+                const pageHeight = doc.internal.pageSize.getHeight();
+                
+                // Draw border
+                doc.setDrawColor(139, 0, 0); // Dark red color
+                doc.setLineWidth(0.7); // 0.7mm thickness
+                doc.rect(margin, margin, pageWidth - 2 * margin, pageHeight - 2 * margin);
+                
+                // Set initial position
+                let yPos = margin + 10;
+                
+                // Add main heading
+                doc.setFontSize(24);
+                doc.setTextColor(0, 0, 128); // Dark blue
+                doc.setFont(undefined, 'bold');
+                doc.text('Shipyard Nagar', pageWidth / 2, yPos, { align: 'center' });
+                yPos += 10;
+                
+                // Add address (50% size of main heading)
+                doc.setFontSize(12);
+                doc.setTextColor(0, 0, 0);
+                doc.setFont(undefined, 'normal');
+                doc.text('Nettoor 682040', pageWidth / 2, yPos, { align: 'center' });
+                yPos += 8;
+                
+                // Add subheading
+                doc.setFontSize(14);
+                doc.setTextColor(0, 0, 128);
+                doc.setFont(undefined, 'bold');
+                doc.text('Subscription Paid Report', pageWidth / 2, yPos, { align: 'center' });
+                yPos += 15;
+                
+                // Define table columns
+                const columns = [
+                    { header: 'No.', dataKey: 'number' },
+                    { header: 'Name', dataKey: 'name' },
+                    { header: 'Oct 25', dataKey: 'oct25' },
+                    { header: 'Nov 25', dataKey: 'nov25' },
+                    { header: 'Dec 25', dataKey: 'dec25' },
+                    { header: 'Jan 26', dataKey: 'jan26' },
+                    { header: 'Feb 26', dataKey: 'feb26' },
+                    { header: 'Mar 26', dataKey: 'mar26' },
+                    { header: 'Apr 26', dataKey: 'apr26' }
+                ];
+                
+                // Prepare table data
+                const tableData = [];
+                
+                for (let i = 0; i < members.length; i++) {
+                    const member = members[i];
+                    const payments = paymentData[i];
+                    
+                    const row = {
+                        number: (i + 1).toString(),
+                        name: member.memberName,
+                        oct25: payments[0].paid ? payments[0].date : '',
+                        nov25: payments[1].paid ? payments[1].date : '',
+                        dec25: payments[2].paid ? payments[2].date : '',
+                        jan26: payments[3].paid ? payments[3].date : '',
+                        feb26: payments[4].paid ? payments[4].date : '',
+                        mar26: payments[5].paid ? payments[5].date : '',
+                        apr26: payments[6].paid ? payments[6].date : ''
+                    };
+                    
+                    tableData.push(row);
+                }
+                
+                // Define table styles
+                const tableStyles = {
+                    theme: 'grid',
+                    headStyles: {
+                        fillColor: [173, 216, 230], // Light blue
+                        textColor: 0,
+                        fontStyle: 'bold'
+                    },
+                    bodyStyles: {
+                        textColor: 0
+                    },
+                    alternateRowStyles: {
+                        fillColor: [240, 240, 240]
+                    },
+                    columnStyles: {
+                        number: { cellWidth: 10 },
+                        name: { cellWidth: 40 },
+                        oct25: { cellWidth: 20 },
+                        nov25: { cellWidth: 20 },
+                        dec25: { cellWidth: 20 },
+                        jan26: { cellWidth: 20 },
+                        feb26: { cellWidth: 20 },
+                        mar26: { cellWidth: 20 },
+                        apr26: { cellWidth: 20 }
+                    },
+                    margin: { top: yPos, right: margin, bottom: margin + 20, left: margin },
+                    didDrawCell: function(data) {
+                        // Check if this is a body cell (not header)
+                        if (data.section === 'body') {
+                            const rowIndex = data.row.index;
+                            const colIndex = data.column.dataKey;
+                            
+                            // Check if this is a payment column
+                            const paymentColumns = ['oct25', 'nov25', 'dec25', 'jan26', 'feb26', 'mar26', 'apr26'];
+                            
+                            if (paymentColumns.includes(colIndex)) {
+                                const payment = paymentData[rowIndex][paymentColumns.indexOf(colIndex)];
+                                
+                                // If payment is not made and the month is in the past, color cell light red
+                                if (!payment.paid) {
+                                    const monthStr = colIndex.replace(/([a-z])(\d+)/i, '$1 $2');
+                                    const monthYear = monthStr.split(' ');
+                                    const monthNames = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+                                    const monthIndex = monthNames.indexOf(monthYear[0].toLowerCase());
+                                    const year = parseInt('20' + monthYear[1]);
+                                    
+                                    const today = new Date();
+                                    const currentYear = today.getFullYear();
+                                    const currentMonth = today.getMonth();
+                                    
+                                    // If the report month is in the past
+                                    if (year < currentYear || (year === currentYear && monthIndex < currentMonth)) {
+                                        doc.setFillColor(255, 200, 200); // Light red
+                                        doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'F');
+                                        doc.setTextColor(0, 0, 0);
+                                        doc.text(data.cell.text, data.cell.x + 2, data.cell.y + data.cell.height / 2 + 2);
+                                    }
+                                } else {
+                                    // Payment is made, use white background with dark green text
+                                    doc.setFillColor(255, 255, 255);
+                                    doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'F');
+                                    doc.setTextColor(0, 100, 0); // Dark green
+                                    doc.text(data.cell.text, data.cell.x + 2, data.cell.y + data.cell.height / 2 + 2);
+                                }
+                            }
+                        }
+                    }
+                };
+                
+                // Generate table
+                doc.autoTable(columns, tableData, tableStyles);
+                
+                // Add date and treasurer signature
+                const finalY = doc.lastAutoTable.finalY + 10;
+                
+                // Current date
+                const today = new Date();
+                const dateStr = today.toLocaleDateString();
+                doc.setFontSize(10);
+                doc.setTextColor(0, 0, 0);
+                doc.setFont(undefined, 'normal');
+                doc.text(`Date: ${dateStr}`, margin + 5, finalY);
+                
+                // Treasurer signature
+                doc.text('Treasurer: Vishnu T', pageWidth - margin - 50, finalY);
+                
+                // Save PDF
+                doc.save('Shipyard_Nagar_Subscription_Report.pdf');
+                
+            } catch (error) {
+                console.error('Error generating report:', error);
+                alert('Error generating report: ' + error.message);
+            } finally {
+                loadingSpinner.style.display = 'none';
+            }
+        }
     </script>
 </body>
 </html>
