@@ -821,16 +821,24 @@
                     const member = members[i];
                     const payments = paymentData[i];
                     
+                    // Safety check - ensure payments array exists and has data
+                    if (!payments || payments.length === 0) {
+                        console.warn(`No payment data for member: ${member.memberName}`);
+                        // Create empty payment data for this member
+                        const emptyPayments = reportMonths.map(() => ({ paid: false, date: '' }));
+                        paymentData[i] = emptyPayments;
+                    }
+                    
                     const row = {
                         number: (i + 1).toString(),
                         name: member.memberName,
-                        oct25: payments[0].paid ? payments[0].date : '',
-                        nov25: payments[1].paid ? payments[1].date : '',
-                        dec25: payments[2].paid ? payments[2].date : '',
-                        jan26: payments[3].paid ? payments[3].date : '',
-                        feb26: payments[4].paid ? payments[4].date : '',
-                        mar26: payments[5].paid ? payments[5].date : '',
-                        apr26: payments[6].paid ? payments[6].date : ''
+                        oct25: payments[0]?.paid ? payments[0].date : '',
+                        nov25: payments[1]?.paid ? payments[1].date : '',
+                        dec25: payments[2]?.paid ? payments[2].date : '',
+                        jan26: payments[3]?.paid ? payments[3].date : '',
+                        feb26: payments[4]?.paid ? payments[4].date : '',
+                        mar26: payments[5]?.paid ? payments[5].date : '',
+                        apr26: payments[6]?.paid ? payments[6].date : ''
                     };
                     
                     tableData.push(row);
@@ -872,7 +880,9 @@
                             const paymentColumns = ['oct25', 'nov25', 'dec25', 'jan26', 'feb26', 'mar26', 'apr26'];
                             
                             if (paymentColumns.includes(colIndex)) {
-                                const payment = paymentData[rowIndex][paymentColumns.indexOf(colIndex)];
+                                const paymentIndex = paymentColumns.indexOf(colIndex);
+                                const payment = paymentData[rowIndex] && paymentData[rowIndex][paymentIndex] ? 
+                                    paymentData[rowIndex][paymentIndex] : { paid: false, date: '' };
                                 
                                 // If payment is not made and the month is in the past, color cell light red
                                 if (!payment.paid) {
@@ -891,14 +901,18 @@
                                         doc.setFillColor(255, 200, 200); // Light red
                                         doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'F');
                                         doc.setTextColor(0, 0, 0);
-                                        doc.text(data.cell.text, data.cell.x + 2, data.cell.y + data.cell.height / 2 + 2);
+                                        if (data.cell.text) {
+                                            doc.text(data.cell.text, data.cell.x + 2, data.cell.y + data.cell.height / 2 + 2);
+                                        }
                                     }
                                 } else {
                                     // Payment is made, use white background with dark green text
                                     doc.setFillColor(255, 255, 255);
                                     doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'F');
                                     doc.setTextColor(0, 100, 0); // Dark green
-                                    doc.text(data.cell.text, data.cell.x + 2, data.cell.y + data.cell.height / 2 + 2);
+                                    if (data.cell.text) {
+                                        doc.text(data.cell.text, data.cell.x + 2, data.cell.y + data.cell.height / 2 + 2);
+                                    }
                                 }
                             }
                         }
