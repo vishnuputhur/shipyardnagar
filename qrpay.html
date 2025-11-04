@@ -3,63 +3,59 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>UPI Payment Share</title>
-  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+  <title>UPI Share</title>
+  <!-- ശരിയായ QRCode.js -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
   <style>
-    body { margin: 0; background: white; display: flex; justify-content: center; align-items: center; height: 100vh; }
+    body { margin: 0; background: white; }
   </style>
 </head>
 <body>
   <script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const amount = urlParams.get('amount');
-    const member = urlParams.get('member');
-    const upiId = "vishnuputhur@sbi"; // 👈 നിങ്ങളുടെ UPI ID
-
-    async function createAndShare() {
+    (async () => {
       try {
-        if (!amount || isNaN(amount)) return alert("Invalid amount");
+        // URL പാരാമീറ്ററുകൾ
+        const params = new URLSearchParams(location.search);
+        const amount = params.get('amount');
+        const member = params.get('member') || '';
+        const upiId = "vishnuputhur@sbi";
 
-        // ✅ UPI link
-        const upiLink = `upi://pay?pa=${upiId}&pn=ShipyardNagar&am=${amount}&cu=INR&tn=Member${member}`;
+        if (!amount || isNaN(amount) || amount <= 0) {
+          return alert("തുക സാധുവല്ല. ?amount=100");
+        }
 
-        // ✅ QR Data URL
-        const qrDataUrl = await QRCode.toDataURL(upiLink, { width: 400, margin: 1 });
+        // UPI Link (encode ചെയ്യുക)
+        const upiLink = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=ShipyardNagar&am=${amount}&cu=INR&tn=Member${member}`;
 
-        // ✅ convert to blob + file
+        // QR Code → Data URL
+        const qrDataUrl = await window.QRCode.toDataURL(upiLink, {
+          width: 512,
+          margin: 2,
+          color: { dark: '#000000', light: '#ffffff' }
+        });
+
+        // Data URL → Blob → File
         const blob = await (await fetch(qrDataUrl)).blob();
-        const file = new File([blob], `UPI_Payment_${amount}.png`, { type: "image/png" });
+        const file = new File([blob], `Pay_Rs${amount}_Member${member}.png`, { type: 'image/png' });
 
-        // ✅ share (if supported)
+        // Share API പിന്തുണയുണ്ടോ?
         if (navigator.share && navigator.canShare({ files: [file] })) {
           await navigator.share({
             files: [file],
-            title: "UPI Payment QR",
-            text: `Scan this QR to pay ₹${amount}`
+            title: `₹${amount} UPI പേമെന്റ്`,
+            text: `Member ${member} - ₹${amount} അടയ്ക്കാൻ ഈ QR സ്കാൻ ചെയ്യുക`
           });
-          window.close();
+          // ഷെയർ ചെയ്താൽ പേജ് അടയ്ക്കുക (mobile browsers)
+          setTimeout(() => window.close(), 800);
         } else {
-          // fallback → show QR for manual share/download
-          const img = document.createElement("img");
-          img.src = qrDataUrl;
-          img.alt = "QR Code";
-          img.style.width = "90%";
-          document.body.appendChild(img);
-
-          const msg = document.createElement("p");
-          msg.innerText = "QR code ready — long-press to share or save.";
-          msg.style.textAlign = "center";
-          msg.style.fontFamily = "sans-serif";
-          msg.style.marginTop = "10px";
-          document.body.appendChild(msg);
+          // Share API ഇല്ലെങ്കിൽ (Desktop, etc.)
+          alert("ഷെയർ ചെയ്യാൻ കഴിയില്ല. ദയവായി മൊബൈലിൽ തുറക്കുക.");
         }
-      } catch (e) {
-        console.error(e);
-        alert("QR generation failed 😔");
+      } catch (err) {
+        console.error(err);
+        alert("QR ജനറേഷൻ പരാജയപ്പെട്ടു");
       }
-    }
-
-    createAndShare();
+    })();
   </script>
 </body>
 </html>
