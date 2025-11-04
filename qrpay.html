@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GPay QR</title>
+  <title>UPI Payment</title>
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
   <style>
     body { margin: 0; background: #fff; }
@@ -20,54 +20,60 @@
         }
 
         const upiId = "vishnuputhur@sbi";
-        const upiLink = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=ShipyardNagar&am=${amount}&cu=INR`;
+        const upiLink = `upi://pay?pa=${upiId}&pn=ShipyardNagar&am=${amount}&cu=INR`;
 
-        // QR Code ജനറേറ്റ് ചെയ്യുക
-        const qrDataUrl = await window.QRCode.toDataURL(upiLink, {
+        console.log('Generating QR for amount:', amount);
+
+        // QR Code ജനറേറ്റ് ചെയ്യുക - FIXED: window.QRCode → QRCode
+        const qrDataUrl = await QRCode.toDataURL(upiLink, {
           width: 512,
           margin: 2,
           color: { dark: '#000', light: '#fff' }
         });
 
-        // Canvas-ൽ QR വരയ്ക്കുക (അദൃശ്യമായി)
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        const img = new Image();
-        img.onload = () => {
-          canvas.width = img.width;
-          canvas.height = img.height;
-          ctx.drawImage(img, 0, 0);
+        console.log('QR generated successfully');
 
-          // GPay-ലേക്ക് ഓപ്പൺ ചെയ്യാൻ intent URL
-          const gpayIntent = `intent://scan/#Intent;scheme=upi;package=com.google.android.apps.nbu.paisa.user;end`;
+        // Convert to blob for sharing
+        const response = await fetch(qrDataUrl);
+        const blob = await response.blob();
+        const file = new File([blob], `payment_${amount}.png`, { type: "image/png" });
 
-          // QR കാണിക്കാതെ, GPay തുറക്കാൻ ശ്രമിക്കുക
-          // ഈ intent GPay-യിൽ QR സ്കാൻ മോഡ് തുറക്കും
-          window.location = gpayIntent;
-
-          // 2 സെക്കൻഡ് കഴിഞ്ഞാൽ fallback: QR image കാണിക്കുക
+        // Auto share
+        if (navigator.share && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            files: [file],
+            title: "UPI Payment - Shipyard Nagar",
+            text: `Scan this QR to pay ₹${amount}`
+          });
+          
+          // Close after successful share
           setTimeout(() => {
-            const qrImg = document.createElement('img');
-            qrImg.src = qrDataUrl;
-            qrImg.style.maxWidth = '90%';
-            qrImg.style.margin = '20px';
-            qrImg.style.border = '1px solid #ccc';
-            qrImg.style.borderRadius = '12px';
-            document.body.appendChild(qrImg);
-
-            const p = document.createElement('p');
-            p.innerText = 'GPay തുറന്നില്ലെങ്കിൽ ഈ QR സ്കാൻ ചെയ്യുക';
-            p.style.textAlign = 'center';
-            p.style.fontFamily = 'sans-serif';
-            p.style.color = '#d00';
-            document.body.appendChild(p);
+            window.close();
+          }, 1000);
+          
+        } else {
+          // Fallback - download QR
+          const link = document.createElement('a');
+          link.href = qrDataUrl;
+          link.download = `shipyard_payment_${amount}.png`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          
+          // Close after download
+          setTimeout(() => {
+            window.close();
           }, 2000);
-        };
-        img.src = qrDataUrl;
+        }
 
       } catch (err) {
-        console.error(err);
-        alert("QR പരാജയപ്പെട്ടു");
+        console.error("QR generation error:", err);
+        alert("QR പരാജയപ്പെട്ടു: " + err.message);
+        
+        // Close on error too
+        setTimeout(() => {
+          window.close();
+        }, 3000);
       }
     })();
   </script>
