@@ -4,55 +4,57 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>UPI Share</title>
-  <!-- ശരിയായ QRCode.js -->
+  <!-- ശരിയായ QRCode.js version -->
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
   <style>
-    body { margin: 0; background: white; }
+    body { margin: 0; background: #fff; }
   </style>
 </head>
 <body>
   <script>
     (async () => {
       try {
-        // URL പാരാമീറ്ററുകൾ
-        const params = new URLSearchParams(location.search);
-        const amount = params.get('amount');
-        const member = params.get('member') || '';
-        const upiId = "vishnuputhur@sbi";
-
+        // URL-ൽ നിന്ന് amount മാത്രം എടുക്കുക
+        const amount = new URLSearchParams(location.search).get('amount');
+        
+        // amount ഇല്ലെങ്കിൽ അല്ലെങ്കിൽ സാധുവല്ലെങ്കിൽ
         if (!amount || isNaN(amount) || amount <= 0) {
-          return alert("തുക സാധുവല്ല. ?amount=100");
+          alert("തുക സാധുവല്ല. ഉദാ: ?amount=100");
+          return;
         }
 
-        // UPI Link (encode ചെയ്യുക)
-        const upiLink = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=ShipyardNagar&am=${amount}&cu=INR&tn=Member${member}`;
+        // നിങ്ങളുടെ UPI ID
+        const upiId = "vishnuputhur@sbi";
 
-        // QR Code → Data URL
+        // UPI link - amount മാത്രം, member ഇല്ല
+        const upiLink = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=ShipyardNagar&am=${amount}&cu=INR`;
+
+        // QR Code ജനറേറ്റ് ചെയ്യുക
         const qrDataUrl = await window.QRCode.toDataURL(upiLink, {
           width: 512,
           margin: 2,
-          color: { dark: '#000000', light: '#ffffff' }
+          color: { dark: '#000000', light: '#FFFFFF' }
         });
 
         // Data URL → Blob → File
         const blob = await (await fetch(qrDataUrl)).blob();
-        const file = new File([blob], `Pay_Rs${amount}_Member${member}.png`, { type: 'image/png' });
+        const file = new File([blob], `Pay_Rs${amount}.png`, { type: 'image/png' });
 
-        // Share API പിന്തുണയുണ്ടോ?
+        // Share API (mobile only)
         if (navigator.share && navigator.canShare({ files: [file] })) {
           await navigator.share({
             files: [file],
-            title: `₹${amount} UPI പേമെന്റ്`,
-            text: `Member ${member} - ₹${amount} അടയ്ക്കാൻ ഈ QR സ്കാൻ ചെയ്യുക`
+            title: `₹${amount} പേമെന്റ്`,
+            text: `₹${amount} അടയ്ക്കാൻ ഈ QR സ്കാൻ ചെയ്യുക`
           });
-          // ഷെയർ ചെയ്താൽ പേജ് അടയ്ക്കുക (mobile browsers)
-          setTimeout(() => window.close(), 800);
+          // ഷെയർ ചെയ്താൽ പേജ് അടയ്ക്കുക
+          setTimeout(() => window.close(), 1000);
         } else {
-          // Share API ഇല്ലെങ്കിൽ (Desktop, etc.)
-          alert("ഷെയർ ചെയ്യാൻ കഴിയില്ല. ദയവായി മൊബൈലിൽ തുറക്കുക.");
+          alert("ഷെയർ ചെയ്യാൻ കഴിയില്ല. മൊബൈൽ ബ്രൗസറിൽ തുറക്കുക.");
         }
+
       } catch (err) {
-        console.error(err);
+        console.error("QR Error:", err);
         alert("QR ജനറേഷൻ പരാജയപ്പെട്ടു");
       }
     })();
