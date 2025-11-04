@@ -841,18 +841,31 @@
                 doc.text('Subscription Paid Report', pageWidth / 2, yPos, { align: 'center' });
                 yPos += 6; // Small gap before table
                 
-                // Define table columns with optimized widths
-                const columns = [
-                    { header: 'No.', dataKey: 'number' },
-                    { header: 'Name', dataKey: 'name' },
-                    { header: 'Oct 25', dataKey: 'oct25' },
-                    { header: 'Nov 25', dataKey: 'nov25' },
-                    { header: 'Dec 25', dataKey: 'dec25' },
-                    { header: 'Jan 26', dataKey: 'jan26' },
-                    { header: 'Feb 26', dataKey: 'feb26' },
-                    { header: 'Mar 26', dataKey: 'mar26' },
-                    { header: 'Apr 26', dataKey: 'apr26' }
+                // Calculate PERFECT CENTERING for table
+                const availableWidth = pageWidth - (2 * margin) - 20; // 10mm gap on each side inside box
+                const columnCount = 9; // Number of columns
+                
+                // Calculate equal column widths
+                const columnWidth = availableWidth / columnCount;
+                
+                // Define column widths for perfect centering
+                const columnWidths = [
+                    columnWidth * 0.6,  // No. column (60% of equal width)
+                    columnWidth * 1.4,  // Name column (140% of equal width)
+                    columnWidth,        // Oct 25
+                    columnWidth,        // Nov 25
+                    columnWidth,        // Dec 25
+                    columnWidth,        // Jan 26
+                    columnWidth,        // Feb 26
+                    columnWidth,        // Mar 26
+                    columnWidth         // Apr 26
                 ];
+                
+                // Calculate total table width
+                const totalTableWidth = columnWidths.reduce((sum, width) => sum + width, 0);
+                
+                // Calculate perfect center position
+                const tableStartX = (pageWidth - totalTableWidth) / 2;
                 
                 // Prepare table data
                 const tableData = [];
@@ -884,13 +897,9 @@
                     tableData.push(row);
                 }
                 
-                // Calculate table width to center it properly
-                const totalTableWidth = 180; // Total width in mm
-                const tableStartX = (pageWidth - totalTableWidth) / 2; // Center the table
-                
-                // Generate table with autoTable - CENTERED and OPTIMIZED
+                // Generate table with PERFECT CENTERING
                 doc.autoTable({
-                    head: [columns.map(col => col.header)],
+                    head: [['No.', 'Name', 'Oct 25', 'Nov 25', 'Dec 25', 'Jan 26', 'Feb 26', 'Mar 26', 'Apr 26']],
                     body: tableData.map(row => [
                         row.number,
                         row.name,
@@ -929,17 +938,17 @@
                     alternateRowStyles: {
                         fillColor: [245, 245, 245]
                     },
-                    // Optimized column widths to prevent line breaks
+                    // PERFECTLY CENTERED COLUMN WIDTHS
                     columnStyles: {
-                        0: { cellWidth: 8, halign: 'center' },
-                        1: { cellWidth: 32, halign: 'left' },
-                        2: { cellWidth: 17.5, halign: 'center' },
-                        3: { cellWidth: 17.5, halign: 'center' },
-                        4: { cellWidth: 17.5, halign: 'center' },
-                        5: { cellWidth: 17.5, halign: 'center' },
-                        6: { cellWidth: 17.5, halign: 'center' },
-                        7: { cellWidth: 17.5, halign: 'center' },
-                        8: { cellWidth: 17.5, halign: 'center' }
+                        0: { cellWidth: columnWidths[0], halign: 'center' },
+                        1: { cellWidth: columnWidths[1], halign: 'left' },
+                        2: { cellWidth: columnWidths[2], halign: 'center' },
+                        3: { cellWidth: columnWidths[3], halign: 'center' },
+                        4: { cellWidth: columnWidths[4], halign: 'center' },
+                        5: { cellWidth: columnWidths[5], halign: 'center' },
+                        6: { cellWidth: columnWidths[6], halign: 'center' },
+                        7: { cellWidth: columnWidths[7], halign: 'center' },
+                        8: { cellWidth: columnWidths[8], halign: 'center' }
                     },
                     didParseCell: function(data) {
                         // Add vertical lines between months with lighter color
@@ -989,8 +998,13 @@
                 doc.setFont('times', 'normal');
                 doc.text('Manojkumar', rightX, finalY + 4, { align: 'right' });
                 
-                // Save PDF
-                doc.save('Shipyard_Nagar_Subscription_Report.pdf');
+                // Generate filename with current date
+                const currentDate = new Date();
+                const dateStr = formatDate(currentDate.toISOString()).replace(/-/g, '');
+                const fileName = `Shipyard_Nagar_Report_${dateStr}.pdf`;
+                
+                // Save PDF with date in filename
+                doc.save(fileName);
                 
             } catch (error) {
                 console.error('Error generating report:', error);
