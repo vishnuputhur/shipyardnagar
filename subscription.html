@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
     <style>
+        /* All your existing CSS remains same */
         :root {
             --primary-orange: #FF6B35;
             --orange-light: #FF8C42;
@@ -698,7 +699,7 @@
             updateAmountField();
         });
 
-        // Pay Button Click Handler - UPDATED for WebView to Chrome
+        // Pay Button Click Handler - UPDATED with openchrome://
         document.getElementById('payButton').addEventListener('click', function() {
             const amount = document.getElementById('amount').value;
             
@@ -712,21 +713,17 @@
                 return;
             }
 
-            // WebView to Chrome opening - multiple methods
+            // Use openchrome:// protocol for WebView to Chrome
             const qrPageUrl = `https://vishnuputhur.github.io/shipyardnagar/qrpay.html?amount=${amount}`;
+            const openChromeUrl = `openchrome://${qrPageUrl}`;
             
-            // Method 1: Try intent for WebView
-            window.location.href = `intent://vishnuputhur.github.io/shipyardnagar/qrpay.html?amount=${amount}#Intent;package=com.android.chrome;end`;
+            // Try openchrome:// first
+            window.location.href = openChromeUrl;
             
-            // Method 2: Fallback - direct URL
+            // Fallback after 1 second
             setTimeout(() => {
                 window.open(qrPageUrl, '_system');
-            }, 100);
-            
-            // Method 3: Ultimate fallback
-            setTimeout(() => {
-                window.location.href = qrPageUrl;
-            }, 500);
+            }, 1000);
         });
 
         // Theme Toggle
