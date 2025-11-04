@@ -1,113 +1,74 @@
 <!DOCTYPE html>
-<html>
+<html lang="ml">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>UPI Payment</title>
-  <!-- ശരിയായ version -->
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
   <style>
     body { 
       margin: 0; 
       background: #fff; 
       text-align: center;
       padding: 20px;
-      font-family: Arial, sans-serif;
+      font-family: Arial;
     }
     canvas {
       width: 250px;
       height: 250px;
       margin: 20px auto;
       display: block;
-      border: 1px solid #ddd;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
     .msg {
       color: #333;
       margin: 10px 0;
+    }
+    button {
+      background: #0078d7;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
       font-size: 16px;
-    }
-    .title {
-      font-weight: bold;
-      font-size: 18px;
-      color: #1a73e8;
-    }
-    .status {
-      color: #d00;
-      font-weight: bold;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <div class="msg title">UPI Payment - ₹<span id="amt">0</span></div>
+  <div class="msg">UPI Payment - ₹<span id="amt">0</span></div>
   <canvas id="qrCanvas"></canvas>
-  <div class="msg status" id="status">QR generating...</div>
+  <div class="msg">👇 Press below to share QR 👇</div>
+  <button id="shareBtn">Share Now</button>
 
   <script>
-    (async () => {
-      const statusEl = document.getElementById('status');
-      const amountEl = document.getElementById('amt');
+    const urlParams = new URLSearchParams(window.location.search);
+    const amount = urlParams.get('amount') || '200';
+    document.getElementById('amt').textContent = amount;
+    const upiId = 'vishnuputhur@sbi';
+    const upiURI = `upi://pay?pa=${upiId}&pn=ShipyardNagar&am=${amount}&cu=INR`;
 
-      try {
-        // 1. Get amount
-        const params = new URLSearchParams(location.search);
-        const amount = params.get('amount') || '200';
-        if (isNaN(amount) || amount <= 0) throw new Error("Invalid amount");
+    const canvas = document.getElementById('qrCanvas');
+    const shareBtn = document.getElementById('shareBtn');
 
-        amountEl.textContent = amount;
-        statusEl.textContent = "Generating QR...";
+    QRCode.toCanvas(canvas, upiURI, { width: 250, margin: 1 }, function(err) {
+      if (err) return console.error(err);
+      shareBtn.disabled = false;
+    });
 
-        // 2. UPI URI (encode @)
-        const upiId = 'vishnuputhur@sbi';
-        const upiURI = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=ShipyardNagar&am=${amount}&cu=INR`;
-
-        // 3. Generate QR on canvas
-        const canvas = document.getElementById('qrCanvas');
-        await window.QRCode.toCanvas(canvas, upiURI, {
-          width: 250,
-          margin: 2,
-          color: { dark: '#000000', light: '#FFFFFF' }
-        });
-
-        statusEl.textContent = "QR ready! Sharing in 1 sec...";
-
-        // 4. Wait 1 sec → then share
-        await new Promise(r => setTimeout(r, 1000));
-
-        // 5. Convert canvas to blob → file
-        const blob = await new Promise((resolve) => {
-          canvas.toBlob(resolve, 'image/png');
-        });
-
-        if (!blob) throw new Error("Blob generation failed");
-
-        const file = new File([blob], `Pay_Rs${amount}.png`, { type: 'image/png' });
-
-        // 6. Check share support
-        if (!navigator.share) {
-          throw new Error("Share API not supported (use mobile browser)");
+    shareBtn.addEventListener('click', () => {
+      canvas.toBlob(blob => {
+        const file = new File([blob], `payment_${amount}.png`, { type: 'image/png' });
+        if (navigator.share && navigator.canShare({ files: [file] })) {
+          navigator.share({
+            files: [file],
+            title: "UPI Payment - Shipyard Nagar",
+            text: `Pay ₹${amount}`
+          });
+        } else {
+          alert("Sharing not supported on this device/browser.");
         }
-        if (!navigator.canShare({ files: [file] })) {
-          throw new Error("Cannot share files");
-        }
-
-        // 7. SHARE!
-        await navigator.share({
-          files: [file],
-          title: `₹${amount} - Shipyard Nagar`,
-          text: `Pay ₹${amount} via UPI`
-        });
-
-        statusEl.textContent = "Shared! Closing...";
-        setTimeout(() => window.close(), 1500);
-
-      } catch (err) {
-        console.error("Share failed:", err);
-        statusEl.textContent = "Share failed: " + err.message;
-        statusEl.style.color = '#d00';
-      }
-    })();
+      });
+    });
   </script>
 </body>
 </html>
