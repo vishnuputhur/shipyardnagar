@@ -48,7 +48,6 @@
             z-index: -1;
         }
 
-        /* Header Image - Fixed at top */
         .header-image {
             width: 100%;
             height: auto;
@@ -61,7 +60,6 @@
             z-index: 999;
         }
 
-        /* Main Card - Reduced top gap */
         .main-card {
             background: var(--card-bg);
             backdrop-filter: blur(20px);
@@ -74,7 +72,6 @@
             margin-top: 120px;
         }
 
-        /* Page Title */
         .page-title {
             font-size: 1.5rem;
             font-weight: 700;
@@ -87,7 +84,6 @@
             color: #60a5fa;
         }
 
-        /* Footer - Reduced height */
         footer {
             position: fixed;
             bottom: 0;
@@ -115,7 +111,6 @@
             text-align: center;
         }
 
-        /* Theme Toggle - Slightly larger */
         .theme-toggle-btn {
             background: transparent;
             border: 1px solid #ccc;
@@ -139,7 +134,6 @@
             border-color: var(--primary-orange);
         }
 
-        /* Button Grid Layout */
         .button-grid {
             display: flex;
             gap: 10px;
@@ -147,7 +141,6 @@
             flex-wrap: wrap;
         }
 
-        /* Form Styling */
         .card {
             margin-top: 20px;
             padding: 15px;
@@ -160,7 +153,6 @@
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
         }
 
-        /* Table Styling */
         #subscriptionTable {
             margin-top: 20px;
             overflow-x: auto;
@@ -172,7 +164,6 @@
             min-width: 100px;
         }
 
-        /* Loading Spinner */
         #loadingSpinner {
             display: none;
             position: fixed;
@@ -184,14 +175,12 @@
             z-index: 9999;
         }
         
-        /* Checkbox styling */
         .contribution-check {
             width: 20px;
             height: 20px;
             cursor: pointer;
         }
         
-        /* Mobile-friendly month selection */
         .month-buttons {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -210,7 +199,6 @@
             color: white;
         }
         
-        /* Admin buttons */
         .admin-btn {
             background: var(--gradient);
             border: none;
@@ -229,6 +217,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            cursor: pointer;
         }
 
         .admin-btn::before {
@@ -252,7 +241,6 @@
             left: 100%;
         }
 
-        /* Responsive */
         @media (max-width: 576px) {
             .header-image {
                 max-height: 120px;
@@ -280,7 +268,7 @@
 </head>
 <body>
     <!-- Header Image - Fixed at top -->
-    <img src="assets/head.png" alt="Header" class="header-image">
+    <img src="assets/head.png" alt="Header" class="header-image" onerror="this.style.display='none'">
     
     <main class="container">
         <div class="row justify-content-center">
@@ -410,10 +398,16 @@
                     return;
                 }
 
-                const userDoc = await db.collection('users').doc(user.uid).get();
-                if (!userDoc.exists || userDoc.data().role !== 'admin') {
-                    alert('Permission denied. Only admins can access this dashboard. Redirecting to login...');
-                    window.location.href = 'login.html';
+                try {
+                    const userDoc = await db.collection('users').doc(user.uid).get();
+                    if (!userDoc.exists || userDoc.data().role !== 'admin') {
+                        alert('Permission denied. Only admins can access this dashboard. Redirecting to login...');
+                        window.location.href = 'login.html';
+                        return;
+                    }
+                } catch (error) {
+                    console.error('Error checking admin status:', error);
+                    alert('Error checking permissions. Please try again.');
                     return;
                 }
 
@@ -440,16 +434,26 @@
                 try {
                     // Load members from Firebase
                     const membersSnapshot = await db.collection('users').get();
-                    currentMembers = membersSnapshot.docs.map(doc => ({
-                        id: doc.id,
-                        memberName: doc.data().memberName || 'Unknown',
-                        memberNumber: doc.data().memberNumber || ''
-                    }));
+                    currentMembers = [];
+                    
+                    membersSnapshot.forEach(doc => {
+                        const data = doc.data();
+                        // Only include members with memberNumber (exclude admins)
+                        if (data.memberNumber) {
+                            currentMembers.push({
+                                id: doc.id,
+                                memberName: data.memberName || 'Unknown',
+                                memberNumber: data.memberNumber
+                            });
+                        }
+                    });
+                    
+                    console.log('Loaded members:', currentMembers);
                     
                     // Sort members by member number (SN01 to SN22)
                     currentMembers.sort((a, b) => {
-                        const numA = parseInt(a.memberNumber.replace('SN', ''));
-                        const numB = parseInt(b.memberNumber.replace('SN', ''));
+                        const numA = parseInt(a.memberNumber.replace('SN', '')) || 0;
+                        const numB = parseInt(b.memberNumber.replace('SN', '')) || 0;
                         return numA - numB;
                     });
                     
@@ -469,7 +473,7 @@
 
                 } catch (error) {
                     console.error('Error in loadSubscriptions:', error);
-                    subscriptionTableBody.innerHTML = '<tr><td colspan="2">Error loading data. Please refresh.</td></tr>';
+                    subscriptionTableBody.innerHTML = '<tr><td colspan="2">Error loading data. Please check console.</td></tr>';
                 } finally {
                     loadingSpinner.style.display = 'none';
                 }
@@ -495,6 +499,7 @@
                 monthButtons.innerHTML = '';
                 months.forEach(month => {
                     const button = document.createElement('button');
+                    button.type = 'button';
                     button.className = 'btn btn-outline-primary month-btn';
                     button.textContent = getMonthName(month);
                     button.dataset.month = month;
@@ -533,14 +538,19 @@
             const renderSubscriptionTableForMonth = async (month) => {
                 if (!subscriptionTableBody) return;
 
-                subscriptionTableBody.innerHTML = '<tr><td colspan="2">Loading...</td></tr>';
+                subscriptionTableBody.innerHTML = '<tr><td colspan="2">Loading subscription data...</td></tr>';
 
                 try {
                     const rows = [];
                     
                     for (const member of currentMembers) {
                         try {
-                            const contributionDoc = await db.collection('contributions').doc(member.id).collection('months').doc(month).get();
+                            const contributionDoc = await db.collection('contributions')
+                                .doc(member.id)
+                                .collection('months')
+                                .doc(month)
+                                .get();
+                                
                             const paid = contributionDoc.exists ? contributionDoc.data().paid : false;
                             
                             rows.push(`
@@ -559,17 +569,21 @@
                             console.error(`Error loading data for ${member.memberName}:`, error);
                             rows.push(`
                                 <tr>
-                                    <td>${member.memberName}</td>
-                                    <td>Error</td>
+                                    <td>${member.memberName}<br><small class="text-muted">${member.memberNumber}</small></td>
+                                    <td>Error loading data</td>
                                 </tr>
                             `);
                         }
                     }
                     
-                    subscriptionTableBody.innerHTML = rows.join('');
+                    if (rows.length === 0) {
+                        subscriptionTableBody.innerHTML = '<tr><td colspan="2">No members found</td></tr>';
+                    } else {
+                        subscriptionTableBody.innerHTML = rows.join('');
+                    }
                 } catch (error) {
                     console.error('Error rendering table:', error);
-                    subscriptionTableBody.innerHTML = '<tr><td colspan="2">Error loading data</td></tr>';
+                    subscriptionTableBody.innerHTML = '<tr><td colspan="2">Error loading subscription data</td></tr>';
                 }
             };
 
@@ -577,7 +591,7 @@
             const getMonthName = (monthString) => {
                 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                 const monthIndex = parseInt(monthString.split('-')[1]) - 1;
-                return months[monthIndex];
+                return months[monthIndex] || 'Unknown';
             };
 
             // Refresh Total
@@ -701,11 +715,15 @@
         // Format date to dd-mm-yy
         function formatDate(dateString) {
             if (!dateString) return '';
-            const date = new Date(dateString);
-            const day = String(date.getDate()).padStart(2, '0');
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const year = String(date.getFullYear()).slice(-2);
-            return `${day}-${month}-${year}`;
+            try {
+                const date = new Date(dateString);
+                const day = String(date.getDate()).padStart(2, '0');
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const year = String(date.getFullYear()).slice(-2);
+                return `${day}-${month}-${year}`;
+            } catch (error) {
+                return dateString;
+            }
         }
 
         // Generate Report PDF
@@ -716,16 +734,23 @@
             try {
                 // Load members from Firebase
                 const membersSnapshot = await firebase.firestore().collection('users').get();
-                let members = membersSnapshot.docs.map(doc => ({
-                    id: doc.id,
-                    memberName: doc.data().memberName || 'Unknown',
-                    memberNumber: doc.data().memberNumber || ''
-                }));
+                let members = [];
+                
+                membersSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.memberNumber) {
+                        members.push({
+                            id: doc.id,
+                            memberName: data.memberName || 'Unknown',
+                            memberNumber: data.memberNumber
+                        });
+                    }
+                });
 
                 // Sort members by member number (SN01 to SN22)
                 members.sort((a, b) => {
-                    const numA = parseInt(a.memberNumber.replace('SN', ''));
-                    const numB = parseInt(b.memberNumber.replace('SN', ''));
+                    const numA = parseInt(a.memberNumber.replace('SN', '')) || 0;
+                    const numB = parseInt(b.memberNumber.replace('SN', '')) || 0;
                     return numA - numB;
                 });
 
@@ -834,15 +859,7 @@
                 
                 for (let i = 0; i < members.length; i++) {
                     const member = members[i];
-                    const payments = paymentData[i];
-                    
-                    // Safety check - ensure payments array exists and has data
-                    if (!payments || payments.length === 0) {
-                        console.warn(`No payment data for member: ${member.memberName}`);
-                        // Create empty payment data for this member
-                        const emptyPayments = reportMonths.map(() => ({ paid: false, date: '' }));
-                        paymentData[i] = emptyPayments;
-                    }
+                    const payments = paymentData[i] || [];
                     
                     // For pending months, show "Pending" text
                     const row = {
@@ -867,14 +884,22 @@
                     tableData.push(row);
                 }
                 
-                // Define table styles - centered on page
-                const tableWidth = 180; // Width of table in mm
-                const tableStartX = (pageWidth - tableWidth) / 2; // Center the table
-                
-                const tableStyles = {
-                    theme: 'grid',
+                // Generate table with autoTable
+                doc.autoTable({
+                    head: [columns.map(col => col.header)],
+                    body: tableData.map(row => [
+                        row.number,
+                        row.name,
+                        row.oct25,
+                        row.nov25,
+                        row.dec25,
+                        row.jan26,
+                        row.feb26,
+                        row.mar26,
+                        row.apr26
+                    ]),
                     startY: yPos,
-                    margin: { left: tableStartX, right: tableStartX },
+                    margin: { left: 15, right: 15 },
                     headStyles: {
                         fillColor: [173, 216, 230], // Light blue
                         textColor: 0,
@@ -889,59 +914,38 @@
                         fillColor: [240, 240, 240]
                     },
                     columnStyles: {
-                        number: { cellWidth: 10, halign: 'center' },
-                        name: { cellWidth: 35, halign: 'left' },
-                        oct25: { cellWidth: 18, halign: 'center' },
-                        nov25: { cellWidth: 18, halign: 'center' },
-                        dec25: { cellWidth: 18, halign: 'center' },
-                        jan26: { cellWidth: 18, halign: 'center' },
-                        feb26: { cellWidth: 18, halign: 'center' },
-                        mar26: { cellWidth: 18, halign: 'center' },
-                        apr26: { cellWidth: 18, halign: 'center' }
+                        0: { cellWidth: 10, halign: 'center' },
+                        1: { cellWidth: 35, halign: 'left' },
+                        2: { cellWidth: 18, halign: 'center' },
+                        3: { cellWidth: 18, halign: 'center' },
+                        4: { cellWidth: 18, halign: 'center' },
+                        5: { cellWidth: 18, halign: 'center' },
+                        6: { cellWidth: 18, halign: 'center' },
+                        7: { cellWidth: 18, halign: 'center' },
+                        8: { cellWidth: 18, halign: 'center' }
                     },
-                    didDrawCell: function(data) {
-                        // Check if this is a body cell (not header)
-                        if (data.section === 'body') {
-                            const rowIndex = data.row.index;
-                            const colIndex = data.column.dataKey;
+                    didParseCell: function(data) {
+                        // Color pending cells red
+                        if (data.section === 'body' && data.column.index >= 2) {
+                            const monthIndex = data.column.index - 2;
+                            const memberIndex = data.row.index;
+                            const payment = paymentData[memberIndex] && paymentData[memberIndex][monthIndex];
                             
-                            // Check if this is a payment column
-                            const paymentColumns = ['oct25', 'nov25', 'dec25', 'jan26', 'feb26', 'mar26', 'apr26'];
-                            
-                            if (paymentColumns.includes(colIndex)) {
-                                const paymentIndex = paymentColumns.indexOf(colIndex);
-                                const payment = paymentData[rowIndex] && paymentData[rowIndex][paymentIndex] ? 
-                                    paymentData[rowIndex][paymentIndex] : { paid: false, date: '' };
-                                
-                                // If payment is not made and the month is current or past, color cell light red
-                                if (!payment.paid && paymentIndex <= currentMonthIndex) {
-                                    doc.setFillColor(255, 200, 200); // Light red
-                                    doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'F');
-                                    doc.setTextColor(139, 0, 0); // Dark red text for "Pending"
-                                    doc.text('Pending', data.cell.x + data.cell.width / 2, data.cell.y + data.cell.height / 2 + 3, { align: 'center' });
-                                } else if (payment.paid) {
-                                    // Payment is made, use white background with dark green text
-                                    doc.setFillColor(255, 255, 255);
-                                    doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'F');
-                                    doc.setTextColor(0, 100, 0); // Dark green
-                                    if (data.cell.text) {
-                                        doc.text(data.cell.text, data.cell.x + data.cell.width / 2, data.cell.y + data.cell.height / 2 + 3, { align: 'center' });
-                                    }
-                                }
+                            if (!payment?.paid && monthIndex <= currentMonthIndex) {
+                                data.cell.styles.fillColor = [255, 200, 200]; // Light red
+                                data.cell.styles.textColor = [139, 0, 0]; // Dark red
+                            } else if (payment?.paid) {
+                                data.cell.styles.textColor = [0, 100, 0]; // Dark green
                             }
                         }
                     }
-                };
-                
-                // Generate table
-                doc.autoTable(columns, tableData, tableStyles);
+                });
                 
                 // Add date and treasurer signature
                 const finalY = Math.min(doc.lastAutoTable.finalY + 10, pageHeight - margin - 10);
                 
                 // Current date in dd-mm-yy format
-                const today = new Date();
-                const dateStr = formatDate(today.toISOString());
+                const dateStr = formatDate(new Date().toISOString());
                 doc.setFontSize(10);
                 doc.setTextColor(0, 0, 0);
                 doc.setFont(undefined, 'normal');
