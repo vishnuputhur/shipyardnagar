@@ -701,99 +701,96 @@
             updateAmountField();
         });
 
-        // Generate QR Code as Image Blob
-        function generateQRCodeImage(amount, callback) {
-            if (amount < 10) {
-                alert('Please enter minimum ₹10!');
-                return;
-            }
-
-            // Create UPI URL with amount
-            const upiURL = `upi://pay?pa=Q343298201@ybl&pn=PhonePeMerchant&am=${amount}&cu=INR&tn=Member${currentMemberNumber}`;
-            
-            // Create canvas for QR code
-            const canvas = document.createElement('canvas');
-            
-            QRCode.toCanvas(canvas, upiURL, {
-                width: 300,
-                height: 300,
-                margin: 2,
-                color: {
-                    dark: '#000000',
-                    light: '#FFFFFF'
-                }
-            }, function(error) {
-                if (error) {
-                    console.error('QR Code generation error:', error);
-                    alert('Error generating QR code. Please try again.');
+        // Generate QR Code as Data URL (FIXED VERSION)
+        function generateQRCodeImage(amount) {
+            return new Promise((resolve, reject) => {
+                if (amount < 10) {
+                    reject('Please enter minimum ₹10!');
                     return;
                 }
+
+                // Create UPI URL with amount
+                const upiURL = `upi://pay?pa=Q343298201@ybl&pn=PhonePeMerchant&am=${amount}&cu=INR&tn=Member${currentMemberNumber}`;
                 
-                // Convert canvas to blob
-                canvas.toBlob(function(blob) {
-                    callback(blob);
-                }, 'image/png');
+                // Create canvas for QR code
+                const canvas = document.createElement('canvas');
+                
+                // Use QRCode.toString to get SVG data, then convert to image
+                QRCode.toString(upiURL, {
+                    type: 'svg',
+                    width: 300,
+                    margin: 2,
+                    color: {
+                        dark: '#000000',
+                        light: '#FFFFFF'
+                    }
+                }, function(err, svgString) {
+                    if (err) {
+                        reject('QR Code generation error: ' + err);
+                        return;
+                    }
+                    
+                    // Convert SVG to data URL
+                    const svgBlob = new Blob([svgString], {type: 'image/svg+xml;charset=utf-8'});
+                    const url = URL.createObjectURL(svgBlob);
+                    
+                    // Create image from SVG
+                    const img = new Image();
+                    img.onload = function() {
+                        canvas.width = 300;
+                        canvas.height = 300;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, 300, 300);
+                        
+                        // Convert to PNG data URL
+                        const pngDataUrl = canvas.toDataURL('image/png');
+                        resolve(pngDataUrl);
+                        URL.revokeObjectURL(url);
+                    };
+                    img.onerror = function() {
+                        reject('Image loading failed');
+                        URL.revokeObjectURL(url);
+                    };
+                    img.src = url;
+                });
             });
         }
 
-        // Share QR Code Image
-        function shareQRCodeImage(amount) {
-            generateQRCodeImage(amount, function(blob) {
-                if (!blob) return;
+        // Share QR Code Image (SIMPLIFIED VERSION)
+        async function shareQRCodeImage(amount) {
+            try {
+                const qrCodeDataUrl = await generateQRCodeImage(amount);
                 
-                // Create file from blob
+                // Convert data URL to blob
+                const response = await fetch(qrCodeDataUrl);
+                const blob = await response.blob();
                 const file = new File([blob], `payment_qr_${amount}.png`, { type: 'image/png' });
-                
-                // Check if Web Share API is available
-                if (navigator.share && navigator.canShare({ files: [file] })) {
-                    navigator.share({
+
+                // Check if Web Share API is available and supports files
+                if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({
                         files: [file],
                         title: 'UPI Payment QR Code',
-                        text: `Scan this QR code to pay ₹${amount} for Shipyard Nagar subscription`
-                    })
-                    .then(() => console.log('Share successful'))
-                    .catch((error) => {
-                        console.log('Sharing failed, trying fallback:', error);
-                        fallbackShare(blob, amount);
+                        text: `Scan this QR code to pay ₹${amount} for Shipyard Nagar subscription. Amount is pre-filled!`
                     });
+                    console.log('Share successful');
                 } else {
-                    // Fallback for browsers that don't support file sharing
-                    fallbackShare(blob, amount);
+                    // Fallback - download the image
+                    const link = document.createElement('a');
+                    link.href = qrCodeDataUrl;
+                    link.download = `payment_qr_${amount}.png`;
+                    link.click();
+                    
+                    alert(`QR code downloaded!\n\nPlease:\n1. Open any UPI app (GPay, PhonePe, etc.)\n2. Use "Scan QR" feature\n3. Select this saved image\n4. Complete the payment`);
                 }
-            });
+            } catch (error) {
+                console.error('Sharing failed:', error);
+                alert('Error: ' + error);
+            }
         }
 
-        // Fallback share method
-        function fallbackShare(blob, amount) {
-            // Create object URL for the blob
-            const url = URL.createObjectURL(blob);
-            
-            // Create temporary link for download
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `payment_qr_${amount}.png`;
-            link.style.display = 'none';
-            
-            // Create instructions for user
-            const message = `QR code generated for ₹${amount}!\n\n` +
-                           'Please save the image and:\n' +
-                           '1. Open any UPI app (GPay, PhonePe, etc.)\n' +
-                           '2. Use the "Scan QR" feature\n' +
-                           '3. Select this saved image\n' +
-                           '4. Complete the payment';
-            
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            // Clean up URL
-            setTimeout(() => URL.revokeObjectURL(url), 1000);
-            
-            alert(message);
-        }
-
-        // Pay Button Click Handler
-        document.getElementById('payButton').addEventListener('click', function() {
+        // Pay Button Click Handler (FIXED)
+        document.getElementById('payButton').addEventListener('click', async function() {
             const amount = document.getElementById('amount').value;
             
             if (amount < 10) {
@@ -811,14 +808,15 @@
             this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Generating QR...';
             this.disabled = true;
 
-            // Generate and share QR code
-            setTimeout(() => {
-                shareQRCodeImage(amount);
-                
+            try {
+                await shareQRCodeImage(amount);
+            } catch (error) {
+                alert('Error: ' + error);
+            } finally {
                 // Restore button state
                 this.innerHTML = originalText;
                 this.disabled = false;
-            }, 500);
+            }
         });
 
         // Theme Toggle
