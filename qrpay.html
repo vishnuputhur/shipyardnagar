@@ -4,61 +4,51 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UPI Payment</title>
-    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
     <style>
         body {
             background: white;
-            font-family: Arial;
-            text-align: center;
-            padding: 20px;
             margin: 0;
+            padding: 0;
+            overflow: hidden;
         }
-        .loading {
-            padding: 50px 20px;
-            color: #666;
-        }
-        .error {
-            color: red;
-            padding: 20px;
-        }
+        /* Display nothing - completely hidden */
     </style>
 </head>
 <body>
-    <div class="loading" id="loading">
-        <h3>QR Code തയ്യാറാക്കുന്നു...</h3>
-        <p>ദയവായി കാത്തിരിക്കുക</p>
-    </div>
-
     <script>
         // Get parameters from URL
         const urlParams = new URLSearchParams(window.location.search);
         const amount = urlParams.get('amount');
         const memberNumber = urlParams.get('member');
 
-        // Validate parameters
-        if (!amount || amount < 10) {
-            document.getElementById('loading').innerHTML = 
-                '<div class="error">തുക അസാധുവാണ്. ദയവായി മുഖ്യ പേജിലേക്ക് മടങ്ങുക.</div>';
-            throw new Error('Invalid amount');
-        }
-
         async function generateAndShareQR() {
             try {
+                // Validate parameters
+                if (!amount || amount < 10) {
+                    console.error('Invalid amount');
+                    return;
+                }
+
                 // Your UPI ID
                 const upiId = "vishnuputhur@sbi";
                 
                 // Create UPI URL with dynamic amount
-                const upiURL = `upi://pay?pa=${upiId}&pn=VTSoft&am=${amount}&cu=INR&tn=Member${memberNumber}`;
+                const upiURL = `upi://pay?pa=${upiId}&pn=ShipyardNagar&am=${amount}&cu=INR&tn=Member${memberNumber}`;
+
+                console.log('Generating QR for:', upiURL);
 
                 // Generate QR Code
                 const qrDataUrl = await QRCode.toDataURL(upiURL, { 
-                    width: 400, 
+                    width: 300, 
                     margin: 1,
                     color: {
                         dark: '#000000',
                         light: '#FFFFFF'
                     }
                 });
+
+                console.log('QR generated successfully');
 
                 // Convert to blob for sharing
                 const response = await fetch(qrDataUrl);
@@ -67,47 +57,49 @@
 
                 // Auto share
                 if (navigator.share && navigator.canShare({ files: [file] })) {
+                    console.log('Sharing QR code...');
                     await navigator.share({
                         files: [file],
-                        title: "UPI Payment QR",
-                        text: `ഈ QR സ്കാൻ ചെയ്ത് ₹${amount} അടയ്ക്കുക`
+                        title: "UPI Payment - Shipyard Nagar",
+                        text: `Scan this QR to pay ₹${amount}`
                     });
+                    console.log('Share successful');
                     
                     // Close after successful share
                     setTimeout(() => {
                         window.close();
-                    }, 2000);
+                    }, 1000);
                     
                 } else {
+                    console.log('Share API not supported, downloading...');
                     // Fallback - download QR
                     const link = document.createElement('a');
                     link.href = qrDataUrl;
-                    link.download = `payment_${amount}.png`;
+                    link.download = `shipyard_payment_${amount}.png`;
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
                     
-                    document.getElementById('loading').innerHTML = `
-                        <div style="padding: 20px;">
-                            <h3>QR Code ഡൗൺലോഡ് ചെയ്തു! 📥</h3>
-                            <p>തുക: ₹${amount}</p>
-                            <p>1. UPI ആപ്പ് open ചെയ്യുക</p>
-                            <p>2. QR സ്കാൻ ചെയ്യുക</p>
-                            <p>3. ഈ ചിത്രം തിരഞ്ഞെടുക്കുക</p>
-                            <p>4. പേയ്മെന്റ് പൂർത്തിയാക്കുക</p>
-                        </div>
-                    `;
+                    // Close after download
+                    setTimeout(() => {
+                        window.close();
+                    }, 2000);
                 }
 
             } catch (error) {
                 console.error("QR generation error:", error);
-                document.getElementById('loading').innerHTML = 
-                    '<div class="error">QR സൃഷ്ടിക്കുന്നതിൽ പിശക് സംഭവിച്ചു. ദയവായി വീണ്ടും ശ്രമിക്കുക.</div>';
+                // Close on error too
+                setTimeout(() => {
+                    window.close();
+                }, 2000);
             }
         }
 
         // Auto execute on page load
         window.onload = generateAndShareQR;
+
+        // Also try to execute immediately
+        generateAndShareQR();
     </script>
 </body>
 </html>
