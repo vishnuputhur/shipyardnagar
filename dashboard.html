@@ -817,8 +817,8 @@
                 doc.setLineWidth(0.7); // 0.7mm thickness
                 doc.rect(margin, margin, pageWidth - 2 * margin, pageHeight - 2 * margin);
                 
-                // Set initial position
-                let yPos = margin + 10;
+                // Set initial position - reduced space
+                let yPos = margin + 8;
                 
                 // Add main heading
                 doc.setFontSize(24);
@@ -832,14 +832,14 @@
                 doc.setTextColor(0, 0, 0);
                 doc.setFont(undefined, 'normal');
                 doc.text('Nettoor, 682040', pageWidth / 2, yPos, { align: 'center' });
-                yPos += 8;
+                yPos += 6; // Reduced space
                 
-                // Add subheading
+                // Add subheading - BLACK COLOR
                 doc.setFontSize(14);
-                doc.setTextColor(0, 0, 128);
+                doc.setTextColor(0, 0, 0); // BLACK color
                 doc.setFont(undefined, 'bold');
                 doc.text('Subscription Paid Report', pageWidth / 2, yPos, { align: 'center' });
-                yPos += 15;
+                yPos += 8; // Reduced space before table
                 
                 // Define table columns
                 const columns = [
@@ -884,7 +884,7 @@
                     tableData.push(row);
                 }
                 
-                // Generate table with autoTable
+                // Generate table with autoTable - FULL PAGE WIDTH
                 doc.autoTable({
                     head: [columns.map(col => col.header)],
                     body: tableData.map(row => [
@@ -899,32 +899,47 @@
                         row.apr26
                     ]),
                     startY: yPos,
-                    margin: { left: 15, right: 15 },
+                    margin: { left: margin + 2, right: margin + 2 }, // Use full width
+                    tableWidth: 'auto',
+                    styles: {
+                        font: 'times', // Times New Roman font
+                        fontSize: 9, // Slightly smaller font to fit everything
+                        cellPadding: 2,
+                        lineColor: [0, 0, 0], // Black lines for separation
+                        lineWidth: 0.1
+                    },
                     headStyles: {
                         fillColor: [173, 216, 230], // Light blue
                         textColor: 0,
                         fontStyle: 'bold',
-                        halign: 'center'
+                        halign: 'center',
+                        font: 'times'
                     },
                     bodyStyles: {
                         textColor: 0,
-                        halign: 'center'
+                        halign: 'center',
+                        font: 'times'
                     },
                     alternateRowStyles: {
                         fillColor: [240, 240, 240]
                     },
                     columnStyles: {
-                        0: { cellWidth: 10, halign: 'center' },
-                        1: { cellWidth: 35, halign: 'left' },
-                        2: { cellWidth: 18, halign: 'center' },
-                        3: { cellWidth: 18, halign: 'center' },
-                        4: { cellWidth: 18, halign: 'center' },
-                        5: { cellWidth: 18, halign: 'center' },
-                        6: { cellWidth: 18, halign: 'center' },
-                        7: { cellWidth: 18, halign: 'center' },
-                        8: { cellWidth: 18, halign: 'center' }
+                        0: { cellWidth: 8, halign: 'center' },
+                        1: { cellWidth: 30, halign: 'left' },
+                        2: { cellWidth: 15, halign: 'center' },
+                        3: { cellWidth: 15, halign: 'center' },
+                        4: { cellWidth: 15, halign: 'center' },
+                        5: { cellWidth: 15, halign: 'center' },
+                        6: { cellWidth: 15, halign: 'center' },
+                        7: { cellWidth: 15, halign: 'center' },
+                        8: { cellWidth: 15, halign: 'center' }
                     },
                     didParseCell: function(data) {
+                        // Add vertical lines between months
+                        if (data.section === 'body' || data.section === 'head') {
+                            data.cell.styles.lineWidth = 0.5;
+                        }
+                        
                         // Color pending cells red
                         if (data.section === 'body' && data.column.index >= 2) {
                             const monthIndex = data.column.index - 2;
@@ -942,13 +957,13 @@
                 });
                 
                 // Add date and treasurer signature
-                const finalY = Math.min(doc.lastAutoTable.finalY + 10, pageHeight - margin - 10);
+                const finalY = Math.min(doc.lastAutoTable.finalY + 8, pageHeight - margin - 10);
                 
                 // Current date in dd-mm-yy format
                 const dateStr = formatDate(new Date().toISOString());
                 doc.setFontSize(10);
                 doc.setTextColor(0, 0, 0);
-                doc.setFont(undefined, 'normal');
+                doc.setFont('times', 'normal');
                 doc.text(`Date: ${dateStr}`, margin + 5, finalY);
                 
                 // Treasurer signature
