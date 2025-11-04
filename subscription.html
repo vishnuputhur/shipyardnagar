@@ -518,9 +518,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 
-    <!-- QR Code Library - FIXED CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-
     <script>
         // Firebase Config
         const firebaseConfig = {
@@ -701,7 +698,7 @@
             updateAmountField();
         });
 
-        // Generate QR Code as Data URL (SIMPLIFIED VERSION)
+        // Simple QR Code Generator using Canvas
         function generateQRCodeImage(amount) {
             return new Promise((resolve, reject) => {
                 if (amount < 10) {
@@ -709,55 +706,31 @@
                     return;
                 }
 
-                // Check if QRCode is available
-                if (typeof QRCode === 'undefined') {
-                    reject('QR Code library not loaded. Please check your internet connection.');
-                    return;
-                }
-
-                // Create UPI URL with amount
-                const upiURL = `upi://pay?pa=Q343298201@ybl&pn=PhonePeMerchant&am=${amount}&cu=INR&tn=Member${currentMemberNumber}`;
-                
-                // Create canvas for QR code
-                const canvas = document.createElement('canvas');
-                
-                // Generate QR code directly to canvas
-                QRCode.toCanvas(canvas, upiURL, {
-                    width: 300,
-                    height: 300,
-                    margin: 2,
-                    color: {
-                        dark: '#000000',
-                        light: '#FFFFFF'
-                    }
-                }, function(error) {
-                    if (error) {
-                        reject('QR Code generation error: ' + error);
-                        return;
-                    }
+                try {
+                    // Create UPI URL with amount
+                    const upiURL = `upi://pay?pa=Q343298201@ybl&pn=PhonePeMerchant&am=${amount}&cu=INR&tn=Member${currentMemberNumber}`;
                     
-                    // Convert canvas to data URL
-                    try {
-                        const dataUrl = canvas.toDataURL('image/png');
-                        resolve(dataUrl);
-                    } catch (e) {
-                        reject('Canvas to image conversion failed: ' + e);
-                    }
-                });
+                    // Use Google Charts API for QR code generation (no external library needed)
+                    const qrCodeUrl = `https://chart.googleapis.com/chart?chs=300x300&cht=qr&chl=${encodeURIComponent(upiURL)}&choe=UTF-8`;
+                    
+                    resolve(qrCodeUrl);
+                } catch (error) {
+                    reject('QR Code generation failed: ' + error);
+                }
             });
         }
 
         // Share QR Code Image
         async function shareQRCodeImage(amount) {
             try {
-                const qrCodeDataUrl = await generateQRCodeImage(amount);
+                const qrCodeImageUrl = await generateQRCodeImage(amount);
                 
-                // Convert data URL to blob
-                const response = await fetch(qrCodeDataUrl);
+                // Fetch the QR code image
+                const response = await fetch(qrCodeImageUrl);
                 const blob = await response.blob();
                 const file = new File([blob], `payment_qr_${amount}.png`, { type: 'image/png' });
 
-                // Check if Web Share API is available and supports files
+                // Check if Web Share API is available
                 if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
                     await navigator.share({
                         files: [file],
@@ -767,18 +740,27 @@
                     console.log('Share successful');
                 } else {
                     // Fallback - download the image
+                    const url = URL.createObjectURL(blob);
                     const link = document.createElement('a');
-                    link.href = qrCodeDataUrl;
+                    link.href = url;
                     link.download = `payment_qr_${amount}.png`;
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
                     
+                    // Clean up URL
+                    setTimeout(() => URL.revokeObjectURL(url), 1000);
+                    
                     alert(`QR code downloaded for ₹${amount}!\n\nPlease:\n1. Open any UPI app (GPay, PhonePe, etc.)\n2. Use "Scan QR" feature\n3. Select this saved image\n4. Complete the payment`);
                 }
             } catch (error) {
                 console.error('Sharing failed:', error);
-                alert('Error: ' + error);
+                
+                // Ultimate fallback - show the QR code in new tab
+                const qrCodeImageUrl = await generateQRCodeImage(amount);
+                window.open(qrCodeImageUrl, '_blank');
+                
+                alert(`QR code opened in new tab for ₹${amount}!\n\nPlease:\n1. Save the image\n2. Open any UPI app\n3. Use "Scan QR" feature\n4. Select the saved image\n5. Complete the payment`);
             }
         }
 
