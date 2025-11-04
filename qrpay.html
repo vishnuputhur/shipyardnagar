@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>UPI Payment</title>
-  <!-- ശരിയായ version (global QRCode expose ചെയ്യുന്നു) -->
+  <!-- ശരിയായ version -->
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
   <style>
     body { 
@@ -21,6 +21,7 @@
       display: block;
       border: 1px solid #ddd;
       border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
     .msg {
       color: #333;
@@ -32,67 +33,79 @@
       font-size: 18px;
       color: #1a73e8;
     }
+    .status {
+      color: #d00;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
   <div class="msg title">UPI Payment - ₹<span id="amt">0</span></div>
   <canvas id="qrCanvas"></canvas>
-  <div class="msg">QR ready — Share ചെയ്യുന്നു...</div>
+  <div class="msg status" id="status">QR generating...</div>
 
   <script>
     (async () => {
+      const statusEl = document.getElementById('status');
+      const amountEl = document.getElementById('amt');
+
       try {
-        const urlParams = new URLSearchParams(window.location.search);
-        const amount = urlParams.get('amount') || '200';
+        // 1. Get amount
+        const params = new URLSearchParams(location.search);
+        const amount = params.get('amount') || '200';
+        if (isNaN(amount) || amount <= 0) throw new Error("Invalid amount");
 
-        if (isNaN(amount) || amount <= 0) {
-          alert("തുക സാധുവല്ല");
-          return;
-        }
+        amountEl.textContent = amount;
+        statusEl.textContent = "Generating QR...";
 
-        document.getElementById('amt').textContent = amount;
-
+        // 2. UPI URI (encode @)
         const upiId = 'vishnuputhur@sbi';
-        // പ്രധാനം: @ → %40
         const upiURI = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=ShipyardNagar&am=${amount}&cu=INR`;
 
+        // 3. Generate QR on canvas
         const canvas = document.getElementById('qrCanvas');
-
-        // QR → Canvas (async/await)
         await window.QRCode.toCanvas(canvas, upiURI, {
           width: 250,
           margin: 2,
-          color: { dark: '#000', light: '#fff' }
+          color: { dark: '#000000', light: '#FFFFFF' }
         });
 
-        // 1 sec wait → then auto share
-        setTimeout(async () => {
-          canvas.toBlob(async (blob) => {
-            if (!blob) return;
+        statusEl.textContent = "QR ready! Sharing in 1 sec...";
 
-            const file = new File([blob], `Pay_Rs${amount}.png`, { type: 'image/png' });
+        // 4. Wait 1 sec → then share
+        await new Promise(r => setTimeout(r, 1000));
 
-            if (navigator.share && navigator.canShare({ files: [file] })) {
-              try {
-                await navigator.share({
-                  files: [file],
-                  title: `₹${amount} - Shipyard Nagar`,
-                  text: `Pay ₹${amount} via UPI QR`
-                });
-                // Optional: close page
-                setTimeout(() => window.close(), 1000);
-              } catch (shareErr) {
-                console.warn("Share canceled", shareErr);
-              }
-            } else {
-              alert("Share not supported. Long press QR to save.");
-            }
-          }, 'image/png');
-        }, 1000);
+        // 5. Convert canvas to blob → file
+        const blob = await new Promise((resolve) => {
+          canvas.toBlob(resolve, 'image/png');
+        });
+
+        if (!blob) throw new Error("Blob generation failed");
+
+        const file = new File([blob], `Pay_Rs${amount}.png`, { type: 'image/png' });
+
+        // 6. Check share support
+        if (!navigator.share) {
+          throw new Error("Share API not supported (use mobile browser)");
+        }
+        if (!navigator.canShare({ files: [file] })) {
+          throw new Error("Cannot share files");
+        }
+
+        // 7. SHARE!
+        await navigator.share({
+          files: [file],
+          title: `₹${amount} - Shipyard Nagar`,
+          text: `Pay ₹${amount} via UPI`
+        });
+
+        statusEl.textContent = "Shared! Closing...";
+        setTimeout(() => window.close(), 1500);
 
       } catch (err) {
-        console.error("QR Error:", err);
-        alert("QR generation failed");
+        console.error("Share failed:", err);
+        statusEl.textContent = "Share failed: " + err.message;
+        statusEl.style.color = '#d00';
       }
     })();
   </script>
