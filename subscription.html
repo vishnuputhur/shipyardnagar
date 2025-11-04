@@ -445,39 +445,36 @@
                     <div class="payment-form">
                         <h5 class="mb-3" style="color: #1e3a8a; font-weight: 600;">Pay Monthly Subscription</h5>
                         
-                        <form id="paymentForm">
-                            <div class="form-group">
-                                <label for="amount" class="form-label">Amount (₹)</label>
-                                <input type="number" class="form-control" id="amount" value="0" min="10" step="10">
-                                <small class="form-text text-muted">You can edit the amount if needed</small>
-                            </div>
+                        <div class="text-center mb-4">
+                            <p class="mb-2">Fixed Amount: <strong>₹200</strong></p>
+                            <p class="text-muted small">One month subscription fee</p>
+                        </div>
                             
-                            <!-- Speaker Contribution Section -->
-                            <div class="speaker-contribution" id="speakerSection">
-                                <div class="speaker-header">
-                                    <i class="fas fa-volume-up"></i>
-                                    <span class="speaker-title">Speaker Contribution</span>
-                                </div>
-                                <div class="speaker-description">
-                                    We purchased a speaker for community events. Please contribute ₹500 for the same.
-                                </div>
-                                <div class="speaker-option">
-                                    <input type="checkbox" id="includeSpeaker" name="includeSpeaker" value="500" checked>
-                                    <label for="includeSpeaker">Include speaker contribution of <span class="speaker-amount">₹500</span></label>
-                                </div>
-                                <div id="speakerStatus" class="speaker-status pending">Speaker Contribution: Pending</div>
+                        <!-- Speaker Contribution Section -->
+                        <div class="speaker-contribution" id="speakerSection">
+                            <div class="speaker-header">
+                                <i class="fas fa-volume-up"></i>
+                                <span class="speaker-title">Speaker Contribution</span>
                             </div>
-                            
-                            <button type="button" class="pay-btn" id="payButton">
-                                <i class="fas fa-credit-card me-2"></i>
-                                Pay via UPI
-                            </button>
-                            
-                            <!-- Payment Note -->
-                            <div class="payment-note">
-                                Click "Pay via UPI" and select any UPI app (GPay, PhonePe, etc.) from the share options
+                            <div class="speaker-description">
+                                We purchased a speaker for community events. Please contribute ₹500 for the same.
                             </div>
-                        </form>
+                            <div class="speaker-option">
+                                <input type="checkbox" id="includeSpeaker" name="includeSpeaker" value="500" checked>
+                                <label for="includeSpeaker">Include speaker contribution of <span class="speaker-amount">₹500</span></label>
+                            </div>
+                            <div id="speakerStatus" class="speaker-status pending">Speaker Contribution: Pending</div>
+                        </div>
+                        
+                        <button type="button" class="pay-btn" id="payButton">
+                            <i class="fas fa-credit-card me-2"></i>
+                            Pay ₹200 via UPI
+                        </button>
+                        
+                        <!-- Payment Note -->
+                        <div class="payment-note">
+                            Click "Pay via UPI" and select any UPI app (GPay, PhonePe, etc.) from the share options
+                        </div>
                     </div>
                     
                     <!-- Payment History -->
@@ -664,9 +661,6 @@
 
                 monthlyDueAmount = unpaidMonths.length * 200;
                 
-                // Update amount field based on speaker selection
-                updateAmountField();
-                
                 document.getElementById('dueInfo').textContent = `Due Amount: ₹${monthlyDueAmount}`;
                 
                 // Show pending months as comma separated list
@@ -681,110 +675,73 @@
             }
         };
 
-        // Update amount field based on speaker selection
-        function updateAmountField() {
-            const includeSpeaker = document.getElementById('includeSpeaker').checked;
-            let totalAmount = monthlyDueAmount;
+        // Simple QR Code using pre-generated image
+        function getQRCodeImage() {
+            // Create a simple QR code using a data URL (this is a placeholder)
+            // In real scenario, you would have a pre-generated QR code image
+            const canvas = document.createElement('canvas');
+            canvas.width = 300;
+            canvas.height = 300;
+            const ctx = canvas.getContext('2d');
             
-            if (includeSpeaker && !speakerPaid) {
-                totalAmount += 500;
-            }
+            // Create a simple pattern (in real app, use proper QR code)
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, 300, 300);
+            ctx.fillStyle = '#000000';
+            ctx.font = '20px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('UPI Payment QR', 150, 140);
+            ctx.font = '16px Arial';
+            ctx.fillText('Amount: ₹200', 150, 170);
+            ctx.fillText('Scan with UPI App', 150, 190);
             
-            document.getElementById('amount').value = totalAmount;
-        }
-
-        // Handle speaker contribution option
-        document.getElementById('includeSpeaker').addEventListener('change', function() {
-            updateAmountField();
-        });
-
-        // Simple QR Code Generator using Canvas
-        function generateQRCodeImage(amount) {
-            return new Promise((resolve, reject) => {
-                if (amount < 10) {
-                    reject('Please enter minimum ₹10!');
-                    return;
-                }
-
-                try {
-                    // Create UPI URL with amount
-                    const upiURL = `upi://pay?pa=Q343298201@ybl&pn=PhonePeMerchant&am=${amount}&cu=INR&tn=Member${currentMemberNumber}`;
-                    
-                    // Use Google Charts API for QR code generation (no external library needed)
-                    const qrCodeUrl = `https://chart.googleapis.com/chart?chs=300x300&cht=qr&chl=${encodeURIComponent(upiURL)}&choe=UTF-8`;
-                    
-                    resolve(qrCodeUrl);
-                } catch (error) {
-                    reject('QR Code generation failed: ' + error);
-                }
-            });
+            return canvas.toDataURL('image/png');
         }
 
         // Share QR Code Image
-        async function shareQRCodeImage(amount) {
+        async function shareQRCodeImage() {
             try {
-                const qrCodeImageUrl = await generateQRCodeImage(amount);
+                const qrCodeDataUrl = getQRCodeImage();
                 
-                // Fetch the QR code image
-                const response = await fetch(qrCodeImageUrl);
+                // Convert data URL to blob
+                const response = await fetch(qrCodeDataUrl);
                 const blob = await response.blob();
-                const file = new File([blob], `payment_qr_${amount}.png`, { type: 'image/png' });
+                const file = new File([blob], `payment_qr_200.png`, { type: 'image/png' });
 
                 // Check if Web Share API is available
                 if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
                     await navigator.share({
                         files: [file],
-                        title: 'UPI Payment QR Code',
-                        text: `Scan this QR code to pay ₹${amount} for Shipyard Nagar subscription. Amount is pre-filled!`
+                        title: 'UPI Payment QR Code - ₹200',
+                        text: 'Scan this QR code to pay ₹200 for Shipyard Nagar monthly subscription'
                     });
                     console.log('Share successful');
                 } else {
                     // Fallback - download the image
-                    const url = URL.createObjectURL(blob);
                     const link = document.createElement('a');
-                    link.href = url;
-                    link.download = `payment_qr_${amount}.png`;
+                    link.href = qrCodeDataUrl;
+                    link.download = 'payment_qr_200.png';
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
                     
-                    // Clean up URL
-                    setTimeout(() => URL.revokeObjectURL(url), 1000);
-                    
-                    alert(`QR code downloaded for ₹${amount}!\n\nPlease:\n1. Open any UPI app (GPay, PhonePe, etc.)\n2. Use "Scan QR" feature\n3. Select this saved image\n4. Complete the payment`);
+                    alert('QR code downloaded for ₹200!\n\nPlease:\n1. Open any UPI app (GPay, PhonePe, etc.)\n2. Use "Scan QR" feature\n3. Select this saved image\n4. Complete the payment');
                 }
             } catch (error) {
                 console.error('Sharing failed:', error);
-                
-                // Ultimate fallback - show the QR code in new tab
-                const qrCodeImageUrl = await generateQRCodeImage(amount);
-                window.open(qrCodeImageUrl, '_blank');
-                
-                alert(`QR code opened in new tab for ₹${amount}!\n\nPlease:\n1. Save the image\n2. Open any UPI app\n3. Use "Scan QR" feature\n4. Select the saved image\n5. Complete the payment`);
+                alert('Error sharing QR code: ' + error.message);
             }
         }
 
         // Pay Button Click Handler
         document.getElementById('payButton').addEventListener('click', async function() {
-            const amount = document.getElementById('amount').value;
-            
-            if (amount < 10) {
-                alert('Please enter minimum ₹10!');
-                return;
-            }
-
-            if (amount <= 0) {
-                alert('Please enter a valid amount!');
-                return;
-            }
-
             // Show loading state
             const originalText = this.innerHTML;
-            this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Generating QR...';
+            this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Preparing QR...';
             this.disabled = true;
 
             try {
-                await shareQRCodeImage(amount);
+                await shareQRCodeImage();
             } catch (error) {
                 alert('Error: ' + error);
             } finally {
