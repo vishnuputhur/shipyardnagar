@@ -6,42 +6,66 @@
   <title>UPI Payment</title>
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
   <style>
-    body { margin: 0; background: #fff; }
+    body { 
+      margin: 0; 
+      background: #fff; 
+      text-align: center;
+      padding: 20px;
+      font-family: Arial;
+    }
+    canvas {
+      width: 250px;
+      height: 250px;
+      margin: 20px auto;
+      display: block;
+    }
+    .msg {
+      color: #333;
+      margin: 10px 0;
+    }
   </style>
 </head>
 <body>
+  <div class="msg">UPI Payment - ₹<span id="amt">0</span></div>
+  <canvas id="qrCanvas"></canvas>
+  <div class="msg">Select GPay from share options</div>
+
   <script>
     (function(){
-      // Get amount from URL
       const urlParams = new URLSearchParams(window.location.search);
       const amount = urlParams.get('amount') || '200';
       
-      // UPI details
+      document.getElementById('amt').textContent = amount;
+      
       const upiId = 'vishnuputhur@sbi';
       const upiURI = `upi://pay?pa=${upiId}&pn=ShipyardNagar&am=${amount}&cu=INR`;
       
-      // Generate QR immediately
-      QRCode.toDataURL(upiURI, { width: 300, margin: 1 }, function(err, qrDataUrl) {
+      const canvas = document.getElementById('qrCanvas');
+      
+      // Generate QR on canvas
+      QRCode.toCanvas(canvas, upiURI, { 
+        width: 250,
+        margin: 1 
+      }, function(err) {
         if (err) {
           console.error('QR error:', err);
           return;
         }
         
-        // Convert to blob and share
-        fetch(qrDataUrl)
-          .then(res => res.blob())
-          .then(blob => {
+        // Auto share after QR is visible
+        setTimeout(() => {
+          canvas.toBlob(function(blob) {
             const file = new File([blob], `payment_${amount}.png`, { type: "image/png" });
             
             if (navigator.share && navigator.canShare({ files: [file] })) {
               navigator.share({
                 files: [file],
-                title: "UPI Payment",
+                title: "UPI Payment - Shipyard Nagar",
                 text: `Pay ₹${amount}`
               });
             }
-          })
-          .catch(e => console.log('Share failed'));
+          });
+        }, 1000);
       });
     })();
   </script>
