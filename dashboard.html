@@ -807,17 +807,17 @@
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF('p', 'mm', 'letter');
                 
-                // Set margins and create border
+                // Set margins and create border - SKYBLUE COLOR
                 const margin = 6; // 6mm margin
                 const pageWidth = doc.internal.pageSize.getWidth();
                 const pageHeight = doc.internal.pageSize.getHeight();
                 
-                // Draw border
-                doc.setDrawColor(139, 0, 0); // Dark red color
-                doc.setLineWidth(0.7); // 0.7mm thickness
+                // Draw border - SKYBLUE COLOR
+                doc.setDrawColor(135, 206, 235); // Sky blue color
+                doc.setLineWidth(0.5); // Reduced thickness
                 doc.rect(margin, margin, pageWidth - 2 * margin, pageHeight - 2 * margin);
                 
-                // Set initial position - reduced space
+                // Set initial position
                 let yPos = margin + 8;
                 
                 // Add main heading
@@ -832,16 +832,16 @@
                 doc.setTextColor(0, 0, 0);
                 doc.setFont(undefined, 'normal');
                 doc.text('Nettoor, 682040', pageWidth / 2, yPos, { align: 'center' });
-                yPos += 6; // Reduced space
+                yPos += 10; // 10mm gap after address
                 
                 // Add subheading - BLACK COLOR
                 doc.setFontSize(14);
                 doc.setTextColor(0, 0, 0); // BLACK color
                 doc.setFont(undefined, 'bold');
                 doc.text('Subscription Paid Report', pageWidth / 2, yPos, { align: 'center' });
-                yPos += 8; // Reduced space before table
+                yPos += 6; // Small gap before table
                 
-                // Define table columns
+                // Define table columns with optimized widths
                 const columns = [
                     { header: 'No.', dataKey: 'number' },
                     { header: 'Name', dataKey: 'name' },
@@ -884,7 +884,11 @@
                     tableData.push(row);
                 }
                 
-                // Generate table with autoTable - FULL PAGE WIDTH
+                // Calculate table width to center it properly
+                const totalTableWidth = 180; // Total width in mm
+                const tableStartX = (pageWidth - totalTableWidth) / 2; // Center the table
+                
+                // Generate table with autoTable - CENTERED and OPTIMIZED
                 doc.autoTable({
                     head: [columns.map(col => col.header)],
                     body: tableData.map(row => [
@@ -899,45 +903,49 @@
                         row.apr26
                     ]),
                     startY: yPos,
-                    margin: { left: margin + 2, right: margin + 2 }, // Use full width
-                    tableWidth: 'auto',
+                    margin: { left: tableStartX, right: tableStartX },
+                    tableWidth: totalTableWidth,
                     styles: {
                         font: 'times', // Times New Roman font
-                        fontSize: 9, // Slightly smaller font to fit everything
-                        cellPadding: 2,
-                        lineColor: [0, 0, 0], // Black lines for separation
-                        lineWidth: 0.1
+                        fontSize: 8, // Smaller font to fit everything
+                        cellPadding: 1.5, // Reduced padding
+                        lineColor: [100, 100, 100], // Lighter gray lines
+                        lineWidth: 0.1 // Thinner lines
                     },
                     headStyles: {
                         fillColor: [173, 216, 230], // Light blue
                         textColor: 0,
                         fontStyle: 'bold',
                         halign: 'center',
-                        font: 'times'
+                        font: 'times',
+                        lineWidth: 0.2
                     },
                     bodyStyles: {
                         textColor: 0,
                         halign: 'center',
-                        font: 'times'
+                        font: 'times',
+                        lineWidth: 0.1
                     },
                     alternateRowStyles: {
-                        fillColor: [240, 240, 240]
+                        fillColor: [245, 245, 245]
                     },
+                    // Optimized column widths to prevent line breaks
                     columnStyles: {
                         0: { cellWidth: 8, halign: 'center' },
-                        1: { cellWidth: 30, halign: 'left' },
-                        2: { cellWidth: 15, halign: 'center' },
-                        3: { cellWidth: 15, halign: 'center' },
-                        4: { cellWidth: 15, halign: 'center' },
-                        5: { cellWidth: 15, halign: 'center' },
-                        6: { cellWidth: 15, halign: 'center' },
-                        7: { cellWidth: 15, halign: 'center' },
-                        8: { cellWidth: 15, halign: 'center' }
+                        1: { cellWidth: 32, halign: 'left' },
+                        2: { cellWidth: 17.5, halign: 'center' },
+                        3: { cellWidth: 17.5, halign: 'center' },
+                        4: { cellWidth: 17.5, halign: 'center' },
+                        5: { cellWidth: 17.5, halign: 'center' },
+                        6: { cellWidth: 17.5, halign: 'center' },
+                        7: { cellWidth: 17.5, halign: 'center' },
+                        8: { cellWidth: 17.5, halign: 'center' }
                     },
                     didParseCell: function(data) {
-                        // Add vertical lines between months
+                        // Add vertical lines between months with lighter color
                         if (data.section === 'body' || data.section === 'head') {
-                            data.cell.styles.lineWidth = 0.5;
+                            data.cell.styles.lineWidth = 0.2;
+                            data.cell.styles.lineColor = [150, 150, 150]; // Lighter gray
                         }
                         
                         // Color pending cells red
@@ -956,18 +964,30 @@
                     }
                 });
                 
-                // Add date and treasurer signature
-                const finalY = Math.min(doc.lastAutoTable.finalY + 8, pageHeight - margin - 10);
+                // Add signatures at the bottom
+                const finalY = Math.min(doc.lastAutoTable.finalY + 12, pageHeight - margin - 15);
                 
-                // Current date in dd-mm-yy format
-                const dateStr = formatDate(new Date().toISOString());
-                doc.setFontSize(10);
+                // President - Left
+                doc.setFontSize(9);
                 doc.setTextColor(0, 0, 0);
+                doc.setFont('times', 'bold');
+                doc.text('President', tableStartX, finalY);
                 doc.setFont('times', 'normal');
-                doc.text(`Date: ${dateStr}`, margin + 5, finalY);
+                doc.text('Vinayan KP', tableStartX, finalY + 4);
                 
-                // Treasurer signature
-                doc.text('Treasurer: Vishnu T', pageWidth - margin - 50, finalY);
+                // Treasurer - Center
+                const centerX = pageWidth / 2;
+                doc.setFont('times', 'bold');
+                doc.text('Treasurer', centerX, finalY, { align: 'center' });
+                doc.setFont('times', 'normal');
+                doc.text('Vishnu T', centerX, finalY + 4, { align: 'center' });
+                
+                // Secretary - Right
+                const rightX = tableStartX + totalTableWidth;
+                doc.setFont('times', 'bold');
+                doc.text('Secretary', rightX, finalY, { align: 'right' });
+                doc.setFont('times', 'normal');
+                doc.text('Manojkumar', rightX, finalY + 4, { align: 'right' });
                 
                 // Save PDF
                 doc.save('Shipyard_Nagar_Subscription_Report.pdf');
