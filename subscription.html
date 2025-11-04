@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
     <style>
+        /* All your existing CSS remains same */
         :root {
             --primary-orange: #FF6B35;
             --orange-light: #FF8C42;
@@ -145,12 +146,12 @@
             box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.2);
         }
 
-        /* Payment Buttons */
+        /* Payment Buttons - ORIGINAL SIZE */
         .pay-btn {
             background: var(--gradient);
             border: none;
             border-radius: 12px;
-            padding: 14px 20px;
+            padding: 12px 20px;
             color: white;
             font-weight: 500;
             font-size: 1rem;
@@ -159,7 +160,7 @@
             position: relative;
             overflow: hidden;
             width: 100%;
-            margin-top: 8px;
+            margin-top: 10px;
         }
 
         .pay-btn::before {
@@ -183,12 +184,12 @@
         }
 
         .pay-btn .app-name {
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 700;
         }
 
         .pay-btn .pay-text {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-style: italic;
             opacity: 0.9;
         }
@@ -481,14 +482,12 @@
                             
                             <!-- GPay Button -->
                             <button type="button" class="pay-btn" id="gpayButton">
-                                <span class="pay-text">Pay by</span><br>
-                                <span class="app-name">GPay</span>
+                                <span class="pay-text">Pay by</span> <span class="app-name">GPay</span>
                             </button>
                             
                             <!-- CRED Button -->
                             <button type="button" class="pay-btn" id="credButton">
-                                <span class="pay-text">Pay by</span><br>
-                                <span class="app-name">CRED</span>
+                                <span class="pay-text">Pay by</span> <span class="app-name">CRED</span>
                             </button>
                             
                             <!-- Payment Note -->
