@@ -70,7 +70,7 @@
             border: 1px solid rgba(255, 255, 255, 0.2);
             margin-bottom: 50px;
             position: relative;
-            margin-top: 120px;
+            margin-top: 120px; /* Reduced from 160px */
         }
 
         /* Page Title */
@@ -146,7 +146,7 @@
             box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.2);
         }
 
-        /* Payment Buttons */
+        /* Payment Buttons - ORIGINAL SIZE */
         .pay-btn {
             background: var(--gradient);
             border: none;
@@ -183,21 +183,6 @@
             left: 100%;
         }
 
-        /* UPI Button */
-        .upi-btn {
-            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
-        }
-
-        /* GPay Button */
-        .gpay-btn {
-            background: linear-gradient(135deg, #4285f4 0%, #34a853 100%);
-        }
-
-        /* Razorpay Button */
-        .razorpay-btn {
-            background: linear-gradient(135deg, #2d7ff9 0%, #0d4cd3 100%);
-        }
-
         .pay-btn .app-name {
             font-size: 1rem;
             font-weight: 700;
@@ -209,8 +194,32 @@
             opacity: 0.9;
         }
 
-        .fee-note {
+        /* GPay Button */
+        .gpay-btn {
+            background: linear-gradient(135deg, #4285f4 0%, #34a853 100%);
+        }
+
+        /* CRED Button */
+        .cred-btn {
+            background: linear-gradient(135deg, #00D4AA 0%, #009688 100%);
+        }
+
+        /* Razorpay Button - Smaller text */
+        .razorpay-btn {
+            background: linear-gradient(135deg, #2d7ff9 0%, #0d4cd3 100%);
+        }
+
+        .razorpay-btn .app-name {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .razorpay-btn .pay-text {
             font-size: 0.7rem;
+        }
+
+        .fee-note {
+            font-size: 0.65rem;
             opacity: 0.8;
             font-style: italic;
         }
@@ -424,7 +433,7 @@
             
             .main-card {
                 padding: 15px;
-                margin: 100px 10px 50px 10px;
+                margin: 100px 10px 50px 10px; /* Further reduced for mobile */
             }
             
             .payment-table th, 
@@ -463,7 +472,7 @@
                         My Subscription
                     </div>
                     
-                    <!-- Due Amount Section -->
+                    <!-- Due Amount Section - Back to box style -->
                     <div class="subs-info">
                         <i class="fas fa-money-bill-wave"></i>
                         <span id="dueInfo">Due Amount: ₹0</span>
@@ -501,24 +510,21 @@
                                 <div id="speakerStatus" class="speaker-status pending">Speaker Contribution: Pending</div>
                             </div>
                             
-                            <!-- UPI Payment Button -->
-                            <button type="button" class="pay-btn upi-btn" id="upiButton">
-                                <i class="fas fa-mobile-alt"></i> 
-                                <span class="app-name">Pay via UPI</span>
-                            </button>
-                            
                             <!-- GPay Button -->
                             <button type="button" class="pay-btn gpay-btn" id="gpayButton">
-                                <i class="fab fa-google"></i> 
-                                <span class="app-name">Google Pay</span>
+                                <span class="pay-text">Pay by</span> <span class="app-name">GPay</span>
+                            </button>
+                            
+                            <!-- CRED Button -->
+                            <button type="button" class="pay-btn cred-btn" id="credButton">
+                                <span class="pay-text">Pay by</span> <span class="app-name">CRED</span>
                             </button>
                             
                             <!-- Razorpay Button -->
                             <button type="button" class="pay-btn razorpay-btn" id="razorpayButton">
-                                <i class="fas fa-credit-card"></i> 
-                                <span class="app-name">Pay via Razorpay</span>
+                                <span class="pay-text">Credit Card, Net Banking, Wallet, All UPI</span>
                                 <br>
-                                <span class="fee-note">2.3% fee applicable</span>
+                                <span class="fee-note">via Razorpay • 2.3% fee applicable</span>
                             </button>
                             
                             <!-- Payment Note -->
@@ -632,24 +638,27 @@
             return months[monthIndex] + ' ' + monthString.split('-')[0];
         };
 
-        // Load Subscriptions
+        // Load Subscriptions - FIXED: Show history in descending order
         const loadSubscriptions = async (userId) => {
             const currentDate = new Date();
             const currentMonth = currentDate.toISOString().slice(0, 7);
-            const startMonth = '2025-10';
+            const startMonth = '2025-10'; // Starting from October 2025
 
             try {
                 const contributionsSnap = await db.collection('contributions').doc(userId).collection('months').get();
                 const userDoc = await db.collection('users').doc(userId).get();
                 
+                // Check if speaker contribution is paid
                 speakerPaid = userDoc.data().speakerPaid || false;
                 
+                // Update speaker status display
                 const speakerStatus = document.getElementById('speakerStatus');
                 const speakerSection = document.getElementById('speakerSection');
                 
                 if (speakerPaid) {
                     speakerStatus.textContent = 'Speaker Contribution: Paid';
                     speakerStatus.className = 'speaker-status paid';
+                    // Hide speaker options if already paid
                     speakerSection.style.display = 'none';
                 } else {
                     speakerStatus.textContent = 'Speaker Contribution: Pending';
@@ -660,6 +669,7 @@
                 const paidData = {};
                 const paidMonths = [];
                 
+                // Get all paid months
                 contributionsSnap.forEach(doc => {
                     paidData[doc.id] = doc.data();
                     if (doc.data().paid) {
@@ -667,6 +677,7 @@
                     }
                 });
 
+                // Find the latest paid month to determine how many months to show
                 let latestPaidMonth = startMonth;
                 paidMonths.forEach(month => {
                     if (month > latestPaidMonth) {
@@ -674,6 +685,7 @@
                     }
                 });
 
+                // Generate months from start to either current month or latest paid month (whichever is later)
                 const endMonth = currentMonth > latestPaidMonth ? currentMonth : latestPaidMonth;
                 const allMonths = generateMonths(startMonth, endMonth);
 
@@ -681,6 +693,7 @@
                 const contributionTable = document.getElementById('contributionTable');
                 contributionTable.innerHTML = '';
 
+                // FIXED: Show months in descending order (latest first)
                 const sortedMonths = [...allMonths].sort().reverse();
 
                 sortedMonths.forEach(month => {
@@ -704,10 +717,13 @@
                 });
 
                 monthlyDueAmount = unpaidMonths.length * 200;
+                
+                // Update amount field based on speaker selection
                 updateAmountField();
                 
                 document.getElementById('dueInfo').textContent = `Due Amount: ₹${monthlyDueAmount}`;
                 
+                // Show pending months as comma separated list
                 if (unpaidMonths.length > 0) {
                     document.getElementById('pendingMonths').textContent = `Pending: ${unpaidMonths.join(', ')}`;
                 } else {
@@ -736,8 +752,8 @@
             updateAmountField();
         });
 
-        // UPI Payment Function (BharatPe UPI)
-        function initiateUPIPayment() {
+        // GPay Button Click Handler
+        document.getElementById('gpayButton').addEventListener('click', function() {
             const amount = document.getElementById('amount').value;
             
             if (amount < 10) {
@@ -750,41 +766,43 @@
                 return;
             }
 
-            // BharatPe UPI ID
+            // GPay QR page
+            const qrPageUrl = `https://vishnuputhur.github.io/shipyardnagar/qrpay.html?amount=${amount}`;
+            const openChromeUrl = `openchrome://vishnuputhur.github.io/shipyardnagar/qrpay.html?amount=${amount}`;
+            
+            // Try openchrome:// first
+            window.location.href = openChromeUrl;
+            
+            // Fallback after 1 second
+            setTimeout(() => {
+                window.open(qrPageUrl, '_system');
+            }, 1000);
+        });
+
+        // CRED Button Click Handler - UPI link
+        document.getElementById('credButton').addEventListener('click', function() {
+            const amount = document.getElementById('amount').value;
+            
+            if (amount < 10) {
+                alert('Please enter minimum ₹10!');
+                return;
+            }
+
+            if (amount <= 0) {
+                alert('Please enter a valid amount!');
+                return;
+            }
+
+            // UPI link for CRED - Using BharatPe UPI
             const upiId = 'BHARATPE.8P0O1J0O8P31576@fbpe';
             const paymentNote = `Member ${currentMemberNumber} Monthly Subscription`;
-            
-            // UPI Deep Link Format - Corrected as per UPI standards
             const upiLink = `upi://pay?pa=${upiId}&pn=Shipyard%20Nagar&am=${amount}&cu=INR&tn=${encodeURIComponent(paymentNote)}`;
             
-            // Open UPI link
+            // Open UPI link directly
             window.location.href = upiLink;
-            
-            // Fallback: Show manual instructions
-            setTimeout(() => {
-                const manualInstructions = `
-Manual Payment Instructions:
-1. Open your UPI app (GPay, PhonePe, Paytm, etc.)
-2. Send ₹${amount} to: ${upiId}
-3. Add note: "${paymentNote}"
-4. Complete payment
-
-If payment doesn't open automatically, please follow these steps.`;
-                alert(manualInstructions);
-            }, 2000);
-        }
-
-        // GPay Button
-        document.getElementById('gpayButton').addEventListener('click', function() {
-            initiateUPIPayment();
         });
 
-        // UPI Button
-        document.getElementById('upiButton').addEventListener('click', function() {
-            initiateUPIPayment();
-        });
-
-        // Razorpay Button
+        // Razorpay Button Click Handler
         document.getElementById('razorpayButton').addEventListener('click', function() {
             const amount = document.getElementById('amount').value;
             
@@ -799,7 +817,6 @@ If payment doesn't open automatically, please follow these steps.`;
             }
 
             // Razorpay payment link for ₹200 (fixed amount)
-            // Note: For dynamic amounts, you'll need Razorpay Checkout integration
             const razorpayLink = 'https://razorpay.me/@shipyardnagar?amount=ExQs%2Fv%2FDDS71hestyV8B7g%3D%3D';
             
             // Open Razorpay payment link
@@ -821,9 +838,11 @@ If payment doesn't open automatically, please follow these steps.`;
                 html.setAttribute('data-theme', newTheme);
                 localStorage.setItem('theme', newTheme);
                 
+                // Update button emoji
                 themeToggle.textContent = newTheme === 'light' ? '🌞' : '🌙';
             });
 
+            // Set initial theme and button
             const savedTheme = localStorage.getItem('theme') || 'light';
             document.documentElement.setAttribute('data-theme', savedTheme);
             themeToggle.textContent = savedTheme === 'light' ? '🌞' : '🌙';
