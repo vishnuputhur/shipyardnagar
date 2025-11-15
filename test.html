@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
     <style>
-        /* All your existing CSS remains same */
         :root {
             --primary-orange: #FF6B35;
             --orange-light: #FF8C42;
@@ -47,7 +46,6 @@
             z-index: -1;
         }
 
-        /* Header Image - Fixed at top */
         .header-image {
             width: 100%;
             height: auto;
@@ -60,7 +58,6 @@
             z-index: 999;
         }
 
-        /* Main Card - Reduced top gap */
         .main-card {
             background: var(--card-bg);
             backdrop-filter: blur(20px);
@@ -70,10 +67,9 @@
             border: 1px solid rgba(255, 255, 255, 0.2);
             margin-bottom: 50px;
             position: relative;
-            margin-top: 120px; /* Reduced from 160px */
+            margin-top: 120px;
         }
 
-        /* Page Title */
         .page-title {
             font-size: 1.5rem;
             font-weight: 700;
@@ -86,7 +82,6 @@
             color: #60a5fa;
         }
 
-        /* Subscription Info Cards */
         .subs-info {
             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
             padding: 15px;
@@ -108,7 +103,6 @@
             color: var(--primary-orange);
         }
 
-        /* Payment Form */
         .payment-form {
             margin-top: 20px;
         }
@@ -146,7 +140,6 @@
             box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.2);
         }
 
-        /* Payment Buttons - ORIGINAL SIZE */
         .pay-btn {
             background: var(--gradient);
             border: none;
@@ -194,18 +187,15 @@
             opacity: 0.9;
         }
 
-        /* All buttons same orange color */
         .gpay-btn, .cred-btn, .razorpay-btn {
             background: var(--gradient);
         }
 
-        /* Razorpay Button - Single line smaller font */
         .razorpay-btn .app-name {
             font-size: 0.9rem;
             font-weight: 600;
         }
 
-        /* Payment Note */
         .payment-note {
             font-size: 0.75rem;
             color: #666;
@@ -218,7 +208,6 @@
             color: #ccc;
         }
 
-        /* Payment History Table */
         .payment-history {
             margin-top: 30px;
         }
@@ -270,7 +259,6 @@
             font-weight: 500;
         }
 
-        /* Footer - Reduced height */
         footer {
             position: fixed;
             bottom: 0;
@@ -298,7 +286,6 @@
             text-align: center;
         }
 
-        /* Theme Toggle - Slightly larger */
         .theme-toggle-btn {
             background: transparent;
             border: 1px solid #ccc;
@@ -322,7 +309,6 @@
             border-color: var(--primary-orange);
         }
         
-        /* Speaker Contribution Styles */
         .speaker-contribution {
             margin-top: 15px;
             padding: 15px;
@@ -406,7 +392,6 @@
             color: #28a745;
         }
 
-        /* Responsive */
         @media (max-width: 576px) {
             .header-image {
                 max-height: 120px;
@@ -414,7 +399,7 @@
             
             .main-card {
                 padding: 15px;
-                margin: 100px 10px 50px 10px; /* Further reduced for mobile */
+                margin: 100px 10px 50px 10px;
             }
             
             .payment-table th, 
@@ -442,7 +427,6 @@
     </style>
 </head>
 <body>
-    <!-- Header Image - Fixed at top -->
     <img src="assets/head.png" alt="Header" class="header-image">
     
     <main class="container">
@@ -453,7 +437,6 @@
                         My Subscription
                     </div>
                     
-                    <!-- Due Amount Section - Back to box style -->
                     <div class="subs-info">
                         <i class="fas fa-money-bill-wave"></i>
                         <span id="dueInfo">Due Amount: ₹0</span>
@@ -464,7 +447,6 @@
                         <span id="pendingMonths">Pending: 0 months</span>
                     </div>
                     
-                    <!-- Payment Form -->
                     <div class="payment-form">
                         <h5 class="mb-3" style="color: #1e3a8a; font-weight: 600;">Pay Monthly Subscription</h5>
                         
@@ -475,7 +457,6 @@
                                 <small class="form-text text-muted">You can edit the amount if needed</small>
                             </div>
                             
-                            <!-- Speaker Contribution Section -->
                             <div class="speaker-contribution" id="speakerSection">
                                 <div class="speaker-header">
                                     <i class="fas fa-volume-up"></i>
@@ -491,29 +472,24 @@
                                 <div id="speakerStatus" class="speaker-status pending">Speaker Contribution: Pending</div>
                             </div>
                             
-                            <!-- GPay Button -->
                             <button type="button" class="pay-btn gpay-btn" id="gpayButton">
                                 <span class="pay-text">Pay by</span> <span class="app-name">GPay</span>
                             </button>
                             
-                            <!-- CRED Button -->
                             <button type="button" class="pay-btn cred-btn" id="credButton">
                                 <span class="pay-text">Pay by</span> <span class="app-name">CRED</span>
                             </button>
                             
-                            <!-- Razorpay Button -->
                             <button type="button" class="pay-btn razorpay-btn" id="razorpayButton">
                                 <span class="app-name">Credit Cards, NetBanking, Wallet</span>
                             </button>
                             
-                            <!-- Payment Note -->
                             <div class="payment-note">
                                 Payment will be updated in the system within 4 hours of successful transaction
                             </div>
                         </form>
                     </div>
                     
-                    <!-- Payment History -->
                     <div class="payment-history">
                         <h5 class="mb-3" style="color: #1e3a8a; font-weight: 600;">Payment History</h5>
                         
@@ -528,7 +504,6 @@
                                     </tr>
                                 </thead>
                                 <tbody id="contributionTable">
-                                    <!-- Payment history will be loaded here -->
                                 </tbody>
                             </table>
                         </div>
@@ -538,7 +513,6 @@
         </div>
     </main>
     
-    <!-- Footer -->
     <footer>
         <div class="footer-text">
             <p>Powered by VTSoft 2025</p>
@@ -546,13 +520,11 @@
         <button id="themeToggle" class="theme-toggle-btn">🌞</button>
     </footer>
 
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 
     <script>
-        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyBWswawf9tpxNwVU0BaJ6FCwCvgcjUQXlA",
             authDomain: "shipyard-nagar.firebaseapp.com",
@@ -563,7 +535,6 @@
             measurementId: "G-V8CQ4YCCQ5"
         };
 
-        // Initialize Firebase
         if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
         }
@@ -575,12 +546,10 @@
         let speakerPaid = false;
         let monthlyDueAmount = 0;
 
-        // Auth State Listener
         auth.onAuthStateChanged(async (user) => {
             if (!user) {
                 window.location.href = 'login.html';
             } else {
-                // Fetch user data
                 try {
                     const userDoc = await db.collection('users').doc(user.uid).get();
                     if (!userDoc.exists) {
@@ -598,7 +567,6 @@
             }
         });
 
-        // Generate Months
         const generateMonths = (start, end) => {
             const months = [];
             let current = new Date(start + '-01');
@@ -610,34 +578,29 @@
             return months;
         };
 
-        // Get Month Name
         const getMonthName = (monthString) => {
             const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
             const monthIndex = parseInt(monthString.split('-')[1]) - 1;
             return months[monthIndex] + ' ' + monthString.split('-')[0];
         };
 
-        // Load Subscriptions - FIXED: Show history in descending order
         const loadSubscriptions = async (userId) => {
             const currentDate = new Date();
             const currentMonth = currentDate.toISOString().slice(0, 7);
-            const startMonth = '2025-10'; // Starting from October 2025
+            const startMonth = '2025-10';
 
             try {
                 const contributionsSnap = await db.collection('contributions').doc(userId).collection('months').get();
                 const userDoc = await db.collection('users').doc(userId).get();
                 
-                // Check if speaker contribution is paid
                 speakerPaid = userDoc.data().speakerPaid || false;
                 
-                // Update speaker status display
                 const speakerStatus = document.getElementById('speakerStatus');
                 const speakerSection = document.getElementById('speakerSection');
                 
                 if (speakerPaid) {
                     speakerStatus.textContent = 'Speaker Contribution: Paid';
                     speakerStatus.className = 'speaker-status paid';
-                    // Hide speaker options if already paid
                     speakerSection.style.display = 'none';
                 } else {
                     speakerStatus.textContent = 'Speaker Contribution: Pending';
@@ -648,7 +611,6 @@
                 const paidData = {};
                 const paidMonths = [];
                 
-                // Get all paid months
                 contributionsSnap.forEach(doc => {
                     paidData[doc.id] = doc.data();
                     if (doc.data().paid) {
@@ -656,7 +618,6 @@
                     }
                 });
 
-                // Find the latest paid month to determine how many months to show
                 let latestPaidMonth = startMonth;
                 paidMonths.forEach(month => {
                     if (month > latestPaidMonth) {
@@ -664,7 +625,6 @@
                     }
                 });
 
-                // Generate months from start to either current month or latest paid month (whichever is later)
                 const endMonth = currentMonth > latestPaidMonth ? currentMonth : latestPaidMonth;
                 const allMonths = generateMonths(startMonth, endMonth);
 
@@ -672,7 +632,6 @@
                 const contributionTable = document.getElementById('contributionTable');
                 contributionTable.innerHTML = '';
 
-                // FIXED: Show months in descending order (latest first)
                 const sortedMonths = [...allMonths].sort().reverse();
 
                 sortedMonths.forEach(month => {
@@ -697,12 +656,10 @@
 
                 monthlyDueAmount = unpaidMonths.length * 200;
                 
-                // Update amount field based on speaker selection
                 updateAmountField();
                 
                 document.getElementById('dueInfo').textContent = `Due Amount: ₹${monthlyDueAmount}`;
                 
-                // Show pending months as comma separated list
                 if (unpaidMonths.length > 0) {
                     document.getElementById('pendingMonths').textContent = `Pending: ${unpaidMonths.join(', ')}`;
                 } else {
@@ -714,7 +671,6 @@
             }
         };
 
-        // Update amount field based on speaker selection
         function updateAmountField() {
             const includeSpeaker = document.getElementById('includeSpeaker').checked;
             let totalAmount = monthlyDueAmount;
@@ -726,12 +682,10 @@
             document.getElementById('amount').value = totalAmount;
         }
 
-        // Handle speaker contribution option
         document.getElementById('includeSpeaker').addEventListener('change', function() {
             updateAmountField();
         });
 
-        // GPay Button Click Handler
         document.getElementById('gpayButton').addEventListener('click', function() {
             const amount = document.getElementById('amount').value;
             
@@ -745,20 +699,16 @@
                 return;
             }
 
-            // GPay QR page
             const qrPageUrl = `https://vishnuputhur.github.io/shipyardnagar/qrpay.html?amount=${amount}`;
             const openChromeUrl = `openchrome://vishnuputhur.github.io/shipyardnagar/qrpay.html?amount=${amount}`;
             
-            // Try openchrome:// first
             window.location.href = openChromeUrl;
             
-            // Fallback after 1 second
             setTimeout(() => {
                 window.open(qrPageUrl, '_system');
             }, 1000);
         });
 
-        // CRED Button Click Handler - Direct CRED App Opening
         document.getElementById('credButton').addEventListener('click', function() {
             const amount = document.getElementById('amount').value;
             
@@ -772,22 +722,13 @@
                 return;
             }
 
-            // Try to open CRED app directly
-            const credDeepLink = `upi://pay?amount=${amount}&note=Member${currentMemberNumber}Subscription`;
+            const upiId = 'BHARATPE.8P0O1J0O8P31576@fbpe';
+            const paymentNote = `Member ${currentMemberNumber} Monthly Subscription`;
+            const upiLink = `upi://pay?pa=${upiId}&pn=Shipyard%20Nagar&am=${amount}&cu=INR&tn=${encodeURIComponent(paymentNote)}`;
             
-            // First try CRED deep link
-            window.location.href = credDeepLink;
-            
-            // Fallback to UPI after 1 second
-            setTimeout(() => {
-                const upiId = 'BHARATPE.8P0O1J0O8P31576@fbpe';
-                const paymentNote = `Member ${currentMemberNumber} Monthly Subscription`;
-                const upiLink = `upi://pay?pa=${upiId}&pn=Shipyard%20Nagar&am=${amount}&cu=INR&tn=${encodeURIComponent(paymentNote)}`;
-                
-                window.location.href = upiLink;
-                
-                
-        // Razorpay Button Click Handler
+            window.location.href = upiLink;
+        });
+
         document.getElementById('razorpayButton').addEventListener('click', function() {
             const amount = document.getElementById('amount').value;
             
@@ -801,19 +742,15 @@
                 return;
             }
 
-            // Razorpay payment link for ₹200 (fixed amount)
             const razorpayLink = 'https://razorpay.me/@shipyardnagar?amount=ExQs%2Fv%2FDDS71hestyV8B7g%3D%3D';
             
-            // Open Razorpay payment link
             window.open(razorpayLink, '_blank');
             
-            // Show note about fixed amount
             setTimeout(() => {
                 alert('Note: Razorpay link is for ₹200 fixed amount. For other amounts, please use UPI payment.');
             }, 1000);
         });
 
-        // Theme Toggle
         const themeToggle = document.getElementById('themeToggle');
         if (themeToggle) {
             themeToggle.addEventListener('click', () => {
@@ -823,11 +760,9 @@
                 html.setAttribute('data-theme', newTheme);
                 localStorage.setItem('theme', newTheme);
                 
-                // Update button emoji
                 themeToggle.textContent = newTheme === 'light' ? '🌞' : '🌙';
             });
 
-            // Set initial theme and button
             const savedTheme = localStorage.getItem('theme') || 'light';
             document.documentElement.setAttribute('data-theme', savedTheme);
             themeToggle.textContent = savedTheme === 'light' ? '🌞' : '🌙';
