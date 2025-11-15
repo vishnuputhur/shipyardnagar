@@ -194,30 +194,15 @@
             opacity: 0.9;
         }
 
-        /* GPay Button */
-        .gpay-btn {
-            background: linear-gradient(135deg, #4285f4 0%, #34a853 100%);
+        /* All buttons same orange color */
+        .gpay-btn, .cred-btn, .razorpay-btn {
+            background: var(--gradient);
         }
 
-        /* CRED Button */
-        .cred-btn {
-            background: linear-gradient(135deg, #00D4AA 0%, #009688 100%);
-        }
-
-        /* Razorpay Button - Larger text */
-        .razorpay-btn {
-            background: linear-gradient(135deg, #2d7ff9 0%, #0d4cd3 100%);
-        }
-
+        /* Razorpay Button - Single line smaller font */
         .razorpay-btn .app-name {
-            font-size: 1.1rem;
-            font-weight: 700;
-        }
-
-        .fee-note {
-            font-size: 0.7rem;
-            opacity: 0.8;
-            font-style: italic;
+            font-size: 0.9rem;
+            font-weight: 600;
         }
 
         /* Payment Note */
@@ -518,7 +503,7 @@
                             
                             <!-- Razorpay Button -->
                             <button type="button" class="pay-btn razorpay-btn" id="razorpayButton">
-                                <span class="app-name">Credit Card, Net Banking, Wallet, UPI</span>
+                                <span class="app-name">Cards, Net Banking, Wallet</span>
                             </button>
                             
                             <!-- Payment Note -->
@@ -773,7 +758,7 @@
             }, 1000);
         });
 
-        // CRED Button Click Handler - UPI link
+        // CRED Button Click Handler - Direct CRED App Opening
         document.getElementById('credButton').addEventListener('click', function() {
             const amount = document.getElementById('amount').value;
             
@@ -787,13 +772,34 @@
                 return;
             }
 
-            // UPI link for CRED - Using BharatPe UPI
-            const upiId = 'BHARATPE.8P0O1J0O8P31576@fbpe';
-            const paymentNote = `Member ${currentMemberNumber} Monthly Subscription`;
-            const upiLink = `upi://pay?pa=${upiId}&pn=Shipyard%20Nagar&am=${amount}&cu=INR&tn=${encodeURIComponent(paymentNote)}`;
+            // Try to open CRED app directly
+            const credDeepLink = `cred://pay?amount=${amount}&note=Member${currentMemberNumber}Subscription`;
             
-            // Open UPI link directly
-            window.location.href = upiLink;
+            // First try CRED deep link
+            window.location.href = credDeepLink;
+            
+            // Fallback to UPI after 1 second
+            setTimeout(() => {
+                const upiId = 'BHARATPE.8P0O1J0O8P31576@fbpe';
+                const paymentNote = `Member ${currentMemberNumber} Monthly Subscription`;
+                const upiLink = `upi://pay?pa=${upiId}&pn=Shipyard%20Nagar&am=${amount}&cu=INR&tn=${encodeURIComponent(paymentNote)}`;
+                
+                window.location.href = upiLink;
+                
+                // Final fallback - manual instructions
+                setTimeout(() => {
+                    const manualInstructions = `
+If CRED app didn't open automatically:
+
+1. Open CRED app manually
+2. Go to UPI Payment
+3. Send ₹${amount} to: ${upiId}
+4. Add note: "${paymentNote}"
+
+Or use any UPI app with above details.`;
+                    alert(manualInstructions);
+                }, 2000);
+            }, 1000);
         });
 
         // Razorpay Button Click Handler
