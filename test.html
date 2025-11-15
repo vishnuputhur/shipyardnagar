@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shipyard Nagar - My Subscription</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* All your existing CSS remains same */
+        :root {
+            --primary-orange: #FF6B35;
+            --orange-light: #FF8C42;
+            --orange-dark: #E55A2B;
+            --gradient: linear-gradient(135deg, #FF6B35 0%, #FF8C42 50%, #FFA726 100%);
+            --shadow: 0 8px 25px rgba(255, 107, 53, 0.15);
+            --shadow-hover: 0 12px 35px rgba(255, 107, 53, 0.25);
+            --card-bg: rgba(255, 255, 255, 0.95);
+        }
+
+        [data-theme="dark"] {
+            --card-bg: rgba(45, 45, 45, 0.95);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding-bottom: 0;
+            position: relative;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><polygon fill="%23ffffff10" points="0,1000 1000,0 1000,1000"/></svg>');
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* Header Image - Fixed at top */
+        .header-image {
+            width: 100%;
+            height: auto;
+            max-height: 150px;
+            object-fit: cover;
+            display: block;
+            position: fixed;
+            top: 3mm;
+            left: 0;
+            z-index: 999;
+        }
+
+        /* Main Card - Reduced top gap */
+        .main-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 50px;
+            position: relative;
+            margin-top: 120px; /* Reduced from 160px */
+        }
+
+        /* Page Title */
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e3a8a;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        [data-theme="dark"] .page-title {
+            color: #60a5fa;
+        }
+
+        /* Subscription Info Cards */
+        .subs-info {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 15px;
+            border-radius: 12px;
+            margin: 10px 0;
+            border-left: 3px solid var(--primary-orange);
+            font-weight: 500;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="dark"] .subs-info {
+            background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+            color: #fff;
+        }
+
+        .subs-info i {
+            font-size: 1.2rem;
+            margin-right: 10px;
+            color: var(--primary-orange);
+        }
+
+        /* Payment Form */
+        .payment-form {
+            margin-top: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-label {
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        [data-theme="dark"] .form-label {
+            color: #fff;
+        }
+
+        .form-control {
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            padding: 10px 15px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        [data-theme="dark"] .form-control {
+            background: #444;
+            border-color: #555;
+            color: #fff;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-orange);
+            box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.2);
+        }
+
+        /* Payment Buttons - ORIGINAL SIZE */
+        .pay-btn {
+            background: var(--gradient);
+            border: none;
+            border-radius: 12px;
+            padding: 12px 20px;
+            color: white;
+            font-weight: 500;
+            font-size: 1rem;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .pay-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: 0.5s;
+        }
+
+        .pay-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .pay-btn:hover::before {
+            left: 100%;
+        }
+
+        .pay-btn .app-name {
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        .pay-btn .pay-text {
+            font-size: 0.8rem;
+            font-style: italic;
+            opacity: 0.9;
+        }
+
+        /* Razorpay Button */
+        .razorpay-btn {
+            background: linear-gradient(135deg, #2d7ff9 0%, #0d4cd3 100%);
+        }
+
+        .razorpay-btn:hover {
+            background: linear-gradient(135deg, #0d4cd3 0%, #2d7ff9 100%);
+        }
+
+        /* Payment Note */
+        .payment-note {
+            font-size: 0.75rem;
+            color: #666;
+            text-align: center;
+            margin-top: 10px;
+            line-height: 1.4;
+        }
+
+        [data-theme="dark"] .payment-note {
+            color: #ccc;
+        }
+
+        /* Payment History Table */
+        .payment-history {
+            margin-top: 30px;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .payment-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .payment-table th {
+            background: var(--gradient);
+            color: white;
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: 500;
+            font-size: 0.85rem;
+        }
+
+        .payment-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            font-size: 0.8rem;
+        }
+
+        [data-theme="dark"] .payment-table td {
+            border-bottom: 1px solid #555;
+        }
+
+        .payment-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .status-paid {
+            color: #28a745;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            color: #dc3545;
+            font-weight: 500;
+        }
+
+        /* Footer - Reduced height */
+        footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background: rgba(248, 248, 248, 0.9);
+            backdrop-filter: blur(10px);
+            color: #666;
+            font-size: 0.7rem;
+            z-index: 1000;
+            border-top: 1px solid rgba(255, 107, 53, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 3px 15px;
+            height: 30px;
+        }
+
+        [data-theme="dark"] footer {
+            background: rgba(45, 45, 45, 0.9);
+            color: #ccc;
+        }
+
+        .footer-text {
+            flex: 1;
+            text-align: center;
+        }
+
+        /* Theme Toggle - Slightly larger */
+        .theme-toggle-btn {
+            background: transparent;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            padding: 4px 8px;
+            color: #666;
+            font-size: 0.75rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            height: 24px;
+        }
+
+        [data-theme="dark"] .theme-toggle-btn {
+            border-color: #666;
+            color: #ccc;
+        }
+
+        .theme-toggle-btn:hover {
+            background: var(--gradient);
+            color: white;
+            border-color: var(--primary-orange);
+        }
+        
+        /* Speaker Contribution Styles */
+        .speaker-contribution {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #f0f8ff 0%, #e6f7ff 100%);
+            border: 1px solid #b3d9ff;
+        }
+        
+        [data-theme="dark"] .speaker-contribution {
+            background: linear-gradient(135deg, #1a365d 0%, #2d3748 100%);
+            border-color: #4a5568;
+        }
+        
+        .speaker-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .speaker-header i {
+            font-size: 1.2rem;
+            margin-right: 10px;
+            color: #1e40af;
+        }
+        
+        .speaker-title {
+            font-weight: 600;
+            color: #1e40af;
+        }
+        
+        [data-theme="dark"] .speaker-title {
+            color: #60a5fa;
+        }
+        
+        .speaker-description {
+            font-size: 0.85rem;
+            color: #4b5563;
+            margin-bottom: 10px;
+        }
+        
+        [data-theme="dark"] .speaker-description {
+            color: #cbd5e0;
+        }
+        
+        .speaker-option {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .speaker-option input {
+            margin-right: 8px;
+        }
+        
+        .speaker-option label {
+            font-size: 0.9rem;
+            color: #374151;
+            cursor: pointer;
+        }
+        
+        [data-theme="dark"] .speaker-option label {
+            color: #e2e8f0;
+        }
+        
+        .speaker-amount {
+            font-weight: 600;
+            color: #1e40af;
+        }
+        
+        .speaker-status {
+            margin-top: 10px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .speaker-status.pending {
+            color: #dc3545;
+        }
+        
+        .speaker-status.paid {
+            color: #28a745;
+        }
+
+        /* Responsive */
+        @media (max-width: 576px) {
+            .header-image {
+                max-height: 120px;
+            }
+            
+            .main-card {
+                padding: 15px;
+                margin: 100px 10px 50px 10px; /* Further reduced for mobile */
+            }
+            
+            .payment-table th, 
+            .payment-table td {
+                padding: 10px 8px;
+                font-size: 0.75rem;
+            }
+            
+            footer {
+                padding: 3px 10px;
+                height: 28px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .payment-table {
+                font-size: 0.7rem;
+            }
+            
+            .payment-table th, 
+            .payment-table td {
+                padding: 8px 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Image - Fixed at top -->
+    <img src="assets/head.png" alt="Header" class="header-image">
+    
+    <main class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-8 col-lg-6">
+                <div class="main-card">
+                    <div class="page-title">
+                        My Subscription
+                    </div>
+                    
+                    <!-- Due Amount Section - Back to box style -->
+                    <div class="subs-info">
+                        <i class="fas fa-money-bill-wave"></i>
+                        <span id="dueInfo">Due Amount: ₹0</span>
+                    </div>
+                    
+                    <div class="subs-info">
+                        <i class="fas fa-calendar-times"></i>
+                        <span id="pendingMonths">Pending: 0 months</span>
+                    </div>
+                    
+                    <!-- Payment Form -->
+                    <div class="payment-form">
+                        <h5 class="mb-3" style="color: #1e3a8a; font-weight: 600;">Pay Monthly Subscription</h5>
+                        
+                        <form id="paymentForm">
+                            <div class="form-group">
+                                <label for="amount" class="form-label">Amount (₹)</label>
+                                <input type="number" class="form-control" id="amount" value="0" min="10" step="10">
+                                <small class="form-text text-muted">You can edit the amount if needed</small>
+                            </div>
+                            
+                            <!-- Speaker Contribution Section -->
+                            <div class="speaker-contribution" id="speakerSection">
+                                <div class="speaker-header">
+                                    <i class="fas fa-volume-up"></i>
+                                    <span class="speaker-title">Speaker Contribution</span>
+                                </div>
+                                <div class="speaker-description">
+                                    We purchased a speaker for community events. Please contribute ₹500 for the same.
+                                </div>
+                                <div class="speaker-option">
+                                    <input type="checkbox" id="includeSpeaker" name="includeSpeaker" value="500" checked>
+                                    <label for="includeSpeaker">Include speaker contribution of <span class="speaker-amount">₹500</span></label>
+                                </div>
+                                <div id="speakerStatus" class="speaker-status pending">Speaker Contribution: Pending</div>
+                            </div>
+                            
+                            <!-- Razorpay Button -->
+                            <button type="button" class="pay-btn razorpay-btn" id="razorpayButton">
+                                <span class="pay-text">Pay by</span> <span class="app-name">Razorpay</span>
+                            </button>
+                            
+                            <!-- Payment Note -->
+                            <div class="payment-note">
+                                Payment will be updated in the system within 4 hours of successful transaction
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <!-- Payment History -->
+                    <div class="payment-history">
+                        <h5 class="mb-3" style="color: #1e3a8a; font-weight: 600;">Payment History</h5>
+                        
+                        <div class="table-container">
+                            <table class="payment-table">
+                                <thead>
+                                    <tr>
+                                        <th>Month</th>
+                                        <th>Status</th>
+                                        <th>Amount</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="contributionTable">
+                                    <!-- Payment history will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Footer -->
+    <footer>
+        <div class="footer-text">
+            <p>Powered by VTSoft 2025</p>
+        </div>
+        <button id="themeToggle" class="theme-toggle-btn">🌞</button>
+    </footer>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+
+    <script>
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyBWswawf9tpxNwVU0BaJ6FCwCvgcjUQXlA",
+            authDomain: "shipyard-nagar.firebaseapp.com",
+            projectId: "shipyard-nagar",
+            storageBucket: "shipyard-nagar.firebasestorage.app",
+            messagingSenderId: "552855824221",
+            appId: "1:552855824221:web:f709da953077475be9eab4",
+            measurementId: "G-V8CQ4YCCQ5"
+        };
+
+        // Initialize Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        let currentMemberNumber = '';
+        let speakerPaid = false;
+        let monthlyDueAmount = 0;
+
+        // Auth State Listener
+        auth.onAuthStateChanged(async (user) => {
+            if (!user) {
+                window.location.href = 'login.html';
+            } else {
+                // Fetch user data
+                try {
+                    const userDoc = await db.collection('users').doc(user.uid).get();
+                    if (!userDoc.exists) {
+                        alert('User data not found. Redirecting to login...');
+                        window.location.href = 'login.html';
+                        return;
+                    }
+
+                    currentMemberNumber = userDoc.data().memberNumber || 'Unknown';
+                    await loadSubscriptions(user.uid);
+                } catch (error) {
+                    alert('Error loading user data: ' + error.message);
+                    console.error('Error:', error);
+                }
+            }
+        });
+
+        // Generate Months
+        const generateMonths = (start, end) => {
+            const months = [];
+            let current = new Date(start + '-01');
+            const endDate = new Date(end + '-01');
+            while (current <= endDate) {
+                months.push(current.toISOString().slice(0, 7));
+                current.setMonth(current.getMonth() + 1);
+            }
+            return months;
+        };
+
+        // Get Month Name
+        const getMonthName = (monthString) => {
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const monthIndex = parseInt(monthString.split('-')[1]) - 1;
+            return months[monthIndex] + ' ' + monthString.split('-')[0];
+        };
+
+        // Load Subscriptions - FIXED: Show history in descending order
+        const loadSubscriptions = async (userId) => {
+            const currentDate = new Date();
+            const currentMonth = currentDate.toISOString().slice(0, 7);
+            const startMonth = '2025-10'; // Starting from October 2025
+
+            try {
+                const contributionsSnap = await db.collection('contributions').doc(userId).collection('months').get();
+                const userDoc = await db.collection('users').doc(userId).get();
+                
+                // Check if speaker contribution is paid
+                speakerPaid = userDoc.data().speakerPaid || false;
+                
+                // Update speaker status display
+                const speakerStatus = document.getElementById('speakerStatus');
+                const speakerSection = document.getElementById('speakerSection');
+                
+                if (speakerPaid) {
+                    speakerStatus.textContent = 'Speaker Contribution: Paid';
+                    speakerStatus.className = 'speaker-status paid';
+                    // Hide speaker options if already paid
+                    speakerSection.style.display = 'none';
+                } else {
+                    speakerStatus.textContent = 'Speaker Contribution: Pending';
+                    speakerStatus.className = 'speaker-status pending';
+                    speakerSection.style.display = 'block';
+                }
+                
+                const paidData = {};
+                const paidMonths = [];
+                
+                // Get all paid months
+                contributionsSnap.forEach(doc => {
+                    paidData[doc.id] = doc.data();
+                    if (doc.data().paid) {
+                        paidMonths.push(doc.id);
+                    }
+                });
+
+                // Find the latest paid month to determine how many months to show
+                let latestPaidMonth = startMonth;
+                paidMonths.forEach(month => {
+                    if (month > latestPaidMonth) {
+                        latestPaidMonth = month;
+                    }
+                });
+
+                // Generate months from start to either current month or latest paid month (whichever is later)
+                const endMonth = currentMonth > latestPaidMonth ? currentMonth : latestPaidMonth;
+                const allMonths = generateMonths(startMonth, endMonth);
+
+                let unpaidMonths = [];
+                const contributionTable = document.getElementById('contributionTable');
+                contributionTable.innerHTML = '';
+
+                // FIXED: Show months in descending order (latest first)
+                const sortedMonths = [...allMonths].sort().reverse();
+
+                sortedMonths.forEach(month => {
+                    const data = paidData[month] || { paid: false, amount: 0, date: '' };
+                    const status = data.paid ? 'Paid' : 'Pending';
+                    const amount = data.paid ? '₹200' : '₹0';
+                    const date = data.date || '-';
+
+                    contributionTable.innerHTML += `
+                        <tr>
+                            <td>${getMonthName(month)}</td>
+                            <td class="${data.paid ? 'status-paid' : 'status-pending'}">${status}</td>
+                            <td>${amount}</td>
+                            <td>${date}</td>
+                        </tr>
+                    `;
+
+                    if (!data.paid) {
+                        unpaidMonths.push(getMonthName(month));
+                    }
+                });
+
+                monthlyDueAmount = unpaidMonths.length * 200;
+                
+                // Update amount field based on speaker selection
+                updateAmountField();
+                
+                document.getElementById('dueInfo').textContent = `Due Amount: ₹${monthlyDueAmount}`;
+                
+                // Show pending months as comma separated list
+                if (unpaidMonths.length > 0) {
+                    document.getElementById('pendingMonths').textContent = `Pending: ${unpaidMonths.join(', ')}`;
+                } else {
+                    document.getElementById('pendingMonths').textContent = 'All months paid';
+                }
+            } catch (error) {
+                alert('Error loading subscriptions: ' + error.message);
+                console.error('Error:', error);
+            }
+        };
+
+        // Update amount field based on speaker selection
+        function updateAmountField() {
+            const includeSpeaker = document.getElementById('includeSpeaker').checked;
+            let totalAmount = monthlyDueAmount;
+            
+            if (includeSpeaker && !speakerPaid) {
+                totalAmount += 500;
+            }
+            
+            document.getElementById('amount').value = totalAmount;
+        }
+
+        // Handle speaker contribution option
+        document.getElementById('includeSpeaker').addEventListener('change', function() {
+            updateAmountField();
+        });
+
+        // Razorpay Button Click Handler
+        document.getElementById('razorpayButton').addEventListener('click', function() {
+            const amount = document.getElementById('amount').value;
+            
+            if (amount < 10) {
+                alert('Please enter minimum ₹10!');
+                return;
+            }
+
+            if (amount <= 0) {
+                alert('Please enter a valid amount!');
+                return;
+            }
+
+            // Create Razorpay payment link with member number and description
+            const razorpayBaseUrl = "https://razorpay.me/@shipyardnagar";
+            
+            // Create description with member details
+            const description = `Member ${currentMemberNumber} - Monthly Subscription${speakerPaid ? '' : ' + Speaker'}`;
+            
+            // Razorpay payment link with parameters
+            const razorpayLink = `${razorpayBaseUrl}?amount=${amount * 100}&description=${encodeURIComponent(description)}`;
+            
+            // Open Razorpay payment link
+            window.open(razorpayLink, '_blank');
+        });
+
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        if (themeToggle) {
+            themeToggle.addEventListener('click', () => {
+                const html = document.documentElement;
+                const currentTheme = html.getAttribute('data-theme');
+                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+                html.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+                
+                // Update button emoji
+                themeToggle.textContent = newTheme === 'light' ? '🌞' : '🌙';
+            });
+
+            // Set initial theme and button
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            themeToggle.textContent = savedTheme === 'light' ? '🌞' : '🌙';
+        }
+    </script>
+</body>
+</html>
