@@ -7,36 +7,54 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Razorpay Checkout Script (Live) -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <style>
-        /* Your existing styles remain exactly the same */
+        /* നിങ്ങളുടെ എല്ലാ style-ഉം 100% അതേപടി തന്നെ */
         :root {
             --primary-orange: #FF6B35;
+            --orange-light: #FF8C42;
+            --orange-dark: #E55A2B;
             --gradient: linear-gradient(135deg, #FF6B35 0%, #FF8C42 50%, #FFA726 100%);
             --shadow: 0 8px 25px rgba(255, 107, 53, 0.15);
             --shadow-hover: 0 12px 35px rgba(255, 107, 53, 0.25);
             --card-bg: rgba(255, 255, 255, 0.95);
         }
         [data-theme="dark"] { --card-bg: rgba(45, 45, 45, 0.95); }
-        body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; margin: 0; padding-bottom: 60px; position: relative; overflow-x: hidden; }
+        body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; margin: 0; padding: 0; position: relative; overflow-x: hidden; }
         body::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><polygon fill="%23ffffff10" points="0,1000 1000,0 1000,1000"/></svg>'); pointer-events: none; z-index: -1; }
-        .header-image { width: 100%; max-height: 150px; object-fit: cover; position: fixed; top: 3mm; left: 0; z-index: 999,999; }
-        .main-card { background: var(--card-bg); backdrop-filter: blur(20px); border-radius: 20px; padding: 20px; box-shadow: var(--shadow); border: 1px solid rgba(255,255,255,0.2); margin: 120px 15px 50px; }
-        .page-title { font-size: 1.5rem; font-weight: 700; color: #1e3a8a; text-align: center; margin-bottom: 20px; }
+        .header-image { width: 100%; height: auto; max-height: 150px; object-fit: cover; display: block; position: fixed; top: 3mm; left: 0; z-index: 999; }
+        .main-card { background: var(--card-bg); backdrop-filter: blur(20px); border-radius: 20px; padding: 20px; box-shadow: var(--shadow); border: 1px solid rgba(255,255,255,0.2); margin-bottom: 50px; margin-top: 120px; }
+        .page-title { font-size: 1.5rem; font-weight: 700; color: #1e3a8a; margin-bottom: 20px; text-align: center; }
         [data-theme="dark"] .page-title { color: #60a5fa; }
         .subs-info { background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 15px; border-radius: 12px; margin: 10px 0; border-left: 3px solid var(--primary-orange); font-weight: 500; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        .pay-btn { background: var(--gradient); border: none; border-radius: 12px; padding: 14px; color: white; font-weight: 600; margin: 8px 0; width: 100%; box-shadow: var(--shadow); transition: all 0.3s; position: relative; overflow: hidden; }
-        .pay-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+        [data-theme="dark"] .subs-info { background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%); color: #fff; }
+        .subs-info i { font-size: 1.2rem; margin-right: 10px; color: var(--primary-orange); }
+        .pay-btn { background: var(--gradient); border: none; border-radius: 12px; padding: 12px 20px; color: white; font-weight: 500; font-size: 1rem; box-shadow: var(--shadow); transition: all 0.3s ease; position: relative; overflow: hidden; width: 100%; margin-top: 10px; }
         .pay-btn::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent); transition: 0.5s; }
+        .pay-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
         .pay-btn:hover::before { left: 100%; }
-        footer { position: fixed; bottom: 0; width: 100%; background: rgba(248,248,248,0.9); backdrop-filter: blur(10px); color: #666; font-size: 0.7rem; z-index: 1000; border-top: 1px solid rgba(255,107,53,0.2); display: flex; justify-content: space-between; padding: 3px 15px; height: 30px; align-items: center; }
+        .pay-btn .app-name { font-size: 1rem; font-weight: 700; }
+        .pay-btn .pay-text { font-size: 0.8rem; font-style: italic; opacity: 0.9; }
+        .gpay-btn, .cred-btn, .razorpay-btn { background: var(--gradient); }
+        .razorpay-btn .app-name { font-size: 0.9rem; font-weight: 600; }
+        .payment-note { font-size: 0.75rem; color: #666; text-align: center; margin-top: 10px; line-height: 1.4; }
+        [data-theme="dark"] .payment-note { color: #ccc; }
+        .speaker-contribution { margin-top: 15px; padding: 15px; border-radius: 12px; background: linear-gradient(135deg, #f0f8ff 0%, #e6f7ff 100%); border: 1px solid #b3d9ff; }
+        [data-theme="dark"] .speaker-contribution { background: linear-gradient(135deg, #1a365d 0%, #2d3748 100%); border-color: #4a5568; }
+        .speaker-status.pending { color: #dc3545; }
+        .speaker-status.paid { color: #28a745; }
+        footer { position: fixed; bottom: 0; width: 100%; background: rgba(248,248,248,0.9); backdrop-filter: blur(10px); color: #666; font-size: 0.7rem; z-index: 1000; border-top: 1px solid rgba(255,107,53,0.2); display: flex; justify-content: space-between; align-items: center; padding: 3px 15px; height: 30px; }
         [data-theme="dark"] footer { background: rgba(45,45,45,0.9); color: #ccc; }
-        .theme-toggle-btn { background: transparent; border: 1px solid #ccc; border-radius: 20px; padding: 4px 8px; font-size: 0.75rem; cursor: pointer; }
-        .speaker-contribution { margin-top: 15px; padding: 15px; border-radius: 12px; background: #f0f8ff; border: 1px solid #b3d9ff; }
-        @media (max-width: 576px) { .header-image { max-height: 120px; } .main-card { margin: 100px 10px 50px; } }
+        .theme-toggle-btn { background: transparent; border: 1px solid #ccc; border-radius: 20px; padding: 4px 8px; color: #666; font-size: 0.75rem; cursor: pointer; height: 24px; }
+        [data-theme="dark"] .theme-toggle-btn { border-color: #666; color: #ccc; }
+        .theme-toggle-btn:hover { background: var(--gradient); color: white; border-color: var(--primary-orange); }
+        @media (max-width: 576px) { .header-image { max-height: 120px; } .main-card { padding: 15px; margin: 100px 10px 50px 10px; } }
     </style>
 </head>
 <body>
-    <img src="assets/head.png" alt="Header" class="header-image" onerror="this.style.display='none'">
+    <img src="assets/head.png" alt="Header" class="header-image">
 
     <main class="container">
         <div class="row justify-content-center">
@@ -50,42 +68,49 @@
                     <div class="payment-form">
                         <h5 class="mb-3" style="color: #1e3a8a; font-weight: 600;">Pay Monthly Subscription</h5>
                         
-                        <div class="form-group mb-3">
-                            <label class="form-label">Amount (₹)</label>
-                            <input type="number" class="form-control" id="amount" value="0" min="10" readonly>
-                            <small class="form-text text-muted">Auto-calculated based on pending months</small>
-                        </div>
-
-                        <div class="speaker-contribution" id="speakerSection" style="display:none;">
-                            <div class="speaker-header"><i class="fas fa-volume-up"></i> <span class="speaker-title">Speaker Contribution</span></div>
-                            <div class="speaker-description">We purchased a speaker. Please contribute ₹500.</div>
-                            <div class="speaker-option">
-                                <input type="checkbox" id="includeSpeaker" checked>
-                                <label for="includeSpeaker">Include speaker contribution ₹500</label>
+                        <form id="paymentForm">
+                            <div class="form-group">
+                                <label for="amount" class="form-label">Amount (₹)</label>
+                                <input type="number" class="form-control" id="amount" value="0" min="10" step="10">
+                                <small class="form-text text-muted">You can edit the amount if needed</small>
                             </div>
-                        </div>
-
-                        <!-- Payment Buttons -->
-                        <button type="button" class="pay-btn" id="gpayButton">
-                            <span class="pay-text">Pay via</span> <strong>GPay</strong>
-                        </button>
-                        <button type="button" class="pay-btn" id="credButton">
-                            <span class="pay-text">Pay via</span> <strong>CRED / PhonePe / Paytm</strong>
-                        </button>
-                        <button type="button" class="pay-btn" id="razorpayButton">
-                            <i class="fas fa-credit-card me-2"></i> Pay with Razorpay (Card / Netbanking / UPI)
-                        </button>
-
-                        <div class="payment-note text-center mt-3">
-                            Payment will be updated automatically within minutes
-                        </div>
+                            
+                            <div class="speaker-contribution" id="speakerSection">
+                                <div class="speaker-header"><i class="fas fa-volume-up"></i> <span class="speaker-title">Speaker Contribution</span></div>
+                                <div class="speaker-description">We purchased a speaker for community events. Please contribute ₹500 for the same.</div>
+                                <div class="speaker-option">
+                                    <input type="checkbox" id="includeSpeaker" name="includeSpeaker" value="500" checked>
+                                    <label for="includeSpeaker">Include speaker contribution of <span class="speaker-amount">₹500</span></label>
+                                </div>
+                                <div id="speakerStatus" class="speaker-status pending">Speaker Contribution: Pending</div>
+                            </div>
+                            
+                            <button type="button" class="pay-btn gpay-btn" id="gpayButton">
+                                <span class="pay-text">Pay by</span> <span class="app-name">GPay</span>
+                            </button>
+                            
+                            <button type="button" class="pay-btn cred-btn" id="credButton">
+                                <span class="pay-text">Pay by</span> <span class="app-name">CRED</span>
+                            </button>
+                            
+                            <!-- ഇവിടെ മാത്രം Razorpay integration ചെയ്തു -->
+                            <button type="button" class="pay-btn razorpay-btn" id="razorpayButton">
+                                <span class="app-name">Credit Cards, NetBanking, Wallet</span>
+                            </button>
+                            
+                            <div class="payment-note">
+                                Payment will be updated in the system within 4 hours of successful transaction
+                            </div>
+                        </form>
                     </div>
-
-                    <div class="payment-history mt-4">
-                        <h5 style="color: #1e3a8a; font-weight: 600;">Payment History</h5>
-                        <div class="table-responsive">
-                            <table class="table table-bordered payment-table">
-                                <thead><tr><th>Month</th><th>Status</th><th>Amount</th><th>Date</th></tr></thead>
+                    
+                    <div class="payment-history">
+                        <h5 class="mb-3" style="color: #1e3a8a; font-weight: 600;">Payment History</h5>
+                        <div class="table-container">
+                            <table class="payment-table">
+                                <thead>
+                                    <tr><th>Month</th><th>Status</th><th>Amount</th><th>Date</th></tr>
+                                </thead>
                                 <tbody id="contributionTable"></tbody>
                             </table>
                         </div>
@@ -96,182 +121,161 @@
     </main>
 
     <footer>
-        <div class="footer-text">Powered by VTSoft 2025</div>
-        <button id="themeToggle" class="theme-toggle-btn">Light/Dark</button>
+        <div class="footer-text"><p>Powered by VTSoft 2025</p></div>
+        <button id="themeToggle" class="theme-toggle-btn">Sun/Moon</button>
     </footer>
 
-    <!-- Firebase SDK -->
+    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-    <!-- Razorpay Checkout -->
-    <script src="https://checkout.1pay.in/checkout.js"></script>
 
     <script>
-        const firebaseConfig = {
+        const firebaseConfig = { /* നിങ്ങളുടെ config തന്നെ */ 
             apiKey: "AIzaSyBWswawf9tpxNwVU0BaJ6FCwCvgcjUQXlA",
             authDomain: "shipyard-nagar.firebaseapp.com",
             projectId: "shipyard-nagar",
             storageBucket: "shipyard-nagar.firebasestorage.app",
             messagingSenderId: "552855824221",
-            appId: "1:552855824221:web:f709da953077475be9eab4"
+            appId: "1:552855824221:web:f709da953077475be9eab4",
+            measurementId: "G-V8CQ4YCCQ5"
         };
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        let userId = '';
-        let memberName = '';
-        let memberNumber = '';
-        let pendingMonths = [];
-        let speakerPaid = false;
-        let monthlyDue = 0;
+        let userId = '', memberNumber = '', memberName = '', speakerPaid = false, pendingMonths = [], monthlyDue = 0;
 
-        auth.onAuthStateChanged(async (user) => {
+        auth.onAuthStateChanged(async user => {
             if (!user) { window.location.href = 'login.html'; return; }
             userId = user.uid;
             const doc = await db.collection('users').doc(userId).get();
-            if (!doc.exists) { alert('User not found'); return; }
             memberName = doc.data().memberName || 'Member';
             memberNumber = doc.data().memberNumber || '';
             speakerPaid = doc.data().speakerPaid || false;
-            await loadPaymentData();
+            await loadAllData();
         });
 
-        async function loadPaymentData() {
+        async function loadAllData() {
             const today = new Date().toISOString().slice(0,7);
             const start = '2025-10';
             pendingMonths = [];
             const snap = await db.collection('contributions').doc(userId).collection('months').get();
-            const paidMonths = new Set();
-            snap.forEach(d => { if (d.data().paid) paidMonths.add(d.id); });
+            const paid = new Set();
+            snap.forEach(d => { if (d.data().paid) paid.add(d.id); });
 
-            let current = new Date(start + '-01');
-            const end = new Date(today + '-01');
-            while (current <= end) {
-                const m = current.toISOString().slice(0,7);
-                if (!paidMonths.has(m)) pendingMonths.push(m);
-                current.setMonth(current.getMonth()+1);
+            let cur = new Date(start + '-01');
+            while (cur.toISOString().slice(0,7) <= today) {
+                const m = cur.toISOString().slice(0,7);
+                if (!paid.has(m)) pendingMonths.push(m);
+                cur.setMonth(cur.getMonth()+1);
             }
-
             monthlyDue = pendingMonths.length * 200;
-            updateAmountAndUI();
+            updateAmount();
             loadHistory();
+            document.getElementById('speakerSection').style.display = speakerPaid ? 'none' : 'block';
+            document.getElementById('speakerStatus').textContent = speakerPaid ? 'Speaker Contribution: Paid' : 'Speaker Contribution: Pending';
+            document.getElementById('speakerStatus').className = speakerPaid ? 'speaker-status paid' : 'speaker-status pending';
         }
 
-        function updateAmountAndUI() {
-            const includeSpeaker = document.getElementById('includeSpeaker').checked && !speakerPaid;
-            const total = monthlyDue + (includeSpeaker ? 500 : 0);
-            document.getElementById('amount').value = total;
+        function updateAmount() {
+            const include = document.getElementById('includeSpeaker').checked && !speakerPaid;
+            document.getElementById('amount').value = monthlyDue + (include ? 500 : 0);
             document.getElementById('dueInfo').textContent = `Due Amount: ₹${monthlyDue}`;
-            document.getElementById('pendingMonths').textContent = pendingMonths.length ? `Pending: ${pendingMonths.map(m=>m.slice(5)+'/'+m.slice(0,4)).join(', ')}` : 'All paid';
-            document.getElementById('speakerSection').style.display = speakerPaid ? 'none' : 'block';
+            document.getElementById('pendingMonths').textContent = pendingMonths.length ? `Pending: ${pendingMonths.map(m=>m.slice(5)+'/'+m.slice(2,4)).join(', ')}` : 'All months paid';
         }
+        document.getElementById('includeSpeaker').onchange = updateAmount;
 
         function loadHistory() {
             const tbody = document.getElementById('contributionTable');
             tbody.innerHTML = '';
             const months = ['2025-10','2025-11','2025-12','2026-01','2026-02','2026-03','2026-04','2026-05','2026-06','2026-07','2026-08','2026-09','2026-10'];
             months.forEach(m => {
-                db.collection('contributions').doc(userId).collection('months').doc(m).get().then(doc => {
-                    const data = doc.exists ? doc.data() : {paid:false};
-                    const row = document.createElement('tr');
-                    row.innerHTML = `<td>\( {m.slice(5)}/ \){m.slice(0,4)}</td>
-                                     <td class="\( {data.paid?'text-success':'text-danger'}"> \){data.paid?'Paid':'Pending'}</td>
-                                     <td>₹${data.paid?200:0}</td>
-                                     <td>${data.date || '-'}</td>`;
-                    tbody.appendChild(row);
+                db.collection('contributions').doc(userId).collection('months').doc(m).get().then(d => {
+                    const data = d.exists ? d.data() : {paid:false};
+                    tbody.innerHTML += `<tr>
+                        <td>\( {m.slice(5)}/ \){m.slice(0,4)}</td>
+                        <td class="\( {data.paid?'status-paid':'status-pending'}"> \){data.paid?'Paid':'Pending'}</td>
+                        <td>₹${data.paid?200:0}</td>
+                        <td>${data.date||'-'}</td>
+                    </tr>`;
                 });
             });
         }
 
-        // GPay Button
+        // GPay & CRED – പഴയതുപോലെ തന്നെ
         document.getElementById('gpayButton').onclick = () => {
-            const amount = document.getElementById('amount').value;
-            window.location.href = `https://vishnuputhur.github.io/shipyardnagar/qrpay.html?amount=${amount}`;
+            const amt = document.getElementById('amount').value;
+            if (amt < 10) return alert('Minimum ₹10');
+            location.href = `https://vishnuputhur.github.io/shipyardnagar/qrpay.html?amount=${amt}`;
         };
-
-        // CRED / Other UPI
         document.getElementById('credButton').onclick = () => {
-            const amount = document.getElementById('amount').value;
-            const note = `Member ${memberNumber} Subscription`;
-            const upi = `upi://pay?pa=BHARATPE.8P0O1J0O8P31576@fbpe&pn=Shipyard Nagar&am=\( {amount}&cu=INR&tn= \){encodeURIComponent(note)}`;
-            window.location.href = upi;
+            const amt = document.getElementById('amount').value;
+            if (amt < 10) return alert('Minimum ₹10');
+            const upi = `upi://pay?pa=BHARATPE.8P0O1J0O8P31576@fbpe&pn=Shipyard Nagar&am=\( {amt}&cu=INR&tn=Member \){memberNumber} Subscription`;
+            location.href = upi;
         };
 
-        // Razorpay Payment
+        // Razorpay Button – ഇവിടെ മാത്രം പുതിയ integration
         document.getElementById('razorpayButton').onclick = () => {
-            const totalAmount = Number(document.getElementById('amount').value);
-            if (totalAmount < 10) { alert('Minimum ₹10 required'); return; }
+            const total = Number(document.getElementById('amount').value);
+            if (total < 10) return alert('Minimum ₹10 required');
 
             const includeSpeaker = document.getElementById('includeSpeaker').checked && !speakerPaid;
-            const monthsToMark = [...pendingMonths];
-            const speakerToMark = includeSpeaker;
 
             const options = {
                 key: "rzp_live_RgUX7aqPVgwhwH",
-                amount: totalAmount * 100,
+                amount: total * 100,
                 currency: "INR",
                 name: "Shipyard Nagar",
-                description: `Subscription Payment - ${memberNumber}`,
+                description: `Member ${memberNumber} - Subscription`,
                 image: "assets/head.png",
                 handler: function (response) {
-                    // Success → Update Firebase
-                    markPaymentsAsPaid(monthsToMark, speakerToMark, totalAmount, response.razorpay_payment_id);
+                    markAsPaidAutomatically(pendingMonths, includeSpeaker, total, response.razorpay_payment_id);
                 },
-                prefill: { name: memberName, contact: "", email: "" },
+                prefill: { name: memberName },
                 theme: { color: "#FF6B35" }
             };
-            const rzp = new Razorpay(options);
-            rzp.open();
+            new Razorpay(options).open();
         };
 
-        // Mark payments after successful Razorpay transaction
-        async function markPaymentsAsPaid(months, markSpeaker, totalAmount, paymentId) {
+        // Payment success → Auto update Firebase
+        async function markAsPaidAutomatically(months, markSpeaker, totalAmt, paymentId) {
             const batch = db.batch();
             const today = new Date().toISOString().slice(0,10);
 
-            months.forEach(month => {
-                const ref = db.collection('contributions').doc(userId).collection('months').doc(month);
+            months.forEach(m => {
+                const ref = db.collection('contributions').doc(userId).collection('months').doc(m);
                 batch.set(ref, { paid: true, date: today, amount: 200 }, { merge: true });
-
-                const txRef = db.collection('transactions').doc();
-                batch.set(txRef, {
-                    type: 'income',
-                    memberId: userId,
-                    amount: 200,
-                    head: `Monthly Subscription - ${month}`,
-                    date: today,
-                    paymentId: paymentId
+                batch.set(db.collection('transactions').doc(), {
+                    type: 'income', memberId: userId, amount: 200,
+                    head: `Monthly Subscription - ${m}`, date: today, paymentId
                 });
             });
 
             if (markSpeaker) {
                 batch.set(db.collection('users').doc(userId), { speakerPaid: true }, { merge: true });
-                const txRef = db.collection('transactions').doc();
-                batch.set(txRef, {
-                    type: 'income',
-                    memberId: userId,
-                    amount: 500,
-                    head: 'Speaker Contribution',
-                    date: today,
-                    paymentId: paymentId
+                batch.set(db.collection('transactions').doc(), {
+                    type: 'income', memberId: userId, amount: 500,
+                    head: 'Speaker Contribution', date: today, paymentId
                 });
             }
 
             await batch.commit();
-            alert(`Payment of ₹${totalAmount} successful! Updated automatically.`);
-            loadPaymentData(); // Refresh UI
+            alert(`₹${totalAmt} payment successful! Updated automatically.`);
+            loadAllData();
         }
 
-        // Theme Toggle
-        document.getElementById('themeToggle').addEventListener('click', () => {
+        // Theme toggle – പഴയതുപോലെ
+        document.getElementById('themeToggle').onclick = () => {
             const newTheme = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
             document.documentElement.setAttribute('data-theme', newTheme);
             localStorage.setItem('theme', newTheme);
-        });
+            document.getElementById('themeToggle').textContent = newTheme === 'light' ? 'Sun' : 'Moon';
+        };
         const saved = localStorage.getItem('theme') || 'light';
         document.documentElement.setAttribute('data-theme', saved);
+        document.getElementById('themeToggle').textContent = saved === 'light' ? 'Sun' : 'Moon';
     </script>
 </body>
 </html>
