@@ -394,6 +394,10 @@
             color: #28a745;
         }
 
+        .payment-buttons {
+            display: none; /* Initially hidden */
+        }
+
         @media (max-width: 576px) {
             .header-image {
                 max-height: 120px;
@@ -455,7 +459,7 @@
                         <form id="paymentForm">
                             <div class="form-group">
                                 <label for="amount" class="form-label">Amount (₹)</label>
-                                <input type="number" class="form-control" id="amount" value="0" min="10" step="10">
+                                <input type="number" class="form-control" id="amount" value="0" min="10" step="10" readonly>
                                 <small class="form-text text-muted">You can edit the amount if needed</small>
                             </div>
                             
@@ -474,20 +478,26 @@
                                 <div id="speakerStatus" class="speaker-status pending">Speaker Contribution: Pending</div>
                             </div>
                             
-                            <button type="button" class="pay-btn gpay-btn" id="gpayButton">
-                                <span class="pay-text">Pay by</span> <span class="app-name">GPay</span>
-                            </button>
-                            
-                            <button type="button" class="pay-btn cred-btn" id="credButton">
-                                <span class="pay-text">Pay by</span> <span class="app-name">CRED</span>
-                            </button>
-                            
-                            <button type="button" class="pay-btn razorpay-btn" id="razorpayButton">
-                                <span class="app-name">Credit Cards, NetBanking, Wallet</span>
-                            </button>
-                            
-                            <div class="payment-note">
-                                Payment will be updated in the system within 4 hours of successful transaction
+                            <div class="payment-buttons" id="paymentButtons">
+                                <button type="button" class="pay-btn gpay-btn" id="gpayButton">
+                                    <span class="pay-text">Pay by</span> <span class="app-name">GPay</span>
+                                </button>
+                                
+                                <button type="button" class="pay-btn cred-btn" id="credButton">
+                                    <span class="pay-text">Pay by</span> <span class="app-name">CRED</span>
+                                </button>
+                                
+                                <button type="button" class="pay-btn razorpay-btn" id="razorpayButton">
+                                    <span class="app-name">Credit Cards, NetBanking, Wallet</span>
+                                </button>
+                                
+                                <div class="payment-note">
+                                    Payment will be updated in the system within 4 hours of successful transaction
+                                </div>
+                            </div>
+
+                            <div id="noPaymentMessage" class="alert alert-info text-center" style="display: none;">
+                                <i class="fas fa-info-circle"></i> No payment due. All subscriptions are up to date.
                             </div>
                         </form>
                     </div>
@@ -673,6 +683,9 @@
                 } else {
                     document.getElementById('pendingMonths').textContent = 'All months paid';
                 }
+
+                // Show/hide payment buttons based on amount
+                togglePaymentButtons();
             } catch (error) {
                 alert('Error loading subscriptions: ' + error.message);
                 console.error('Error:', error);
@@ -688,12 +701,30 @@
             }
             
             document.getElementById('amount').value = totalAmount;
+            
+            // Update button visibility when amount changes
+            togglePaymentButtons();
+        }
+
+        function togglePaymentButtons() {
+            const amount = parseFloat(document.getElementById('amount').value);
+            const paymentButtons = document.getElementById('paymentButtons');
+            const noPaymentMessage = document.getElementById('noPaymentMessage');
+            
+            if (amount > 0) {
+                paymentButtons.style.display = 'block';
+                noPaymentMessage.style.display = 'none';
+            } else {
+                paymentButtons.style.display = 'none';
+                noPaymentMessage.style.display = 'block';
+            }
         }
 
         document.getElementById('includeSpeaker').addEventListener('change', function() {
             updateAmountField();
         });
 
+        // GPay Button
         document.getElementById('gpayButton').addEventListener('click', function() {
             const amount = document.getElementById('amount').value;
             
@@ -717,6 +748,7 @@
             }, 1000);
         });
 
+        // CRED Button
         document.getElementById('credButton').addEventListener('click', function() {
             const amount = document.getElementById('amount').value;
             
@@ -737,7 +769,7 @@
             window.location.href = upiLink;
         });
 
-        // Razorpay Integration - Corrected
+        // Razorpay Button with openchrome integration
         document.getElementById('razorpayButton').addEventListener('click', function() {
             const amount = document.getElementById('amount').value;
             
@@ -753,29 +785,37 @@
 
             const includeSpeaker = document.getElementById('includeSpeaker').checked && !speakerPaid;
             
-            const options = {
-                key: "rzp_live_RgUX7aqPVgwhwH",
-                amount: amount * 100, // Convert to paise
-                currency: "INR",
-                name: "Shipyard Nagar",
-                description: `Member ${currentMemberNumber} - Monthly Subscription`,
-                image: "assets/head.png",
-                handler: function(response) {
-                    // Payment successful
-                    markAsPaidAutomatically(pendingMonths, includeSpeaker, parseFloat(amount), response.razorpay_payment_id);
-                },
-                prefill: {
-                    name: currentMemberName,
-                    contact: "",
-                    email: ""
-                },
-                theme: {
-                    color: "#FF6B35"
-                }
-            };
+            // Try to open in Chrome first
+            const razorpayUrl = `https://razorpay.me/@shipyardnagar`;
+            const openChromeUrl = `openchrome://razorpay.me/@shipyardnagar`;
+            
+            window.location.href = openChromeUrl;
+            
+            setTimeout(() => {
+                // Fallback to regular Razorpay
+                const options = {
+                    key: "rzp_live_RgUX7aqPVgwhwH",
+                    amount: amount * 100,
+                    currency: "INR",
+                    name: "Shipyard Nagar",
+                    description: `Member ${currentMemberNumber} - Monthly Subscription`,
+                    image: "assets/logo.jpg",
+                    handler: function(response) {
+                        markAsPaidAutomatically(pendingMonths, includeSpeaker, parseFloat(amount), response.razorpay_payment_id);
+                    },
+                    prefill: {
+                        name: currentMemberName,
+                        contact: "",
+                        email: ""
+                    },
+                    theme: {
+                        color: "#FF6B35"
+                    }
+                };
 
-            const rzp = new Razorpay(options);
-            rzp.open();
+                const rzp = new Razorpay(options);
+                rzp.open();
+            }, 1000);
         });
 
         async function markAsPaidAutomatically(months, markSpeaker, totalAmount, paymentId) {
