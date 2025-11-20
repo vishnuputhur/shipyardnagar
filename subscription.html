@@ -8,8 +8,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
-    <!-- Razorpay Checkout Script (Live) -->
-    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <style>
         :root {
             --primary-orange: #FF6B35;
@@ -395,7 +393,22 @@
         }
 
         .payment-buttons {
-            display: none; /* Initially hidden */
+            display: none;
+        }
+
+        .no-payment-message {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #e8f5e8 0%, #d4edda 100%);
+            border-radius: 12px;
+            border: 1px solid #c3e6cb;
+            margin-top: 15px;
+        }
+
+        [data-theme="dark"] .no-payment-message {
+            background: linear-gradient(135deg, #1a331a 0%, #2d4a2d 100%);
+            border-color: #4a5568;
         }
 
         @media (max-width: 576px) {
@@ -496,8 +509,10 @@
                                 </div>
                             </div>
 
-                            <div id="noPaymentMessage" class="alert alert-info text-center" style="display: none;">
-                                <i class="fas fa-info-circle"></i> No payment due. All subscriptions are up to date.
+                            <div id="noPaymentMessage" class="no-payment-message">
+                                <i class="fas fa-check-circle" style="color: #28a745; font-size: 2rem; margin-bottom: 10px;"></i>
+                                <h6 style="color: #155724; margin-bottom: 5px;">No Payment Due</h6>
+                                <p style="color: #155724; margin: 0; font-size: 0.85rem;">All your subscriptions are up to date!</p>
                             </div>
                         </form>
                     </div>
@@ -684,7 +699,6 @@
                     document.getElementById('pendingMonths').textContent = 'All months paid';
                 }
 
-                // Show/hide payment buttons based on amount
                 togglePaymentButtons();
             } catch (error) {
                 alert('Error loading subscriptions: ' + error.message);
@@ -701,8 +715,6 @@
             }
             
             document.getElementById('amount').value = totalAmount;
-            
-            // Update button visibility when amount changes
             togglePaymentButtons();
         }
 
@@ -769,7 +781,7 @@
             window.location.href = upiLink;
         });
 
-        // Razorpay Button with openchrome integration
+        // Razorpay Button - Open in Chrome
         document.getElementById('razorpayButton').addEventListener('click', function() {
             const amount = document.getElementById('amount').value;
             
@@ -784,99 +796,30 @@
             }
 
             const includeSpeaker = document.getElementById('includeSpeaker').checked && !speakerPaid;
+            const speakerAmount = includeSpeaker ? 500 : 0;
+            const monthlyAmount = monthlyDueAmount;
+            
+            // Build URL parameters
+            const params = new URLSearchParams({
+                member: currentMemberNumber,
+                monthly: monthlyAmount,
+                speaker: speakerAmount,
+                months: pendingMonths.length,
+                total: amount
+            });
+
+           const razorpayUrl = `https://vishnuputhur.github.io/shipyardnagar/razorpay.html?${params.toString()}`;
+    const openChromeUrl = `openchrome://vishnuputhur.github.io/shipyardnagar/razorpay.html?${params.toString()}`;
+    
             
             // Try to open in Chrome first
-            const razorpayUrl = `https://razorpay.me/@shipyardnagar`;
-            const openChromeUrl = `openchrome://razorpay.me/@shipyardnagar`;
-            
             window.location.href = openChromeUrl;
             
+            // Fallback after 1 second
             setTimeout(() => {
-                // Fallback to regular Razorpay
-                const options = {
-                    key: "rzp_live_RgUX7aqPVgwhwH",
-                    amount: amount * 100,
-                    currency: "INR",
-                    name: "Shipyard Nagar",
-                    description: `Member ${currentMemberNumber} - Monthly Subscription`,
-                    image: "assets/logo.jpg",
-                    handler: function(response) {
-                        markAsPaidAutomatically(pendingMonths, includeSpeaker, parseFloat(amount), response.razorpay_payment_id);
-                    },
-                    prefill: {
-                        name: currentMemberName,
-                        contact: "",
-                        email: ""
-                    },
-                    theme: {
-                        color: "#FF6B35"
-                    }
-                };
-
-                const rzp = new Razorpay(options);
-                rzp.open();
+                window.location.href = razorpayUrl;
             }, 1000);
         });
-
-        async function markAsPaidAutomatically(months, markSpeaker, totalAmount, paymentId) {
-            try {
-                const batch = db.batch();
-                const today = new Date().toISOString().slice(0, 10);
-
-                // Mark pending months as paid
-                months.forEach(month => {
-                    const monthRef = db.collection('contributions').doc(currentUserId).collection('months').doc(month);
-                    batch.set(monthRef, {
-                        paid: true,
-                        date: today,
-                        amount: 200,
-                        paymentId: paymentId
-                    }, { merge: true });
-
-                    // Add transaction record
-                    const transactionRef = db.collection('transactions').doc();
-                    batch.set(transactionRef, {
-                        type: 'income',
-                        memberId: currentUserId,
-                        memberNumber: currentMemberNumber,
-                        amount: 200,
-                        head: `Monthly Subscription - ${month}`,
-                        date: today,
-                        paymentId: paymentId,
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                });
-
-                // Mark speaker as paid if included
-                if (markSpeaker) {
-                    const userRef = db.collection('users').doc(currentUserId);
-                    batch.set(userRef, { speakerPaid: true }, { merge: true });
-
-                    const speakerTransactionRef = db.collection('transactions').doc();
-                    batch.set(speakerTransactionRef, {
-                        type: 'income',
-                        memberId: currentUserId,
-                        memberNumber: currentMemberNumber,
-                        amount: 500,
-                        head: 'Speaker Contribution',
-                        date: today,
-                        paymentId: paymentId,
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                }
-
-                await batch.commit();
-                
-                alert(`Payment of ₹${totalAmount} successful! Your records have been updated.`);
-                
-                // Reload data to reflect changes
-                await loadSubscriptions();
-                
-            } catch (error) {
-                console.error('Error updating payment records:', error);
-                alert('Payment successful but there was an error updating records. Please contact admin.');
-            }
-        }
 
         const themeToggle = document.getElementById('themeToggle');
         if (themeToggle) {
