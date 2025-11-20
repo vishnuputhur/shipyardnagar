@@ -577,6 +577,14 @@
         let monthlyDueAmount = 0;
         let pendingMonths = [];
 
+        // Check for payment success on page load
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('payment') === 'success') {
+            alert('✅ Payment successful! Your records are being updated.');
+            // Remove the success parameter from URL
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+
         auth.onAuthStateChanged(async (user) => {
             if (!user) {
                 window.location.href = 'login.html';
@@ -782,7 +790,7 @@
             window.location.href = upiLink;
         });
 
-        // Razorpay Button - Direct to vtsoft.netlify.app
+        // Razorpay Button - Direct to vtsoft.netlify.app (No Chrome redirect)
         document.getElementById('razorpayButton').addEventListener('click', function() {
             const amount = document.getElementById('amount').value;
             
@@ -810,9 +818,9 @@
             });
 
             // Direct to vtsoft.netlify.app without openchrome
-            const razorpayUrl = `https://vtsoft.netlify.app/rozorpay.html?${params.toString()}`;
+            const razorpayUrl = `https://vtsoft.netlify.app/razorpay.html?${params.toString()}`;
             
-            // Navigate directly within the app
+            // Navigate directly within the app (no popup)
             window.location.href = razorpayUrl;
         });
 
