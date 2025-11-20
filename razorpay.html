@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Processing Payment - Shipyard Nagar</title>
-    <!-- Razorpay Checkout Script (Live) -->
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <style>
         body {
@@ -46,26 +45,22 @@
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 
     <script>
-        // Firebase Configuration
+        // Firebase Configuration (No Auth - Direct Access)
         const firebaseConfig = {
             apiKey: "AIzaSyBWswawf9tpxNwVU0BaJ6FCwCvgcjUQXlA",
-            authDomain: "shipyard-nagar.firebaseapp.com",
             projectId: "shipyard-nagar",
             storageBucket: "shipyard-nagar.firebasestorage.app",
             messagingSenderId: "552855824221",
-            appId: "1:552855824221:web:f709da953077475be9eab4",
-            measurementId: "G-V8CQ4YCCQ5"
+            appId: "1:552855824221:web:f709da953077475be9eab4"
         };
 
         if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
         }
 
-        const auth = firebase.auth();
         const db = firebase.firestore();
 
         // Get URL parameters
@@ -104,7 +99,6 @@
                 },
                 modal: {
                     ondismiss: function() {
-                        // User closed the modal, go back
                         window.history.back();
                     }
                 }
@@ -114,108 +108,104 @@
             rzp.open();
         }
 
-        // Process payment success
+        // Process payment success - Update Firebase without authentication
         async function processPaymentSuccess(response) {
             try {
-                // Here you would typically verify the payment with your backend
-                // For now, we'll assume payment is successful
+                const paymentId = response.razorpay_payment_id;
+                const today = new Date().toISOString().slice(0, 10);
                 
-                // Update Firebase records
-                await updateFirebaseRecords(response.razorpay_payment_id);
+                // Create transaction record
+                await db.collection('transactions').add({
+                    type: 'income',
+                    memberNumber: memberNumber,
+                    amount: totalAmount,
+                    monthlyAmount: monthlyAmount,
+                    speakerAmount: speakerAmount,
+                    head: 'Monthly Subscription Payment',
+                    date: today,
+                    paymentId: paymentId,
+                    pendingMonths: pendingMonths,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                // Update user's payment status
+                await updateUserPaymentStatus(memberNumber, paymentId, today);
                 
-                alert('Payment successful! Your subscription has been updated.');
+                alert('Payment successful! Records updated automatically.');
                 
                 // Redirect back to main page
                 setTimeout(() => {
-                    window.location.href = 'https://vishnuputhur.github.io/shipyardnagar/index.html';
+                    window.location.href = 'https://vishnuputhur.github.io/shipyardnagar/index.html?payment=success&id=' + paymentId;
                 }, 2000);
                 
             } catch (error) {
                 console.error('Payment processing error:', error);
-                alert('Payment successful but there was an error updating records. Please contact admin.');
+                alert('Payment successful! Please note your Payment ID: ' + response.razorpay_payment_id + ' and contact admin for manual update.');
                 window.history.back();
             }
         }
 
-        // Update Firebase records
-        async function updateFirebaseRecords(paymentId) {
+        // Update user's payment status in Firestore
+        async function updateUserPaymentStatus(memberNumber, paymentId, date) {
             try {
-                const user = auth.currentUser;
-                if (!user) {
-                    console.error('User not authenticated');
-                    return;
+                // Find user by member number
+                const usersSnapshot = await db.collection('users')
+                    .where('memberNumber', '==', memberNumber)
+                    .get();
+
+                if (!usersSnapshot.empty) {
+                    const userDoc = usersSnapshot.docs[0];
+                    const userId = userDoc.id;
+                    
+                    // Update speaker payment if applicable
+                    if (speakerAmount > 0) {
+                        await db.collection('users').doc(userId).update({
+                            speakerPaid: true
+                        });
+                    }
+                    
+                    // Update monthly subscriptions
+                    await updateMonthlySubscriptions(userId, date, paymentId);
                 }
-
-                const batch = db.batch();
-                const today = new Date().toISOString().slice(0, 10);
-
-                // Get pending months from URL or calculate
-                const monthsCount = parseInt(pendingMonths) || 0;
-                
-                // Mark months as paid (you might need to adjust this logic based on your actual month tracking)
-                if (monthsCount > 0) {
-                    // Add your logic to mark specific months as paid
-                    console.log(`Marking ${monthsCount} months as paid`);
-                }
-
-                // Mark speaker as paid if speaker amount > 0
-                if (speakerAmount > 0) {
-                    const userRef = db.collection('users').doc(user.uid);
-                    batch.set(userRef, { speakerPaid: true }, { merge: true });
-
-                    const speakerTransactionRef = db.collection('transactions').doc();
-                    batch.set(speakerTransactionRef, {
-                        type: 'income',
-                        memberId: user.uid,
-                        memberNumber: memberNumber,
-                        amount: speakerAmount,
-                        head: 'Speaker Contribution',
-                        date: today,
-                        paymentId: paymentId,
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                }
-
-                // Add main transaction record
-                const transactionRef = db.collection('transactions').doc();
-                batch.set(transactionRef, {
-                    type: 'income',
-                    memberId: user.uid,
-                    memberNumber: memberNumber,
-                    amount: totalAmount,
-                    head: 'Monthly Subscription Payment',
-                    date: today,
-                    paymentId: paymentId,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                });
-
-                await batch.commit();
-                console.log('Firebase records updated successfully');
-                
             } catch (error) {
-                console.error('Error updating Firebase records:', error);
-                throw error;
+                console.error('Error updating user status:', error);
             }
         }
 
-        // Wait for Firebase auth to be ready, then start payment
-        auth.onAuthStateChanged((user) => {
-            if (user) {
-                // User is signed in, start payment
-                setTimeout(initiateRazorpayPayment, 1000);
-            } else {
-                // User not signed in, redirect to login
-                alert('Please login first');
-                window.location.href = 'https://vishnuputhur.github.io/shipyardnagar/login.html';
+        // Update monthly subscriptions
+        async function updateMonthlySubscriptions(userId, date, paymentId) {
+            try {
+                const monthsCount = parseInt(pendingMonths);
+                if (monthsCount > 0) {
+                    // Get current pending months and mark them as paid
+                    const contributionsRef = db.collection('contributions').doc(userId).collection('months');
+                    const pendingSnapshot = await contributionsRef.where('paid', '==', false).get();
+                    
+                    const batch = db.batch();
+                    let updatedCount = 0;
+                    
+                    pendingSnapshot.forEach(doc => {
+                        if (updatedCount < monthsCount) {
+                            batch.update(doc.ref, {
+                                paid: true,
+                                date: date,
+                                paymentId: paymentId
+                            });
+                            updatedCount++;
+                        }
+                    });
+                    
+                    await batch.commit();
+                }
+            } catch (error) {
+                console.error('Error updating subscriptions:', error);
             }
-        });
+        }
 
-        // If auth takes too long, start payment anyway (for guest users)
-        setTimeout(() => {
-            if (!auth.currentUser) {
-                initiateRazorpayPayment();
-            }
-        }, 3000);
+        // Start payment immediately
+        window.onload = function() {
+            setTimeout(initiateRazorpayPayment, 1000);
+        };
     </script>
 </body>
 </html>
