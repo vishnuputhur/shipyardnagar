@@ -790,7 +790,7 @@
             window.location.href = upiLink;
         });
 
-        // Razorpay Button - Direct to vtsoft.netlify.app (No Chrome redirect)
+        // Razorpay Button - Now opens the payment link in Chrome
         document.getElementById('razorpayButton').addEventListener('click', function() {
             const amount = document.getElementById('amount').value;
             
@@ -804,24 +804,15 @@
                 return;
             }
 
-            const includeSpeaker = document.getElementById('includeSpeaker').checked && !speakerPaid;
-            const speakerAmount = includeSpeaker ? 500 : 0;
-            const monthlyAmount = monthlyDueAmount;
+            // Direct to the payment link using openchrome
+            const paymentLink = 'https://rzp.io/rzp/3dH5fZk';
+            const openChromeUrl = `openchrome://${paymentLink}`;
             
-            // Build URL parameters
-            const params = new URLSearchParams({
-                member: currentMemberNumber,
-                monthly: monthlyAmount,
-                speaker: speakerAmount,
-                months: pendingMonths.length,
-                total: amount
-            });
-
-            // Direct to vtsoft.netlify.app without openchrome
-            const razorpayUrl = `https://vtsoft.netlify.app/razorpay.html?${params.toString()}`;
+            window.location.href = openChromeUrl;
             
-            // Navigate directly within the app (no popup)
-            window.location.href = razorpayUrl;
+            setTimeout(() => {
+                window.open(paymentLink, '_system');
+            }, 1000);
         });
 
         const themeToggle = document.getElementById('themeToggle');
