@@ -355,79 +355,80 @@
                 });
             });
 
-            // Add Member Form Submission - FIXED
+            // Add Member Form Submission - SIMPLE FIX
             addUserForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 
-                const memberData = {
-                    memberNumber: document.getElementById('memberNumber').value,
-                    memberName: document.getElementById('memberName').value,
-                    email: document.getElementById('email').value.toLowerCase(),
-                    primaryMobile: document.getElementById('primaryMobile').value,
-                    role: document.getElementById('isAdmin').checked ? 'admin' : 'member',
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    speakerPaid: false
-                };
-                
+                const memberNumber = document.getElementById('memberNumber').value;
+                const memberName = document.getElementById('memberName').value;
+                const email = document.getElementById('email').value.toLowerCase();
                 const password = document.getElementById('password').value;
+                const primaryMobile = document.getElementById('primaryMobile').value;
+                const isAdmin = document.getElementById('isAdmin').checked;
                 
                 loadingSpinner.style.display = 'block';
                 
                 try {
-                    // Step 1: Get current admin user (to use their auth token)
-                    const currentUser = auth.currentUser;
-                    if (!currentUser) {
-                        throw new Error('No user logged in');
-                    }
-
-                    // Step 2: Create a custom token using admin's credentials
-                    const idToken = await currentUser.getIdToken();
-                    
-                    // Step 3: Create user with Firebase REST API (since client SDK doesn't allow admin operations)
-                    const createUserResponse = await fetch(
-                        `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${firebaseConfig.apiKey}`,
-                        {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                                email: memberData.email,
-                                password: password,
-                                returnSecureToken: true
-                            })
-                        }
-                    );
-                    
-                    const createUserResult = await createUserResponse.json();
-                    
-                    if (!createUserResponse.ok) {
-                        throw new Error(createUserResult.error.message || 'Failed to create user');
+                    // Check if email already exists
+                    try {
+                        await auth.signInWithEmailAndPassword(email, "temporaryPassword");
+                        // If successful, email exists
+                        alert('❌ This email is already registered. Please use a different email.');
+                        loadingSpinner.style.display = 'none';
+                        return;
+                    } catch (authError) {
+                        // Email doesn't exist, continue
                     }
                     
-                    // Step 4: Store member data in Firestore
-                    await db.collection('users').doc(createUserResult.localId).set(memberData);
+                    // Create user with email and password
+                    const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                    const newUserId = userCredential.user.uid;
                     
-                    // Step 5: Create empty contributions document for the new user
-                    await db.collection('contributions').doc(createUserResult.localId).set({
-                        memberId: createUserResult.localId,
-                        memberNumber: memberData.memberNumber,
+                    // Create user data object
+                    const memberData = {
+                        memberNumber: memberNumber,
+                        memberName: memberName,
+                        email: email,
+                        primaryMobile: primaryMobile,
+                        role: isAdmin ? 'admin' : 'member',
+                        speakerPaid: false,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    };
+                    
+                    // Save to Firestore
+                    await db.collection('users').doc(newUserId).set(memberData);
+                    
+                    // Create contributions document
+                    await db.collection('contributions').doc(newUserId).set({
+                        memberId: newUserId,
+                        memberNumber: memberNumber,
+                        memberName: memberName,
                         createdAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
                     
-                    alert('✅ Member added successfully!');
+                    // Sign out the newly created user and sign back in as admin
+                    await auth.signOut();
+                    
+                    // Sign back in as admin (need to implement this based on your login system)
+                    // For now, redirect to login page
+                    alert('✅ Member added successfully! You will be redirected to login page.');
                     
                     // Reset form
                     addUserForm.reset();
                     
+                    // Redirect to login
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 2000);
+                    
                 } catch (error) {
                     console.error('Error adding member:', error);
                     
-                    if (error.message.includes('EMAIL_EXISTS')) {
+                    if (error.code === 'auth/email-already-in-use') {
                         alert('❌ This email is already registered. Please use a different email.');
-                    } else if (error.message.includes('WEAK_PASSWORD')) {
+                    } else if (error.code === 'auth/weak-password') {
                         alert('❌ Password is too weak. Please use a stronger password (minimum 6 characters).');
-                    } else if (error.message.includes('INVALID_EMAIL')) {
+                    } else if (error.code === 'auth/invalid-email') {
                         alert('❌ Invalid email address. Please enter a valid email.');
                     } else {
                         alert('❌ Error adding member: ' + error.message);
