@@ -146,6 +146,48 @@
             width: 14px;
         }
 
+        /* Due Status Style */
+        .due-status {
+            margin-top: 10px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .due-status.no-due {
+            background-color: #e6f7e6;
+            color: #28a745;
+            border: 1px solid #c3e6cb;
+        }
+
+        [data-theme="dark"] .due-status.no-due {
+            background-color: #1a331a;
+            color: #90ee90;
+            border-color: #4a5568;
+        }
+
+        .due-status.has-due {
+            background-color: #ffe6e6;
+            color: #dc3545;
+            border: 1px solid #f5c6cb;
+        }
+
+        [data-theme="dark"] .due-status.has-due {
+            background-color: #331a1a;
+            color: #ff6b6b;
+            border-color: #4a5568;
+        }
+
+        .due-status i {
+            font-size: 0.9rem;
+        }
+
         [data-theme="dark"] .member-card {
             background: var(--card-bg);
         }
@@ -250,6 +292,11 @@
             
             .member-card p strong {
                 min-width: 100px;
+            }
+            
+            .due-status {
+                font-size: 0.7rem;
+                padding: 6px 10px;
             }
             
             footer {
@@ -359,6 +406,54 @@
             themeToggle.textContent = savedTheme === 'light' ? '🌞' : '🌙';
         }
 
+        // Function to check due months for a member
+        const getDueMonths = async (userId) => {
+            try {
+                const contributionsSnap = await db.collection('contributions').doc(userId).collection('months').get();
+                
+                // Define all months from 2025-10 to current month
+                const currentDate = new Date();
+                const currentMonth = currentDate.toISOString().slice(0, 7);
+                const startMonth = '2025-10';
+                
+                const generateMonths = (start, end) => {
+                    const months = [];
+                    let current = new Date(start + '-01');
+                    const endDate = new Date(end + '-01');
+                    while (current <= endDate) {
+                        months.push(current.toISOString().slice(0, 7));
+                        current.setMonth(current.getMonth() + 1);
+                    }
+                    return months;
+                };
+
+                const allMonths = generateMonths(startMonth, currentMonth);
+                
+                // Check which months are unpaid
+                const paidData = {};
+                contributionsSnap.forEach(doc => {
+                    paidData[doc.id] = doc.data();
+                });
+
+                const pendingMonths = allMonths.filter(month => {
+                    const data = paidData[month];
+                    return !data || !data.paid;
+                });
+
+                return pendingMonths;
+            } catch (error) {
+                console.error('Error fetching due months:', error);
+                return [];
+            }
+        };
+
+        // Get month name for display
+        const getMonthName = (monthString) => {
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const monthIndex = parseInt(monthString.split('-')[1]) - 1;
+            return months[monthIndex] + ' ' + monthString.split('-')[0].slice(2);
+        };
+
         // Load Members
         const loadMembers = async () => {
             const membersList = document.getElementById('membersList');
@@ -377,17 +472,27 @@
             // Refresh from Firebase
             try {
                 const membersSnapshot = await db.collection('users').get();
-                let members = membersSnapshot.docs.map(doc => ({
-                    memberName: doc.data().memberName || 'Unknown',
-                    homeName: doc.data().homeName || 'N/A',
-                    primaryMobile: doc.data().primaryMobile || 'N/A',
-                    email: doc.data().email || 'N/A',
-                    secondaryMobile: doc.data().secondaryMobile || 'N/A',
-                    gasConnection: doc.data().gasConnection || 'N/A'
+                
+                // Create array of promises to get due months for each member
+                const membersData = await Promise.all(membersSnapshot.docs.map(async (doc) => {
+                    const userData = doc.data();
+                    const pendingMonths = await getDueMonths(doc.id);
+                    
+                    return {
+                        id: doc.id,
+                        memberName: userData.memberName || 'Unknown',
+                        homeName: userData.homeName || 'N/A',
+                        primaryMobile: userData.primaryMobile || 'N/A',
+                        email: userData.email || 'N/A',
+                        secondaryMobile: userData.secondaryMobile || 'N/A',
+                        gasConnection: userData.gasConnection || 'N/A',
+                        pendingMonths: pendingMonths,
+                        dueCount: pendingMonths.length
+                    };
                 }));
 
                 // ✅ Sort members alphabetically by name (A-Z)
-                members.sort((a, b) => {
+                membersData.sort((a, b) => {
                     const nameA = a.memberName.toUpperCase();
                     const nameB = b.memberName.toUpperCase();
                     if (nameA < nameB) return -1;
@@ -396,8 +501,8 @@
                 });
 
                 // Save sorted members to cache
-                localStorage.setItem('membersCache', JSON.stringify(members));
-                renderMembers(members);
+                localStorage.setItem('membersCache', JSON.stringify(membersData));
+                renderMembers(membersData);
             } catch (error) {
                 console.error('Error fetching members:', error);
                 if (cachedMembers.length === 0) {
@@ -418,6 +523,32 @@
             membersList.innerHTML = '';
             
             members.forEach(member => {
+                let dueStatusHTML = '';
+                
+                if (member.dueCount === 0) {
+                    dueStatusHTML = `
+                        <div class="due-status no-due">
+                            <i class="fas fa-check-circle"></i>
+                            <span>No Due</span>
+                        </div>
+                    `;
+                } else {
+                    // Show pending months (max 3 months for space)
+                    const displayMonths = member.pendingMonths
+                        .slice(0, 3)
+                        .map(month => getMonthName(month))
+                        .join(', ');
+                    
+                    const moreMonths = member.dueCount > 3 ? ` +${member.dueCount - 3} more` : '';
+                    
+                    dueStatusHTML = `
+                        <div class="due-status has-due">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <span>Due: ${displayMonths}${moreMonths}</span>
+                        </div>
+                    `;
+                }
+                
                 const card = document.createElement('div');
                 card.className = 'col-12 col-md-6 col-lg-4';
                 card.innerHTML = `
@@ -429,6 +560,7 @@
                             <p><i class="fas fa-mobile-alt"></i><strong>Secondary Phone:</strong> <span class="detail-value">${member.secondaryMobile}</span></p>
                             <p><i class="fas fa-envelope"></i><strong>Email:</strong> <span class="detail-value">${member.email}</span></p>
                             <p><i class="fas fa-fire"></i><strong>Gas Connection:</strong> <span class="detail-value">${member.gasConnection}</span></p>
+                            ${dueStatusHTML}
                         </div>
                     </div>
                 `;
@@ -438,9 +570,10 @@
 
         // Call loadMembers on page load
         document.addEventListener('DOMContentLoaded', () => {
-            // Auth Check
+            // Auth Check - ഇത് എല്ലാവർക്കും കാണാൻ പറ്റുന്നതാക്കുന്നു
             auth.onAuthStateChanged((user) => {
                 if (!user) {
+                    // Login page-ലേക്ക് redirect ചെയ്യുന്നു
                     window.location.href = 'login.html';
                 } else {
                     loadMembers();
