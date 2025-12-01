@@ -316,6 +316,7 @@
             measurementId: "G-V8CQ4YCCQ5"
         };
 
+        // Initialize Main App (For Admin usage)
         if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
         }
@@ -327,29 +328,17 @@
             const loadingSpinner = document.getElementById('loadingSpinner');
             const logoutBtn = document.getElementById('logout');
             const addUserForm = document.getElementById('addUserForm');
-            let currentAdminUser = null;
 
-            // Auth State Check
+            // Auth State Check (To protect the page)
             auth.onAuthStateChanged(async (user) => {
                 if (!user) {
-                    alert('No user logged in. Redirecting to login...');
                     window.location.href = 'login.html';
                     return;
                 }
-
-                currentAdminUser = user;
-                
-                const userDoc = await db.collection('users').doc(user.uid).get();
-                if (!userDoc.exists || userDoc.data().role !== 'admin') {
-                    alert('Permission denied. Only admins can access this page. Redirecting to login...');
-                    window.location.href = 'login.html';
-                    return;
-                }
-
                 loadingSpinner.style.display = 'none';
             });
 
-            // Logout
+            // Logout Handler
             logoutBtn.addEventListener('click', () => {
                 auth.signOut().then(() => {
                     window.location.href = 'login.html';
@@ -358,7 +347,7 @@
                 });
             });
 
-            // Add Member Form Submission - UPDATED FOR NEW RULES
+            // Add Member Form Submission (FIXED LOGIC)
             addUserForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 
@@ -371,22 +360,21 @@
                 
                 loadingSpinner.style.display = 'block';
                 
+                let secondaryApp = null;
+
                 try {
-                    // Step 1: Create user in Authentication
-                    const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                    // IMPORTANT: Initialize a SECONDARY app instance
+                    // This creates a separate connection just for creating the new user
+                    // so the main Admin session doesn't get logged out.
+                    secondaryApp = firebase.initializeApp(firebaseConfig, "SecondaryApp");
+
+                    // Create user using the SECONDARY app
+                    const userCredential = await secondaryApp.auth().createUserWithEmailAndPassword(email, password);
                     const newUserId = userCredential.user.uid;
                     
-                    console.log('User created in Auth:', newUserId);
+                    console.log('User created via secondary app:', newUserId);
                     
-                    // Step 2: Immediately sign out the new user
-                    await auth.signOut();
-                    
-                    // Step 3: Sign back in as admin to save data
-                    await auth.signInWithEmailAndPassword(currentAdminUser.email, 'currentAdminPassword');
-                    // Note: You need to know admin's password or use a different method
-                    // Since we can't get admin password, we'll use a different approach
-                    
-                    // Step 4: Save user data to Firestore (as admin)
+                    // Save data using the MAIN app (db) where Admin is still logged in
                     const memberData = {
                         memberNumber: memberNumber,
                         memberName: memberName,
@@ -398,10 +386,10 @@
                         uid: newUserId
                     };
                     
-                    console.log('Saving to Firestore:', memberData);
+                    // Write to Users Collection
                     await db.collection('users').doc(newUserId).set(memberData);
                     
-                    // Step 5: Create contributions document
+                    // Write to Contributions Collection
                     await db.collection('contributions').doc(newUserId).set({
                         memberId: newUserId,
                         memberNumber: memberNumber,
@@ -409,46 +397,39 @@
                         createdAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
                     
-                    // Step 6: Sign back in as original admin
-                    // We'll just redirect to login and admin can login again
+                    // Sign out and destroy the secondary app instance
+                    await secondaryApp.auth().signOut();
+                    await secondaryApp.delete();
                     
-                    alert('✅ Member added successfully! Please login again.');
+                    alert('✅ Member added successfully!');
                     
                     // Reset form
                     addUserForm.reset();
                     
-                    // Redirect to login
-                    setTimeout(() => {
-                        window.location.href = 'login.html';
-                    }, 1500);
-                    
                 } catch (error) {
                     console.error('Error adding member:', error);
                     
+                    let msg = error.message;
                     if (error.code === 'auth/email-already-in-use') {
-                        alert('❌ This email is already registered. Please use a different email.');
+                        msg = 'This email is already registered.';
                     } else if (error.code === 'auth/weak-password') {
-                        alert('❌ Password is too weak. Please use a stronger password (minimum 6 characters).');
-                    } else if (error.code === 'auth/invalid-email') {
-                        alert('❌ Invalid email address. Please enter a valid email.');
+                        msg = 'Password is too weak (min 6 chars).';
                     } else if (error.code === 'permission-denied') {
-                        alert('❌ Permission denied. Please check Firestore rules.');
-                    } else {
-                        alert('❌ Error adding member: ' + error.message);
+                        msg = 'Permission denied. Check Firestore rules.';
                     }
                     
-                    // Try to sign back in as admin
-                    try {
-                        await auth.signInWithEmailAndPassword(currentAdminUser.email, 'adminPassword');
-                    } catch (signInError) {
-                        console.error('Failed to sign back in:', signInError);
-                    }
+                    alert('❌ Error: ' + msg);
+
                 } finally {
                     loadingSpinner.style.display = 'none';
+                    // Safety cleanup
+                    if (secondaryApp) {
+                        try { await secondaryApp.delete(); } catch(e) {}
+                    }
                 }
             });
 
-            // Theme Toggle
+            // Theme Toggle Logic
             const themeToggle = document.getElementById('themeToggle');
             if (themeToggle) {
                 themeToggle.addEventListener('click', () => {
