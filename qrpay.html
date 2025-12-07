@@ -2,7 +2,7 @@
 <html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=0.95"> <!-- 5% ചെറുതാക്കി -->
+    <meta name="viewport" content="width=device-width, initial-scale=0.95">
     <title>UPI Payment - Shipyard Nagar</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -31,7 +31,7 @@
             overflow-x: hidden;
             margin: 0;
             padding: 0;
-            transform: scale(0.95); /* പേജ് 5% ചെറുതാക്കി */
+            transform: scale(0.95);
             transform-origin: top center;
         }
 
@@ -48,14 +48,14 @@
         }
 
         .header-image {
-            width: 90%; /* 10% വീതി കുറച്ചു */
+            width: 100%;
             height: auto;
-            max-height: 100px;
+            max-height: 80px; /* കുറച്ചു */
             object-fit: cover;
             display: block;
             position: fixed;
-            top: 5mm;
-            left: 5%;
+            top: 0;
+            left: 0;
             z-index: 999;
         }
 
@@ -63,20 +63,20 @@
             background: var(--card-bg);
             backdrop-filter: blur(20px);
             border-radius: 20px;
-            padding: 18px; /* കുറച്ചു */
+            padding: 18px;
             box-shadow: var(--shadow);
             border: 1px solid rgba(255, 255, 255, 0.2);
-            margin-bottom: 40px;
+            margin-bottom: 50px;
             position: relative;
-            margin-top: 110px;
-            max-width: 360px; /* 10% കുറച്ചു (400px -> 360px) */
-            width: 85%; /* 10% കുറച്ചു */
+            margin-top: 100px; /* header കഴിഞ്ഞു 15mm gap (approx 100px) */
+            max-width: 360px;
+            width: 85%;
             margin-left: auto;
             margin-right: auto;
         }
 
         .page-title {
-            font-size: 1.3rem; /* കുറച്ചു */
+            font-size: 1.3rem;
             font-weight: 700;
             color: #1e3a8a;
             margin-bottom: 12px;
@@ -88,7 +88,7 @@
         }
 
         .amount-display {
-            font-size: 1rem; /* കുറച്ചു */
+            font-size: 1rem;
             font-weight: 600;
             color: #059669;
             margin-bottom: 15px;
@@ -97,7 +97,7 @@
 
         .qr-container {
             background: white;
-            padding: 12px; /* കുറച്ചു */
+            padding: 12px;
             border-radius: 12px;
             margin: 12px 0;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
@@ -107,7 +107,7 @@
         }
 
         canvas {
-            width: 180px; /* കുറച്ചു */
+            width: 180px;
             height: 180px;
             border-radius: 8px;
         }
@@ -120,10 +120,10 @@
             background: var(--gradient);
             border: none;
             border-radius: 12px;
-            padding: 12px 20px; /* കുറച്ചു */
+            padding: 12px 20px;
             color: white;
             font-weight: 500;
-            font-size: 0.95rem; /* കുറച്ചു */
+            font-size: 0.95rem;
             box-shadow: var(--shadow);
             transition: all 0.3s ease;
             position: relative;
@@ -163,7 +163,7 @@
         }
 
         .instruction {
-            font-size: 0.75rem; /* കുറച്ചു */
+            font-size: 0.75rem;
             color: #666;
             text-align: center;
             margin-top: 10px;
@@ -176,11 +176,11 @@
 
         .upi-details {
             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            padding: 10px; /* കുറച്ചു */
+            padding: 10px;
             border-radius: 10px;
             margin: 12px 0;
             text-align: center;
-            font-size: 0.8rem; /* കുറച്ചു */
+            font-size: 0.8rem;
             border-left: 3px solid var(--primary-orange);
         }
 
@@ -192,7 +192,7 @@
         .upi-id {
             font-weight: 600;
             color: #1e40af;
-            font-size: 0.85rem; /* കുറച്ചു */
+            font-size: 0.85rem;
             margin-top: 5px;
             word-break: break-all;
         }
@@ -200,20 +200,18 @@
         footer {
             position: fixed;
             bottom: 0;
-            width: 90%; /* 10% വീതി കുറച്ചു */
-            left: 5%;
+            width: 100%;
             background: rgba(248, 248, 248, 0.9);
             backdrop-filter: blur(10px);
             color: #666;
-            font-size: 0.65rem; /* കുറച്ചു */
+            font-size: 0.65rem;
             z-index: 1000;
             border-top: 1px solid rgba(255, 107, 53, 0.2);
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 3px 12px;
-            height: 26px; /* കുറച്ചു */
-            border-radius: 15px 15px 0 0;
+            height: 26px;
         }
 
         [data-theme="dark"] footer {
@@ -232,7 +230,7 @@
             border-radius: 20px;
             padding: 3px 6px;
             color: #666;
-            font-size: 0.7rem; /* കുറച്ചു */
+            font-size: 0.7rem;
             transition: all 0.3s ease;
             cursor: pointer;
             height: 22px;
@@ -250,21 +248,22 @@
         }
 
         .back-btn {
-            position: absolute;
-            top: 18px; /* കുറച്ചു */
-            left: 18px;
+            position: fixed;
+            top: 85px; /* header കഴിഞ്ഞു തന്നെ */
+            left: 20px;
             background: rgba(255, 107, 53, 0.1);
             border: none;
             border-radius: 50%;
-            width: 36px; /* കുറച്ചു */
+            width: 36px;
             height: 36px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: var(--primary-orange);
-            font-size: 1.1rem; /* കുറച്ചു */
+            font-size: 1.1rem;
             cursor: pointer;
             transition: all 0.3s ease;
+            z-index: 1001;
         }
 
         .back-btn:hover {
@@ -274,18 +273,16 @@
 
         @media (max-width: 576px) {
             body {
-                transform: scale(1); /* മൊബൈലിൽ original size */
+                transform: scale(1);
             }
             
             .header-image {
-                width: 95%;
-                left: 2.5%;
-                max-height: 90px;
+                max-height: 70px;
             }
             
             .main-card {
                 padding: 15px;
-                margin: 90px auto 40px auto;
+                margin-top: 90px; /* മൊബൈലിൽ ചെറുത് */
                 width: 90%;
             }
             
@@ -295,16 +292,19 @@
             }
             
             footer {
-                width: 95%;
-                left: 2.5%;
                 padding: 3px 10px;
                 height: 24px;
+            }
+            
+            .back-btn {
+                top: 75px;
+                left: 15px;
             }
         }
 
         @media (max-width: 400px) {
             .header-image {
-                max-height: 80px;
+                max-height: 65px;
             }
             
             .main-card {
@@ -319,8 +319,8 @@
             }
             
             .back-btn {
-                top: 15px;
-                left: 15px;
+                top: 70px;
+                left: 12px;
                 width: 32px;
                 height: 32px;
                 font-size: 1rem;
@@ -381,13 +381,13 @@
         document.getElementById('amt').textContent = amount;
         document.getElementById('amt2').textContent = amount;
         
-        const upiId = 'vishnuputhur@sbi'; /* UPI ID മാറ്റി */
+        const upiId = 'vishnuputhur@sbi';
         const upiURI = `upi://pay?pa=${upiId}&pn=ShipyardNagar&am=${amount}&cu=INR`;
 
         const canvas = document.getElementById('qrCanvas');
         const openGpayBtn = document.getElementById('openGpayBtn');
 
-        // Generate QR Code with new UPI ID
+        // Generate QR Code
         QRCode.toCanvas(canvas, upiURI, { width: 180, margin: 1 }, function(err) {
             if (err) {
                 console.error('QR error:', err);
@@ -397,18 +397,41 @@
             openGpayBtn.innerHTML = '<i class="fab fa-google-pay"></i> Open GPay';
         });
 
-        // Open GPay
-        openGpayBtn.addEventListener('click', () => {
-            // Try to open GPay directly
-            const gpayUrl = `tez://upi/pay?pa=${upiId}&pn=ShipyardNagar&am=${amount}&cu=INR`;
-            
-            // Open GPay
-            window.location.href = gpayUrl;
-            
-            // Fallback after 2 seconds
-            setTimeout(() => {
-                window.location.href = upiURI;
-            }, 2000);
+        // Open GPay - ശരിയായ share script
+        openGpayBtn.addEventListener('click', async () => {
+            canvas.toBlob(async blob => {
+                const file = new File([blob], `payment_${amount}.png`, { type: 'image/png' });
+                
+                if (navigator.share && navigator.canShare({ files: [file] })) {
+                    try {
+                        await navigator.share({
+                            files: [file],
+                            title: "UPI Payment - Shipyard Nagar",
+                            text: `Pay ₹${amount} to vishnuputhur@sbi`
+                        });
+                        // Close page after successful share
+                        setTimeout(() => {
+                            if (window.history.length > 1) {
+                                window.history.back();
+                            } else {
+                                window.close();
+                            }
+                        }, 1000);
+                    } catch (error) {
+                        // If share cancelled, don't close
+                        console.log('Share cancelled:', error);
+                    }
+                } else {
+                    // Fallback for browsers that don't support sharing
+                    alert("Sharing not supported. Please save the QR code and share manually.");
+                    
+                    // Try to download the QR code
+                    const link = document.createElement('a');
+                    link.href = canvas.toDataURL();
+                    link.download = `payment_qr_${amount}.png`;
+                    link.click();
+                }
+            });
         });
 
         // Back button
