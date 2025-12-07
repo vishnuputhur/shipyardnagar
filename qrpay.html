@@ -6,274 +6,417 @@
     <title>UPI Payment - Shipyard Nagar</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- ശരിയായ QR Code library -->
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-
     <style>
         :root {
-            --primary: #FF6B35;
-            --gradient: linear-gradient(135deg, #FF6B35 0%, #FF8C42 100%);
-            --shadow: 0 8px 25px rgba(255,107,53,0.2);
-            --card-bg: rgba(255,255,255,0.97);
+            --primary-orange: #FF6B35;
+            --gradient: linear-gradient(135deg, #FF6B35 0%, #FF8C42 50%, #FFA726 100%);
+            --shadow: 0 8px 25px rgba(255, 107, 53, 0.15);
+            --card-bg: rgba(255, 255, 255, 0.97);
         }
 
         [data-theme="dark"] {
-            --card-bg: rgba(30,30,30,0.97);
+            --card-bg: rgba(45, 45, 45, 0.97);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
         body {
             font-family: 'Poppins', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 8px 8px 70px 8px;
-            color: #333;
+            padding: 8px;
+            position: relative;
+            overflow-x: hidden;
         }
 
+        /* Header Image */
         .header-image {
             width: 100%;
-            max-width: 380px;
             height: auto;
             max-height: 100px;
             object-fit: contain;
             display: block;
-            margin: 8px auto 10px auto;
-            border-radius: 12px;
+            margin: 0 auto;
+            padding: 0 15px;
+            margin-top: 8px;
         }
 
+        /* Main Card */
         .main-card {
             background: var(--card-bg);
             backdrop-filter: blur(20px);
-            border-radius: 20px;
-            padding: 22px 18px;
+            border-radius: 18px;
+            padding: 20px 18px;
             box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.3);
             max-width: 340px;
             width: 94%;
-            margin: 0 auto 30px auto;
-            border: 1px solid rgba(255,255,255,0.3);
+            margin: 15px auto 80px auto;
         }
 
         .page-title {
-            font-size: 1.4rem;
+            font-size: 1.35rem;
             font-weight: 600;
-            text-align: center;
             color: #1e3a8a;
+            margin-bottom: 18px;
+            text-align: center;
+        }
+
+        [data-theme="dark"] .page-title {
+            color: #60a5fa;
+        }
+
+        .amount-display {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #059669;
+            text-align: center;
             margin-bottom: 18px;
         }
 
-        [data-theme="dark"] .page-title { color: #60a5fa; }
-
-        .amount-display {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: #059669;
-            text-align: center;
-            margin-bottom: 16px;
-        }
-
-        .upi-details {
-            background: #f0f9ff;
-            padding: 14px;
-            border-radius: 12px;
-            text-align: center;
-            font-size: 0.9rem;
-            border-left: 5px solid var(--primary);
-            margin: 18px 0;
-        }
-
-        [data-theme="dark"] .upi-details {
-            background: #1e293b;
-            color: #e2e8f0;
-        }
-
-        .upi-id {
-            font-weight: 700;
-            color: #1e40af;
-            font-size: 1rem;
-            margin: 8px 0 4px;
-            word-break: break-all;
-        }
-
         .qr-container {
-            background: white !important;
-            padding: 20px;
-            border-radius: 18px;
-            margin: 20px 0;
-            text-align: center;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+            background: white;
+            padding: 12px;
+            border-radius: 12px;
+            margin: 15px 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 210px;
         }
 
         #qrCanvas {
-            border: 14px solid white !important;
-            border-radius: 14px;
-            box-shadow: 0 0 0 1px #ddd;
-            image-rendering: crisp-edges;
-            image-rendering: pixelated;
+            width: 190px;
+            height: 190px;
+            border-radius: 8px;
+        }
+
+        [data-theme="dark"] .qr-container {
+            background: #2d2d2d;
         }
 
         .btn-primary {
             background: var(--gradient);
             border: none;
-            border-radius: 14px;
-            padding: 16px;
+            border-radius: 12px;
+            padding: 14px;
             color: white;
-            font-size: 1.1rem;
-            font-weight: 600;
+            font-weight: 500;
+            font-size: 1rem;
+            box-shadow: var(--shadow);
             width: 100%;
-            margin-top: 10px;
+            margin-top: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 12px;
+            gap: 10px;
             cursor: pointer;
-            box-shadow: var(--shadow);
             transition: all 0.3s;
         }
 
-        .btn-primary:hover { transform: translateY(-3px); }
-        .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(255, 107, 53, 0.25);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
 
         .instruction {
-            text-align: center;
-            font-size: 0.88rem;
+            font-size: 0.82rem;
             color: #555;
-            margin-top: 16px;
+            text-align: center;
+            margin-top: 15px;
             line-height: 1.5;
         }
 
+        [data-theme="dark"] .instruction {
+            color: #bbb;
+        }
+
+        .upi-details {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 10px;
+            margin: 15px 0;
+            text-align: center;
+            font-size: 0.88rem;
+            border-left: 4px solid var(--primary-orange);
+        }
+
+        [data-theme="dark"] .upi-details {
+            background: #2d3748;
+            color: #ddd;
+        }
+
+        .upi-id {
+            font-weight: 600;
+            color: #1e40af;
+            font-size: 0.95rem;
+            margin-top: 6px;
+            word-break: break-all;
+        }
+
+        [data-theme="dark"] .upi-id {
+            color: #60a5fa;
+        }
+
+        /* Footer */
         footer {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            height: 46px;
-            background: rgba(255,255,255,0.95);
+            background: rgba(248,248,248,0.95);
             backdrop-filter: blur(10px);
+            color: #666;
+            font-size: 0.7rem;
+            z-index: 1000;
             border-top: 1px solid rgba(255,107,53,0.2);
             display: flex;
-            align-items: center;
             justify-content: center;
-            font-size: 0.8rem;
-            color: #555;
-            z-index: 1000;
+            align-items: center;
+            padding: 6px 0;
+            height: 36px;
         }
 
         [data-theme="dark"] footer {
-            background: rgba(20,20,20,0.95);
+            background: rgba(45,45,45,0.95);
             color: #ccc;
         }
 
-        .theme-toggle {
+        .theme-toggle-btn {
             position: absolute;
             right: 12px;
-            font-size: 1.3rem;
-            background: none;
-            border: none;
+            background: transparent;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            padding: 3px 8px;
+            font-size: 0.8rem;
             cursor: pointer;
+            transition: all 0.3s;
         }
 
+        [data-theme="dark"] .theme-toggle-btn {
+            border-color: #666;
+            color: #ccc;
+        }
+
+        .theme-toggle-btn:hover {
+            background: var(--gradient);
+            color: white;
+            border-color: var(--primary-orange);
+        }
+
+        /* Loading indicator */
+        .qr-loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .qr-loading i {
+            margin-right: 8px;
+        }
+
+        /* Error message */
+        .error-message {
+            display: none;
+            text-align: center;
+            color: #ef4444;
+            padding: 10px;
+            background: #fef2f2;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+
+        /* Extra small devices */
         @media (max-width: 360px) {
-            .main-card { width: 96%; padding: 18px 14px; }
-            #qrCanvas { border-width: 10px !important; }
+            .main-card {
+                width: 96%;
+                padding: 18px 14px;
+            }
+            #qrCanvas {
+                width: 170px;
+                height: 170px;
+            }
+            .header-image {
+                max-height: 85px;
+            }
         }
     </style>
 </head>
 <body>
 
+    <!-- Header Image -->
     <img src="assets/head.png" alt="Header" class="header-image">
 
     <div class="main-card">
-        <h1 class="page-title">UPI Payment</h1>
-
+        <h1 class="page-title">
+            <i class="fas fa-qrcode" style="margin-right: 8px;"></i>UPI Payment
+        </h1>
+        
         <div class="amount-display">
             Amount: ₹<span id="amt">0</span>
         </div>
-
+        
         <div class="upi-details">
-            <div>UPI ID</div>
-            <div class="upi-id">vishnuputhur@sbi</div>
-            <div style="margin-top:6px; font-size:0.8rem; color:#666;">
+            <div>UPI ID:</div>
+            <div class="upi-id" id="upiIdDisplay">vishnuputhur@sbi</div>
+            <div style="font-size: 0.78rem; margin-top: 6px; color: #666;">
                 Scan QR or tap below to pay
             </div>
         </div>
-
+        
+        <!-- Loading and Error states -->
+        <div class="qr-loading" id="qrLoading">
+            <i class="fas fa-spinner fa-spin"></i> Generating QR Code...
+        </div>
+        
+        <div class="error-message" id="qrError">
+            <i class="fas fa-exclamation-circle"></i> QR code generation failed. Please refresh.
+        </div>
+        
         <div class="qr-container">
             <canvas id="qrCanvas"></canvas>
         </div>
-
+        
         <button class="btn-primary" id="openGpayBtn" disabled>
-            Open GPay / PhonePe
+            <i class="fab fa-google-pay"></i> Open GPay
         </button>
-
+        
         <div class="instruction">
-            Scan the QR code or click the button above to pay ₹<span id="amt2">0</span>
+            Scan the QR code or click above to pay ₹<span id="amt2">0</span>
         </div>
     </div>
 
+    <!-- Footer -->
     <footer>
         <div>Powered by VTSoft 2025</div>
-        <button class="theme-toggle" id="themeToggle">Toggle</button>
+        <button id="themeToggle" class="theme-toggle-btn">🌞</button>
     </footer>
 
     <script>
-        // Get amount from URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const amount = urlParams.get('amount') || '200';
-        document.getElementById('amt').textContent = amount;
-        document.getElementById('amt2').textContent = amount;
-
-        const upiId = 'vishnuputhur@sbi';
-        const upiURI = `upi://pay?pa=\( {upiId}&pn=ShipyardNagar&am= \){amount}&cu=INR&tn=Payment`;
-
-        const canvas = document.getElementById('qrCanvas');
-        const btn = document.getElementById('openGpayBtn');
-
-        // 100% working QR Code – tested on 50+ phones
-        QRCode.toCanvas(canvas, upiURI, {
-            width: 256,
-            margin: 4,
-            color: {
-                dark: '#000000',
-                light: '#FFFFFF'
-            },
-            errorCorrectionLevel: 'H'  // maximum reliability
-        }, function (error) {
-            if (error) {
-                console.error(error);
-                alert("QR generation failed!");
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const amount = urlParams.get('amount') || '200';
+            document.getElementById('amt').textContent = amount;
+            document.getElementById('amt2').textContent = amount;
+            
+            const upiId = 'vishnuputhur@sbi';
+            const upiURI = `upi://pay?pa=${upiId}&pn=ShipyardNagar&am=${amount}&cu=INR&tn=Payment`;
+            
+            console.log('QR Data:', upiURI);
+            
+            const canvas = document.getElementById('qrCanvas');
+            const openGpayBtn = document.getElementById('openGpayBtn');
+            const qrLoading = document.getElementById('qrLoading');
+            const qrError = document.getElementById('qrError');
+            const qrContainer = document.querySelector('.qr-container');
+            
+            // Show loading
+            qrLoading.style.display = 'block';
+            qrContainer.style.display = 'none';
+            
+            // Simple QR Code generation function
+            function generateQRCode() {
+                try {
+                    // Clear canvas
+                    const ctx = canvas.getContext('2d');
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    // Create QR Code using the library
+                    QRCode.toCanvas(canvas, upiURI, {
+                        width: 190,
+                        margin: 1,
+                        colorDark: "#000000",
+                        colorLight: "#FFFFFF",
+                        correctLevel: QRCode.CorrectLevel.H
+                    }, function(error) {
+                        if (error) {
+                            console.error('QR Code Error:', error);
+                            throw error;
+                        }
+                        
+                        // Success
+                        qrLoading.style.display = 'none';
+                        qrError.style.display = 'none';
+                        qrContainer.style.display = 'flex';
+                        openGpayBtn.disabled = false;
+                        console.log('QR Code generated successfully');
+                    });
+                } catch (error) {
+                    console.error('QR Generation Error:', error);
+                    qrLoading.style.display = 'none';
+                    qrError.style.display = 'block';
+                    qrContainer.style.display = 'none';
+                }
+            }
+            
+            // Try to generate QR code
+            if (typeof QRCode !== 'undefined') {
+                // Library loaded, generate QR
+                generateQRCode();
             } else {
-                btn.disabled = false;
+                // Library not loaded, show error
+                console.error('QRCode library not loaded');
+                qrLoading.style.display = 'none';
+                qrError.style.display = 'block';
+                qrContainer.style.display = 'none';
+                qrError.innerHTML = '<i class="fas fa-exclamation-circle"></i> QR library failed to load. Refresh page.';
+            }
+            
+            // Open GPay button
+            openGpayBtn.addEventListener('click', function() {
+                // Create UPI link
+                const upiLink = `upi://pay?pa=${upiId}&pn=ShipyardNagar&am=${amount}&cu=INR&tn=Payment`;
+                
+                // Try to open UPI app
+                window.location.href = upiLink;
+                
+                // Fallback after 1 second
+                setTimeout(function() {
+                    // Create download link for QR
+                    const link = document.createElement('a');
+                    link.href = canvas.toDataURL('image/png');
+                    link.download = `Shipyard_Payment_${amount}.png`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    
+                    alert(`QR code saved. Amount: ₹${amount}\nUPI ID: ${upiId}`);
+                }, 1000);
+            });
+            
+            // Theme toggle
+            const themeToggle = document.getElementById('themeToggle');
+            if (themeToggle) {
+                themeToggle.addEventListener('click', function() {
+                    const html = document.documentElement;
+                    const currentTheme = html.getAttribute('data-theme');
+                    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+                    html.setAttribute('data-theme', newTheme);
+                    localStorage.setItem('theme', newTheme);
+                    themeToggle.textContent = newTheme === 'light' ? '🌞' : '🌙';
+                });
+                
+                // Load saved theme
+                const savedTheme = localStorage.getItem('theme') || 'light';
+                document.documentElement.setAttribute('data-theme', savedTheme);
+                themeToggle.textContent = savedTheme === 'light' ? '🌞' : '🌙';
             }
         });
-
-        // Open in GPay / PhonePe / Paytm
-        btn.addEventListener('click', () => {
-            const deepLink = `gpay://upi/pay?pa=\( {upiId}&am= \){amount}&pn=ShipyardNagar&cu=INR`;
-            const fallback = `upi://pay?pa=\( {upiId}&am= \){amount}&pn=ShipyardNagar&cu=INR`;
-
-            // Try GPay first
-            window.location = deepLink;
-
-            // Fallback after 1 second
-            setTimeout(() => {
-                if (document.hidden || !document.hasFocus()) return;
-                window.location = fallback;
-            }, 1000);
-        });
-
-        // Theme toggle
-        const toggle = document.getElementById('themeToggle');
-        toggle.addEventListener('click', () => {
-            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-            document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
-            localStorage.setItem('theme', isDark ? 'light' : 'dark');
-            toggle.textContent = isDark ? 'Toggle' : 'Toggle';
-        });
-
-        // Load saved theme
-        const saved = localStorage.getItem('theme');
-        if (saved) document.documentElement.setAttribute('data-theme', saved);
-        toggle.textContent = (saved === 'dark') ? 'Toggle' : 'Toggle';
     </script>
 </body>
 </html>
