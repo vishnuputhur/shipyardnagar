@@ -315,6 +315,7 @@
             border-radius: 12px;
             background: linear-gradient(135deg, #f0f8ff 0%, #e6f7ff 100%);
             border: 1px solid #b3d9ff;
+            display: none; /* ഈ വരി ചേർത്തിരിക്കുന്നു */
         }
         
         [data-theme="dark"] .speaker-contribution {
@@ -480,16 +481,16 @@
                             <div class="speaker-contribution" id="speakerSection">
                                 <div class="speaker-header">
                                     <i class="fas fa-volume-up"></i>
-                                    <span class="speaker-title">Speaker Contribution</span>
+                                    <span class="speaker-title">New Year Celebration 2025</span>
                                 </div>
                                 <div class="speaker-description">
-                                    We purchased a speaker for community events. Please contribute ₹500 for the same.
+                                    For the New Year celebrations on 31-12-2025, please contribute ₹500.
                                 </div>
                                 <div class="speaker-option">
                                     <input type="checkbox" id="includeSpeaker" name="includeSpeaker" value="500" checked>
-                                    <label for="includeSpeaker">Include speaker contribution of <span class="speaker-amount">₹500</span></label>
+                                    <label for="includeSpeaker">Include New Year celebration contribution of <span class="speaker-amount">₹500</span></label>
                                 </div>
-                                <div id="speakerStatus" class="speaker-status pending">Speaker Contribution: Pending</div>
+                                <div id="speakerStatus" class="speaker-status pending">New Year Contribution: Pending</div>
                             </div>
                             
                             <div class="payment-buttons" id="paymentButtons">
@@ -640,13 +641,18 @@
                 const speakerSection = document.getElementById('speakerSection');
                 
                 if (speakerPaid) {
-                    speakerStatus.textContent = 'Speaker Contribution: Paid';
+                    speakerStatus.textContent = 'New Year Contribution: Paid';
                     speakerStatus.className = 'speaker-status paid';
                     speakerSection.style.display = 'none';
                 } else {
-                    speakerStatus.textContent = 'Speaker Contribution: Pending';
+                    speakerStatus.textContent = 'New Year Contribution: Pending';
                     speakerStatus.className = 'speaker-status pending';
+                    
+                    // പെൻഡിംഗ് ആണെങ്കിൽ മാത്രം കാണിക്കുക
                     speakerSection.style.display = 'block';
+                    
+                    // അമൗണ്ട് ഫീൽഡ് അപ്ഡേറ്റ് ചെയ്യുക
+                    updateAmountField();
                 }
                 
                 const paidData = {};
@@ -719,6 +725,7 @@
             const includeSpeaker = document.getElementById('includeSpeaker').checked;
             let totalAmount = monthlyDueAmount;
             
+            // Speaker paid ഇല്ലാത്തപ്പോൾ മാത്രം ചേർക്കുക
             if (includeSpeaker && !speakerPaid) {
                 totalAmount += 500;
             }
@@ -731,6 +738,14 @@
             const amount = parseFloat(document.getElementById('amount').value);
             const paymentButtons = document.getElementById('paymentButtons');
             const noPaymentMessage = document.getElementById('noPaymentMessage');
+            const speakerSection = document.getElementById('speakerSection');
+            
+            // Speaker section visibility
+            if (speakerPaid) {
+                speakerSection.style.display = 'none';
+            } else if (amount > 0) {
+                speakerSection.style.display = 'block';
+            }
             
             if (amount > 0) {
                 paymentButtons.style.display = 'block';
@@ -743,6 +758,10 @@
 
         document.getElementById('includeSpeaker').addEventListener('change', function() {
             updateAmountField();
+        });
+
+        document.getElementById('amount').addEventListener('input', function() {
+            togglePaymentButtons();
         });
 
         // GPay Button
@@ -805,8 +824,8 @@
             }
 
             // Direct to the payment link using openchrome
-             const paymentLink = 'https://rzp.io/rzp/3dH5fZk';
-    const openChromeUrl = `openchrome://rzp.io/rzp/3dH5fZk`;
+            const paymentLink = 'https://rzp.io/rzp/3dH5fZk';
+            const openChromeUrl = `openchrome://rzp.io/rzp/3dH5fZk`;
             window.location.href = openChromeUrl;
             
             setTimeout(() => {
