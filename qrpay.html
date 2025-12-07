@@ -2,7 +2,7 @@
 <html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>UPI Payment - Shipyard Nagar</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -10,133 +10,108 @@
     <style>
         :root {
             --primary-orange: #FF6B35;
-            --orange-light: #FF8C42;
-            --orange-dark: #E55A2B;
             --gradient: linear-gradient(135deg, #FF6B35 0%, #FF8C42 50%, #FFA726 100%);
             --shadow: 0 8px 25px rgba(255, 107, 53, 0.15);
-            --shadow-hover: 0 12px 35px rgba(255, 107, 53, 0.25);
-            --card-bg: rgba(255, 255, 255, 0.95);
+            --card-bg: rgba(255, 255, 255, 0.97);
         }
 
         [data-theme="dark"] {
-            --card-bg: rgba(45, 45, 45, 0.95);
+            --card-bg: rgba(45, 45, 45, 0.97);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
         body {
             font-family: 'Poppins', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 0;
+            padding: 8px; /* ചുറ്റും safe space */
             position: relative;
             overflow-x: hidden;
-            margin: 0;
         }
 
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><polygon fill="%23ffffff10" points="0,1000 1000,0 1000,1000"/></svg>');
-            pointer-events: none;
-            z-index: -1;
-        }
-
-        /* Header Image - Fixed at top with 3mm gap - SAME AS PASSWORD PAGE */
+        /* Header Image - ചെറുതാക്കി mobile-ഫ്രണ്ടിലി ആക്കി */
         .header-image {
             width: 100%;
             height: auto;
-            max-height: 150px;
-            object-fit: cover;
+            max-height: 100px;
+            object-fit: contain;
             display: block;
-            position: fixed;
-            top: 3mm; /* 3mm gap from top - FIXED POSITION */
-            left: 0;
-            z-index: 999;
+            margin: 0 auto;
+            padding: 0 15px;
+            margin-top: 8px; /* 3mm ≈ 11px, പക്ഷേ safe ആയി 8px */
         }
 
-        /* Main Card - 8% width കുറച്ചു */
+        /* Main Card - 10% ചെറുതാക്കി, mobile-ൽ max 340px */
         .main-card {
             background: var(--card-bg);
             backdrop-filter: blur(20px);
-            border-radius: 20px;
-            padding: 25px;
+            border-radius: 18px;
+            padding: 20px 18px;
             box-shadow: var(--shadow);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            margin-bottom: 80px; /* Extra margin for footer */
-            max-width: 368px; /* 400px-ൽ നിന്ന് 8% കുറച്ചു: 400 - (400*0.08) = 368px */
-            width: 85%;
-            margin-left: auto;
-            margin-right: auto;
-            margin-top: 140px; /* Header കഴിഞ്ഞു space */
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            max-width: 340px; /* മുൻപ് 368px → ഇപ്പോ 340px (≈10% കുറവ്) */
+            width: 94%;
+            margin: 15px auto 80px auto; /* header കഴിഞ്ഞ് space */
         }
 
         .page-title {
-            font-size: 1.5rem;
+            font-size: 1.35rem;
             font-weight: 600;
             color: #1e3a8a;
-            margin-bottom: 25px;
+            margin-bottom: 18px;
             text-align: center;
-        }
-
-        [data-theme="dark"] .page-title {
-            color: #60a5fa;
         }
 
         .amount-display {
-            font-size: 1.2rem;
+            font-size: 1.25rem;
             font-weight: 600;
             color: #059669;
-            margin-bottom: 20px;
             text-align: center;
+            margin-bottom: 18px;
         }
 
         .qr-container {
             background: white;
-            padding: 15px;
+            padding: 12px;
             border-radius: 12px;
             margin: 15px 0;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             display: flex;
             justify-content: center;
-            align-items: center;
         }
 
         canvas {
-            width: 200px;
-            height: 200px;
+            width: 190px !important;
+            height: 190px !important;
             border-radius: 8px;
         }
 
-        [data-theme="dark"] .qr-container {
-            background: #333;
-        }
-
-        /* Button Styles - SAME AS PASSWORD PAGE */
         .btn-primary {
             background: var(--gradient);
             border: none;
             border-radius: 12px;
-            padding: 12px 20px;
+            padding: 14px;
             color: white;
             font-weight: 500;
             font-size: 1rem;
             box-shadow: var(--shadow);
-            transition: all 0.3s ease;
             width: 100%;
-            margin-top: 10px;
+            margin-top: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 10px;
             cursor: pointer;
+            transition: all 0.3s;
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: var(--shadow-hover);
         }
 
         .btn-primary:disabled {
@@ -145,188 +120,126 @@
         }
 
         .instruction {
-            font-size: 0.8rem;
-            color: #666;
+            font-size: 0.82rem;
+            color: #555;
             text-align: center;
             margin-top: 15px;
-            line-height: 1.4;
-        }
-
-        [data-theme="dark"] .instruction {
-            color: #ccc;
+            line-height: 1.5;
         }
 
         .upi-details {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            background: #f8f9fa;
             padding: 12px;
             border-radius: 10px;
             margin: 15px 0;
             text-align: center;
-            font-size: 0.85rem;
-            border-left: 3px solid var(--primary-orange);
+            font-size: 0.88rem;
+            border-left: 4px solid var(--primary-orange);
         }
 
         [data-theme="dark"] .upi-details {
-            background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
-            color: #fff;
+            background: #2d3748;
+            color: #ddd;
         }
 
         .upi-id {
             font-weight: 600;
             color: #1e40af;
-            font-size: 0.9rem;
-            margin-top: 5px;
+            font-size: 0.95rem;
+            margin-top: 6px;
             word-break: break-all;
         }
 
-        /* Footer - Fixed at bottom - SAME AS PASSWORD PAGE */
+        /* Footer */
         footer {
             position: fixed;
             bottom: 0;
-            width: 100%;
-            background: rgba(248, 248, 248, 0.9);
+            left: 0;
+            right: 0;
+            background: rgba(248,248,248,0.95);
             backdrop-filter: blur(10px);
             color: #666;
             font-size: 0.7rem;
             z-index: 1000;
-            border-top: 1px solid rgba(255, 107, 53, 0.2);
+            border-top: 1px solid rgba(255,107,53,0.2);
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
-            padding: 3px 15px;
-            height: 30px;
+            padding: 6px 0;
+            height: 36px;
         }
 
         [data-theme="dark"] footer {
-            background: rgba(45, 45, 45, 0.9);
+            background: rgba(45,45,45,0.95);
             color: #ccc;
-        }
-
-        .footer-text {
-            flex: 1;
-            text-align: center;
         }
 
         .theme-toggle-btn {
+            position: absolute;
+            right: 12px;
             background: transparent;
             border: 1px solid #ccc;
             border-radius: 20px;
-            padding: 4px 8px;
-            color: #666;
-            font-size: 0.75rem;
-            transition: all 0.3s ease;
+            padding: 3px 8px;
+            font-size: 0.8rem;
             cursor: pointer;
-            height: 24px;
         }
 
-        [data-theme="dark"] .theme-toggle-btn {
-            border-color: #666;
-            color: #ccc;
-        }
-
-        .theme-toggle-btn:hover {
-            background: var(--gradient);
-            color: white;
-            border-color: var(--primary-orange);
-        }
-
-        /* Responsive */
-        @media (max-width: 576px) {
-            .header-image {
-                max-height: 120px;
-            }
-            
+        /* Extra small devices */
+        @media (max-width: 360px) {
             .main-card {
-                padding: 20px;
-                margin: 110px 10px 70px 10px; /* Adjusted for mobile */
-                max-width: 92%;
-                width: 92%;
+                width: 96%;
+                padding: 18px 14px;
             }
-            
-            .page-title {
-                font-size: 1.3rem;
-            }
-            
             canvas {
-                width: 180px;
-                height: 180px;
+                width: 170px !important;
+                height: 170px !important;
             }
-            
-            footer {
-                padding: 3px 10px;
-                height: 28px;
-            }
-        }
-
-        @media (max-width: 400px) {
             .header-image {
-                max-height: 100px;
-            }
-            
-            .main-card {
-                margin-top: 90px;
-                max-width: 95%;
-                width: 95%;
-            }
-            
-            canvas {
-                width: 160px;
-                height: 160px;
+                max-height: 85px;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Header Image - Fixed at top with 3mm gap - SAME AS PASSWORD PAGE -->
+
+    <!-- Header Image (mobile optimized) -->
     <img src="assets/head.png" alt="Header" class="header-image">
-    
-    <main class="container">
-        <!-- Logo removed as requested -->
+
+    <div class="main-card">
+        <h1 class="page-title">
+            UPI Payment
+        </h1>
         
-        <div class="row justify-content-center">
-            <div class="col-12 col-md-6 col-lg-5">
-                <div class="main-card">
-                    <h1 class="page-title">
-                        <i class="fas fa-qrcode me-2"></i>UPI Payment
-                    </h1>
-                    
-                    <div class="amount-display">
-                        Amount: ₹<span id="amt">0</span>
-                    </div>
-                    
-                    <div class="upi-details">
-                        <div>UPI ID:</div>
-                        <div class="upi-id" id="upiIdDisplay">vishnuputhur@sbi</div>
-                        <div style="font-size: 0.75rem; margin-top: 5px; color: #666;">
-                            Scan QR code or click below to pay
-                        </div>
-                    </div>
-                    
-                    <div class="qr-container">
-                        <canvas id="qrCanvas"></canvas>
-                    </div>
-                    
-                    <button class="btn-primary" id="openGpayBtn" disabled>
-                        <i class="fab fa-google-pay"></i>
-                        Open GPay
-                    </button>
-                    
-                    <div class="instruction">
-                        Scan the QR code or click above to pay ₹<span id="amt2">0</span>
-                    </div>
-                    
-                    <!-- Back Button removed as requested -->
-                </div>
+        <div class="amount-display">
+            Amount: ₹<span id="amt">0</span>
+        </div>
+        
+        <div class="upi-details">
+            <div>UPI ID:</div>
+            <div class="upi-id" id="upiIdDisplay">vishnuputhur@sbi</div>
+            <div style="font-size: 0.78rem; margin-top: 6px; color: #666;">
+                Scan QR or tap below to pay
             </div>
         </div>
-    </main>
-    
-    <!-- Footer - Fixed at bottom - SAME AS PASSWORD PAGE -->
-    <footer>
-        <div class="footer-text">
-            <p>Powered by VTSoft 2025</p>
+        
+        <div class="qr-container">
+            <canvas id="qrCanvas"></canvas>
         </div>
-        <button id="themeToggle" class="theme-toggle-btn">🌞</button>
+        
+        <button class="btn-primary" id="openGpayBtn" disabled>
+            Open GPay
+        </button>
+        
+        <div class="instruction">
+            Scan the QR code or click above to pay ₹<span id="amt2">0</span>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div>Powered by VTSoft 2025</div>
+        <button id="themeToggle" class="theme-toggle-btn">Light/Dark</button>
     </footer>
 
     <script>
@@ -336,77 +249,47 @@
         document.getElementById('amt2').textContent = amount;
         
         const upiId = 'vishnuputhur@sbi';
-        const upiURI = `upi://pay?pa=${upiId}&pn=ShipyardNagar&am=${amount}&cu=INR`;
+        const upiURI = `upi://pay?pa=\( {upiId}&pn=ShipyardNagar&am= \){amount}&cu=INR`;
 
         const canvas = document.getElementById('qrCanvas');
         const openGpayBtn = document.getElementById('openGpayBtn');
 
-        // Generate QR Code
-        QRCode.toCanvas(canvas, upiURI, { width: 200, margin: 1 }, function(err) {
-            if (err) {
-                console.error('QR error:', err);
-                return;
-            }
+        QRCode.toCanvas(canvas, upiURI, { width: 190, margin: 2 }, function(err) {
+            if (err) console.error(err);
             openGpayBtn.disabled = false;
-            openGpayBtn.innerHTML = '<i class="fab fa-google-pay"></i> Open GPay';
         });
 
-        // Open GPay
-        openGpayBtn.addEventListener('click', async () => {
-            canvas.toBlob(async blob => {
+        openGpayBtn.addEventListener('click', () => {
+            canvas.toBlob(blob => {
                 const file = new File([blob], `payment_${amount}.png`, { type: 'image/png' });
-                
                 if (navigator.share && navigator.canShare({ files: [file] })) {
-                    try {
-                        await navigator.share({
-                            files: [file],
-                            title: "UPI Payment - Shipyard Nagar",
-                            text: `Pay ₹${amount} to vishnuputhur@sbi`
-                        });
-                        // Close page after successful share
-                        setTimeout(() => {
-                            if (window.history.length > 1) {
-                                window.history.back();
-                            } else {
-                                window.close();
-                            }
-                        }, 1000);
-                    } catch (error) {
-                        // If share cancelled, don't close
-                        console.log('Share cancelled:', error);
-                    }
+                    navigator.share({
+                        files: [file],
+                        title: "UPI Payment",
+                        text: `Pay ₹${amount} to vishnuputhur@sbi`
+                    }).catch(() => {});
                 } else {
-                    // Fallback for browsers that don't support sharing
-                    alert("Sharing not supported. Please save the QR code and share manually.");
-                    
-                    // Try to download the QR code
                     const link = document.createElement('a');
                     link.href = canvas.toDataURL();
-                    link.download = `payment_qr_${amount}.png`;
+                    link.download = `QR_${amount}.png`;
                     link.click();
                 }
             });
         });
 
-        // Theme Toggle - SAME AS PASSWORD PAGE
+        // Theme toggle
         const themeToggle = document.getElementById('themeToggle');
-        if (themeToggle) {
-            themeToggle.addEventListener('click', () => {
-                const html = document.documentElement;
-                const currentTheme = html.getAttribute('data-theme');
-                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-                html.setAttribute('data-theme', newTheme);
-                localStorage.setItem('theme', newTheme);
-                
-                // Update button emoji
-                themeToggle.textContent = newTheme === 'light' ? '🌞' : '🌙';
-            });
+        themeToggle.addEventListener('click', () => {
+            const newTheme = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            themeToggle.textContent = newTheme === 'light' ? 'Dark Mode' : 'Light Mode';
+        });
 
-            // Set initial theme and button
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            document.documentElement.setAttribute('data-theme', savedTheme);
-            themeToggle.textContent = savedTheme === 'light' ? '🌞' : '🌙';
-        }
+        // Load saved theme
+        const saved = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', saved);
+        themeToggle.textContent = saved === 'light' ? 'Dark Mode' : 'Light Mode';
     </script>
 </body>
 </html>
