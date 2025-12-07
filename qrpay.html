@@ -29,12 +29,12 @@
             font-family: 'Poppins', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 8px; /* ചുറ്റും safe space */
+            padding: 8px;
             position: relative;
             overflow-x: hidden;
         }
 
-        /* Header Image - ചെറുതാക്കി mobile-ഫ്രണ്ടിലി ആക്കി */
+        /* Header Image */
         .header-image {
             width: 100%;
             height: auto;
@@ -43,10 +43,10 @@
             display: block;
             margin: 0 auto;
             padding: 0 15px;
-            margin-top: 8px; /* 3mm ≈ 11px, പക്ഷേ safe ആയി 8px */
+            margin-top: 8px;
         }
 
-        /* Main Card - 10% ചെറുതാക്കി, mobile-ൽ max 340px */
+        /* Main Card */
         .main-card {
             background: var(--card-bg);
             backdrop-filter: blur(20px);
@@ -54,9 +54,9 @@
             padding: 20px 18px;
             box-shadow: var(--shadow);
             border: 1px solid rgba(255, 255, 255, 0.3);
-            max-width: 340px; /* മുൻപ് 368px → ഇപ്പോ 340px (≈10% കുറവ്) */
+            max-width: 340px;
             width: 94%;
-            margin: 15px auto 80px auto; /* header കഴിഞ്ഞ് space */
+            margin: 15px auto 80px auto;
         }
 
         .page-title {
@@ -65,6 +65,10 @@
             color: #1e3a8a;
             margin-bottom: 18px;
             text-align: center;
+        }
+
+        [data-theme="dark"] .page-title {
+            color: #60a5fa;
         }
 
         .amount-display {
@@ -83,12 +87,18 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             display: flex;
             justify-content: center;
+            align-items: center;
+            min-height: 210px;
         }
 
-        canvas {
+        #qrCanvas {
             width: 190px !important;
             height: 190px !important;
             border-radius: 8px;
+        }
+
+        [data-theme="dark"] .qr-container {
+            background: #2d2d2d;
         }
 
         .btn-primary {
@@ -112,11 +122,13 @@
 
         .btn-primary:hover {
             transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(255, 107, 53, 0.25);
         }
 
         .btn-primary:disabled {
             opacity: 0.6;
             cursor: not-allowed;
+            transform: none !important;
         }
 
         .instruction {
@@ -125,6 +137,10 @@
             text-align: center;
             margin-top: 15px;
             line-height: 1.5;
+        }
+
+        [data-theme="dark"] .instruction {
+            color: #bbb;
         }
 
         .upi-details {
@@ -148,6 +164,10 @@
             font-size: 0.95rem;
             margin-top: 6px;
             word-break: break-all;
+        }
+
+        [data-theme="dark"] .upi-id {
+            color: #60a5fa;
         }
 
         /* Footer */
@@ -183,6 +203,18 @@
             padding: 3px 8px;
             font-size: 0.8rem;
             cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        [data-theme="dark"] .theme-toggle-btn {
+            border-color: #666;
+            color: #ccc;
+        }
+
+        .theme-toggle-btn:hover {
+            background: var(--gradient);
+            color: white;
+            border-color: var(--primary-orange);
         }
 
         /* Extra small devices */
@@ -191,7 +223,7 @@
                 width: 96%;
                 padding: 18px 14px;
             }
-            canvas {
+            #qrCanvas {
                 width: 170px !important;
                 height: 170px !important;
             }
@@ -203,12 +235,12 @@
 </head>
 <body>
 
-    <!-- Header Image (mobile optimized) -->
+    <!-- Header Image -->
     <img src="assets/head.png" alt="Header" class="header-image">
 
     <div class="main-card">
         <h1 class="page-title">
-            UPI Payment
+            <i class="fas fa-qrcode" style="margin-right: 8px;"></i>UPI Payment
         </h1>
         
         <div class="amount-display">
@@ -228,7 +260,7 @@
         </div>
         
         <button class="btn-primary" id="openGpayBtn" disabled>
-            Open GPay
+            <i class="fab fa-google-pay"></i> Open GPay
         </button>
         
         <div class="instruction">
@@ -239,7 +271,7 @@
     <!-- Footer -->
     <footer>
         <div>Powered by VTSoft 2025</div>
-        <button id="themeToggle" class="theme-toggle-btn">Light/Dark</button>
+        <button id="themeToggle" class="theme-toggle-btn">🌞</button>
     </footer>
 
     <script>
@@ -249,47 +281,90 @@
         document.getElementById('amt2').textContent = amount;
         
         const upiId = 'vishnuputhur@sbi';
-        const upiURI = `upi://pay?pa=\( {upiId}&pn=ShipyardNagar&am= \){amount}&cu=INR`;
+        // FIXED: Proper UPI URI format - template literal ശരിയായി ഉപയോഗിക്കുന്നു
+        const upiURI = `upi://pay?pa=${upiId}&pn=ShipyardNagar&am=${amount}&cu=INR`;
+        
+        console.log('Generating QR for:', upiURI); // Debugging
 
         const canvas = document.getElementById('qrCanvas');
         const openGpayBtn = document.getElementById('openGpayBtn');
 
-        QRCode.toCanvas(canvas, upiURI, { width: 190, margin: 2 }, function(err) {
-            if (err) console.error(err);
+        // Generate QR Code with error handling
+        QRCode.toCanvas(canvas, upiURI, { 
+            width: 190, 
+            height: 190,
+            margin: 2,
+            colorDark: "#000000",
+            colorLight: "#FFFFFF",
+            correctLevel: QRCode.CorrectLevel.H
+        }, function(err) {
+            if (err) {
+                console.error('QR Generation Error:', err);
+                openGpayBtn.innerHTML = '<i class="fas fa-exclamation-circle"></i> QR Error';
+                return;
+            }
             openGpayBtn.disabled = false;
+            openGpayBtn.innerHTML = '<i class="fab fa-google-pay"></i> Open GPay';
         });
 
-        openGpayBtn.addEventListener('click', () => {
-            canvas.toBlob(blob => {
-                const file = new File([blob], `payment_${amount}.png`, { type: 'image/png' });
-                if (navigator.share && navigator.canShare({ files: [file] })) {
-                    navigator.share({
-                        files: [file],
-                        title: "UPI Payment",
-                        text: `Pay ₹${amount} to vishnuputhur@sbi`
-                    }).catch(() => {});
-                } else {
-                    const link = document.createElement('a');
-                    link.href = canvas.toDataURL();
-                    link.download = `QR_${amount}.png`;
-                    link.click();
-                }
-            });
+        // Open GPay button
+        openGpayBtn.addEventListener('click', async () => {
+            // First try direct UPI link
+            const upiLink = `upi://pay?pa=${upiId}&pn=ShipyardNagar&am=${amount}&cu=INR`;
+            
+            // Try to open UPI app directly
+            window.location.href = upiLink;
+            
+            // Fallback: QR code sharing
+            setTimeout(() => {
+                canvas.toBlob(blob => {
+                    if (blob) {
+                        const file = new File([blob], `payment_${amount}.png`, { type: 'image/png' });
+                        
+                        // Check if Web Share API is available
+                        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                            navigator.share({
+                                files: [file],
+                                title: "UPI Payment - Shipyard Nagar",
+                                text: `Pay ₹${amount} to ${upiId}`
+                            }).catch(err => {
+                                console.log('Share cancelled or failed:', err);
+                                // Download fallback
+                                downloadQR();
+                            });
+                        } else {
+                            // Download fallback
+                            downloadQR();
+                        }
+                    }
+                });
+            }, 500);
+            
+            function downloadQR() {
+                const link = document.createElement('a');
+                link.href = canvas.toDataURL();
+                link.download = `Shipyard_Payment_${amount}.png`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
         });
 
         // Theme toggle
         const themeToggle = document.getElementById('themeToggle');
         themeToggle.addEventListener('click', () => {
-            const newTheme = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-            document.documentElement.setAttribute('data-theme', newTheme);
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            html.setAttribute('data-theme', newTheme);
             localStorage.setItem('theme', newTheme);
-            themeToggle.textContent = newTheme === 'light' ? 'Dark Mode' : 'Light Mode';
+            themeToggle.textContent = newTheme === 'light' ? '🌞' : '🌙';
         });
 
         // Load saved theme
-        const saved = localStorage.getItem('theme') || 'light';
-        document.documentElement.setAttribute('data-theme', saved);
-        themeToggle.textContent = saved === 'light' ? 'Dark Mode' : 'Light Mode';
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        themeToggle.textContent = savedTheme === 'light' ? '🌞' : '🌙';
     </script>
 </body>
 </html>
