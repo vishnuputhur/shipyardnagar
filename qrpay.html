@@ -48,7 +48,7 @@
             padding: 25px 20px;
             box-shadow: var(--shadow);
             border: 1px solid rgba(255, 255, 255, 0.2);
-            max-width: 340px;           /* മുൻപ് 368px → ഇപ്പോ 340px (10% കുറച്ചു) */
+            max-width: 340px;
             width: 92%;
             margin: 15px auto 80px;
         }
@@ -162,7 +162,7 @@
 
         @media (max-width: 380px) {
             .main-card { max-width: 320px; padding: 22px 16px; }
-            canvas { width: 180px !important; height: 180px !important; }
+            canvas { width: 180px; height: 180px; }
         }
     </style>
 </head>
@@ -202,10 +202,10 @@
     
     <footer>
         <div>Powered by VTSoft 2025</div>
-        <button id="themeToggle" class="theme-toggle-btn">Toggle</button>
+        <button id="themeToggle" class="theme-toggle-btn">🌞</button>
     </footer>
 
-    <!-- നിങ്ങളുടെ original script തന്നെ – ഒരക്ഷരം മാറ്റിയിട്ടില്ല -->
+    <!-- നിങ്ങളുടെ പഴയ script (working) -->
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const amount = urlParams.get('amount') || '200';
@@ -213,7 +213,7 @@
         document.getElementById('amt2').textContent = amount;
         
         const upiId = 'vishnuputhur@sbi';
-        const upiURI = `upi://pay?pa=\( {upiId}&pn=ShipyardNagar&am= \){amount}&cu=INR`;
+        const upiURI = `upi://pay?pa=${upiId}&pn=ShipyardNagar&am=${amount}&cu=INR`;
 
         const canvas = document.getElementById('qrCanvas');
         const openGpayBtn = document.getElementById('openGpayBtn');
@@ -222,13 +222,14 @@
         QRCode.toCanvas(canvas, upiURI, { width: 200, margin: 1 }, function(err) {
             if (err) {
                 console.error('QR error:', err);
+                alert('QR code generation failed. Please try again.');
                 return;
             }
             openGpayBtn.disabled = false;
-            openGpayBtn.innerHTML = 'Open GPay';
+            openGpayBtn.innerHTML = '<i class="fab fa-google-pay"></i> Open GPay';
         });
 
-        // Open GPay
+        // Open GPay - original share script
         openGpayBtn.addEventListener('click', async () => {
             canvas.toBlob(async blob => {
                 const file = new File([blob], `payment_${amount}.png`, { type: 'image/png' });
@@ -249,10 +250,14 @@
                             }
                         }, 1000);
                     } catch (error) {
+                        // If share cancelled, don't close
                         console.log('Share cancelled:', error);
                     }
                 } else {
-                    // Fallback
+                    // Fallback for browsers that don't support sharing
+                    alert("Sharing not supported. Please save the QR code and share manually.");
+                    
+                    // Try to download the QR code
                     const link = document.createElement('a');
                     link.href = canvas.toDataURL();
                     link.download = `payment_qr_${amount}.png`;
@@ -271,12 +276,12 @@
                 html.setAttribute('data-theme', newTheme);
                 localStorage.setItem('theme', newTheme);
                 
-                themeToggle.textContent = newTheme === 'light' ? 'Toggle' : 'Toggle';
+                themeToggle.textContent = newTheme === 'light' ? '🌞' : '🌙';
             });
 
             const savedTheme = localStorage.getItem('theme') || 'light';
             document.documentElement.setAttribute('data-theme', savedTheme);
-            themeToggle.textContent = savedTheme === 'light' ? 'Toggle' : 'Toggle';
+            themeToggle.textContent = savedTheme === 'light' ? '🌞' : '🌙';
         }
     </script>
 </body>
