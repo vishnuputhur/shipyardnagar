@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
     <style>
+        /* CSS Same as before */
         :root {
             --primary-orange: #FF6B35;
             --orange-light: #FF8C42;
@@ -19,9 +20,7 @@
             --card-bg: rgba(255, 255, 255, 0.95);
         }
 
-        [data-theme="dark"] {
-            --card-bg: rgba(45, 45, 45, 0.95);
-        }
+        [data-theme="dark"] { --card-bg: rgba(45, 45, 45, 0.95); }
 
         body {
             font-family: 'Poppins', sans-serif;
@@ -37,285 +36,111 @@
         body::before {
             content: '';
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0; width: 100%; height: 100%;
             background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><polygon fill="%23ffffff10" points="0,1000 1000,0 1000,1000"/></svg>');
-            pointer-events: none;
-            z-index: -1;
+            pointer-events: none; z-index: -1;
         }
 
         .header-image {
-            width: 100%;
-            height: auto;
-            max-height: 150px;
-            object-fit: cover;
-            display: block;
-            position: fixed;
-            top: 3mm;
-            left: 0;
-            z-index: 999;
+            width: 100%; height: auto; max-height: 150px;
+            object-fit: cover; display: block; position: fixed;
+            top: 3mm; left: 0; z-index: 999;
         }
 
         .page-title {
-            text-align: center;
-            margin: 110px 0 20px 0;
-            color: white;
-            font-weight: 600;
-            font-size: 1.8rem;
+            text-align: center; margin: 110px 0 20px 0;
+            color: white; font-weight: 600; font-size: 1.8rem;
             text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
         }
 
         .loading-message {
-            color: #8B0000;
-            font-weight: 600;
-            font-size: 1.5rem;
-            text-align: center;
-            margin: 50px 0;
+            color: #fff; font-weight: 500; font-size: 1.2rem;
+            text-align: center; margin: 50px 0;
         }
 
         .member-card {
-            background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            border-radius: 15px;
-            padding: 18px;
-            margin: 0 auto 18px auto;
-            box-shadow: var(--shadow);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: all 0.3s ease;
-            width: 95%;
-            max-width: 400px;
+            background: var(--card-bg); backdrop-filter: blur(20px);
+            border-radius: 15px; padding: 18px; margin: 0 auto 18px auto;
+            box-shadow: var(--shadow); border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease; width: 95%; max-width: 400px;
         }
 
-        .member-card:hover {
-            box-shadow: var(--shadow-hover);
-            transform: translateY(-3px);
-        }
+        .member-card:hover { box-shadow: var(--shadow-hover); transform: translateY(-3px); }
 
         .member-card h3 {
-            font-size: 1.2rem;
-            margin-bottom: 12px;
-            color: #1e3a8a;
-            font-weight: 600;
-            border-bottom: 2px solid var(--orange-light);
-            padding-bottom: 6px;
-            text-align: center;
+            font-size: 1.2rem; margin-bottom: 12px; color: #1e3a8a;
+            font-weight: 600; border-bottom: 2px solid var(--orange-light);
+            padding-bottom: 6px; text-align: center;
         }
 
-        [data-theme="dark"] .member-card h3 {
-            color: #60a5fa;
-        }
+        [data-theme="dark"] .member-card h3 { color: #60a5fa; }
 
         .member-card p {
-            margin: 6px 0;
-            font-size: 0.85rem;
-            color: #333;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            margin: 6px 0; font-size: 0.85rem; color: #333;
+            display: flex; align-items: center; justify-content: space-between;
         }
 
         .member-card p strong {
-            color: var(--primary-orange);
-            min-width: 120px;
-            display: inline-block;
-            font-weight: 500;
-            text-align: left;
+            color: var(--primary-orange); min-width: 120px;
+            display: inline-block; font-weight: 500; text-align: left;
         }
 
         .member-card .detail-value {
-            color: #333;
-            text-align: right;
-            flex: 1;
-            margin-left: 10px;
-            word-break: break-word;
+            color: #333; text-align: right; flex: 1;
+            margin-left: 10px; word-break: break-word;
         }
 
-        [data-theme="dark"] .member-card .detail-value {
-            color: #e0e0e0;
-        }
-
-        .member-card i {
-            color: var(--primary-orange);
-            margin-right: 6px;
-            width: 14px;
-        }
+        [data-theme="dark"] .member-card .detail-value { color: #e0e0e0; }
+        .member-card i { color: var(--primary-orange); margin-right: 6px; width: 14px; }
 
         .due-status {
-            margin-top: 10px;
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-size: 0.75rem;
-            font-weight: 500;
-            text-align: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
+            margin-top: 10px; padding: 8px 12px; border-radius: 8px;
+            font-size: 0.75rem; font-weight: 500; text-align: center;
+            display: flex; align-items: center; justify-content: center; gap: 5px;
         }
 
-        .due-status.no-due {
-            background-color: #e6f7e6;
-            color: #28a745;
-            border: 1px solid #c3e6cb;
-        }
+        .due-status.no-due { background-color: #e6f7e6; color: #28a745; border: 1px solid #c3e6cb; }
+        [data-theme="dark"] .due-status.no-due { background-color: #1a331a; color: #90ee90; border-color: #4a5568; }
 
-        [data-theme="dark"] .due-status.no-due {
-            background-color: #1a331a;
-            color: #90ee90;
-            border-color: #4a5568;
-        }
+        .due-status.has-due { background-color: #ffe6e6; color: #dc3545; border: 1px solid #f5c6cb; }
+        [data-theme="dark"] .due-status.has-due { background-color: #331a1a; color: #ff6b6b; border-color: #4a5568; }
 
-        .due-status.has-due {
-            background-color: #ffe6e6;
-            color: #dc3545;
-            border: 1px solid #f5c6cb;
-        }
-
-        [data-theme="dark"] .due-status.has-due {
-            background-color: #331a1a;
-            color: #ff6b6b;
-            border-color: #4a5568;
-        }
-
-        .due-status i {
-            font-size: 0.9rem;
-        }
-
-        [data-theme="dark"] .member-card {
-            background: var(--card-bg);
-        }
-
-        [data-theme="dark"] .member-card p {
-            color: #e0e0e0;
-        }
-
-        [data-theme="dark"] .member-card p strong {
-            color: var(--orange-light);
-        }
+        [data-theme="dark"] .member-card { background: var(--card-bg); }
+        [data-theme="dark"] .member-card p { color: #e0e0e0; }
+        [data-theme="dark"] .member-card p strong { color: var(--orange-light); }
 
         footer {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            background: rgba(248, 248, 248, 0.9);
-            backdrop-filter: blur(10px);
-            color: #666;
-            font-size: 0.7rem;
-            z-index: 1000;
+            position: fixed; bottom: 0; width: 100%;
+            background: rgba(248, 248, 248, 0.9); backdrop-filter: blur(10px);
+            color: #666; font-size: 0.7rem; z-index: 1000;
             border-top: 1px solid rgba(255, 107, 53, 0.2);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 3px 15px;
-            height: 30px;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 3px 15px; height: 30px;
         }
 
-        [data-theme="dark"] footer {
-            background: rgba(45, 45, 45, 0.9);
-            color: #ccc;
-        }
-
-        .footer-text {
-            flex: 1;
-            text-align: center;
-        }
+        [data-theme="dark"] footer { background: rgba(45, 45, 45, 0.9); color: #ccc; }
+        .footer-text { flex: 1; text-align: center; }
 
         .theme-toggle-btn {
-            background: transparent;
-            border: 1px solid #ccc;
-            border-radius: 20px;
-            padding: 5px 10px;
-            color: #666;
-            font-size: 0.8rem;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            height: 25px;
+            background: transparent; border: 1px solid #ccc; border-radius: 20px;
+            padding: 5px 10px; color: #666; font-size: 0.8rem;
+            transition: all 0.3s ease; cursor: pointer; height: 25px;
         }
 
-        [data-theme="dark"] .theme-toggle-btn {
-            border-color: #666;
-            color: #ccc;
-        }
+        [data-theme="dark"] .theme-toggle-btn { border-color: #666; color: #ccc; }
+        .theme-toggle-btn:hover { background: var(--gradient); color: white; border-color: var(--primary-orange); }
 
-        .theme-toggle-btn:hover {
-            background: var(--gradient);
-            color: white;
-            border-color: var(--primary-orange);
-        }
-
-        #loadingSpinner {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 2rem;
-            color: var(--primary-orange);
-            z-index: 1000;
-        }
-
-        .bottom-gap {
-            height: 50px;
-        }
+        .bottom-gap { height: 50px; }
 
         @media (max-width: 576px) {
-            .header-image {
-                max-height: 120px;
-            }
-            
-            .page-title {
-                margin: 100px 0 15px 0;
-                font-size: 1.5rem;
-            }
-            
-            .member-card {
-                padding: 15px;
-                margin: 0 auto 15px auto;
-                width: 92%;
-            }
-            
-            .member-card p {
-                font-size: 0.8rem;
-            }
-            
-            .member-card p strong {
-                min-width: 100px;
-            }
-            
-            .due-status {
-                font-size: 0.7rem;
-                padding: 6px 10px;
-            }
-            
-            footer {
-                padding: 3px 10px;
-                height: 28px;
-            }
-            
-            .bottom-gap {
-                height: 40px;
-            }
-            
-            .loading-message {
-                font-size: 1.3rem;
-                margin: 30px 0;
-            }
-        }
-
-        @media (min-width: 768px) and (max-width: 991px) {
-            .member-card {
-                width: 90%;
-                max-width: 350px;
-            }
-        }
-
-        @media (min-width: 992px) {
-            .member-card {
-                width: 90%;
-                max-width: 380px;
-            }
+            .header-image { max-height: 120px; }
+            .page-title { margin: 100px 0 15px 0; font-size: 1.5rem; }
+            .member-card { padding: 15px; margin: 0 auto 15px auto; width: 92%; }
+            .member-card p { font-size: 0.8rem; }
+            .member-card p strong { min-width: 100px; }
+            .due-status { font-size: 0.7rem; padding: 6px 10px; }
+            footer { padding: 3px 10px; height: 28px; }
+            .bottom-gap { height: 40px; }
         }
     </style>
 </head>
@@ -330,180 +155,164 @@
         </div>
         
         <div class="bottom-gap"></div>
-        
-        <div id="loadingSpinner">⏳ Loading...</div>
     </main>
     
     <footer>
-        <div class="footer-text">
-            <p>Powered by VTSoft 2025</p>
-        </div>
+        <div class="footer-text"><p>Powered by VTSoft 2025</p></div>
         <button id="themeToggle" class="theme-toggle-btn">🌞</button>
     </footer>
 
-    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js" defer></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js" defer></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js" defer></script>
 
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyBWswawf9tpxNwVU0BaJ6FCwCvgcjUQXlA",
-            authDomain: "shipyard-nagar.firebaseapp.com",
-            projectId: "shipyard-nagar",
-            storageBucket: "shipyard-nagar.firebasestorage.app",
-            messagingSenderId: "552855824221",
-            appId: "1:552855824221:web:f709da953077475be9eab4",
-            measurementId: "G-V8CQ4YCCQ5"
-        };
+        // ✅ 1. Load Cached Members IMMEDIATELY (Before Firebase Loads)
+        document.addEventListener('DOMContentLoaded', () => {
+            const cachedMembers = localStorage.getItem('cached_membersList');
+            if (cachedMembers) {
+                const members = JSON.parse(cachedMembers);
+                renderMembers(members, false); // false means "don't check due yet"
+            }
 
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
-
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-
-        const themeToggle = document.getElementById('themeToggle');
-        if (themeToggle) {
-            themeToggle.addEventListener('click', () => {
-                const html = document.documentElement;
-                const currentTheme = html.getAttribute('data-theme');
-                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-                html.setAttribute('data-theme', newTheme);
-                localStorage.setItem('theme', newTheme);
-                themeToggle.textContent = newTheme === 'light' ? '🌞' : '🌙';
-            });
-
+            // Theme Setting
             const savedTheme = localStorage.getItem('theme') || 'light';
             document.documentElement.setAttribute('data-theme', savedTheme);
-            themeToggle.textContent = savedTheme === 'light' ? '🌞' : '🌙';
+            const btn = document.getElementById('themeToggle');
+            if(btn) btn.textContent = savedTheme === 'light' ? '🌞' : '🌙';
+        });
+
+        // Main Script (Runs after page load due to 'defer')
+        window.addEventListener('load', () => {
+            if (typeof firebase === 'undefined') return;
+
+            const firebaseConfig = {
+                apiKey: "AIzaSyBWswawf9tpxNwVU0BaJ6FCwCvgcjUQXlA",
+                authDomain: "shipyard-nagar.firebaseapp.com",
+                projectId: "shipyard-nagar",
+                storageBucket: "shipyard-nagar.firebasestorage.app",
+                messagingSenderId: "552855824221",
+                appId: "1:552855824221:web:f709da953077475be9eab4",
+                measurementId: "G-V8CQ4YCCQ5"
+            };
+
+            if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+
+            const auth = firebase.auth();
+            const db = firebase.firestore();
+
+            // Theme Toggle Logic
+            document.getElementById('themeToggle').addEventListener('click', () => {
+                const html = document.documentElement;
+                const newTheme = html.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+                html.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+                document.getElementById('themeToggle').textContent = newTheme === 'light' ? '🌞' : '🌙';
+            });
+
+            // Auth Check & Load Data
+            auth.onAuthStateChanged((user) => {
+                if (!user) {
+                    window.location.href = 'login.html';
+                } else {
+                    fetchMembersFromFirebase();
+                }
+            });
+
+            // ✅ Fetch Members from Firebase
+            async function fetchMembersFromFirebase() {
+                try {
+                    const snapshot = await db.collection('users').get();
+                    if (snapshot.empty) {
+                        document.getElementById('membersList').innerHTML = '<div class="col-12 text-center text-white">No members found</div>';
+                        return;
+                    }
+
+                    const membersArray = [];
+                    snapshot.forEach(doc => {
+                        membersArray.push({ id: doc.id, ...doc.data() });
+                    });
+
+                    // Sort Alphabetically
+                    membersArray.sort((a, b) => (a.memberName || '').localeCompare(b.memberName || ''));
+
+                    // ✅ SAVE TO CACHE
+                    localStorage.setItem('cached_membersList', JSON.stringify(membersArray));
+
+                    // Render Fresh Data and Check Dues
+                    renderMembers(membersArray, true);
+
+                } catch (error) {
+                    console.error("Error fetching members:", error);
+                }
+            }
+        });
+
+        // ✅ Shared Render Function (Used by both Cache and Firebase)
+        function renderMembers(members, checkDueStatus) {
+            const listContainer = document.getElementById('membersList');
+            let html = '';
+
+            members.forEach(member => {
+                html += `
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <div class="member-card">
+                            <div class="card-body">
+                                <h3>${member.memberName || 'Unknown'}</h3>
+                                <p><i class="fas fa-home"></i><strong>House Name:</strong> <span class="detail-value">${member.homeName || 'N/A'}</span></p>
+                                <p><i class="fas fa-phone"></i><strong>Primary Phone:</strong> <span class="detail-value">${member.primaryMobile || 'N/A'}</span></p>
+                                <p><i class="fas fa-mobile-alt"></i><strong>Secondary Phone:</strong> <span class="detail-value">${member.secondaryMobile || 'N/A'}</span></p>
+                                <p><i class="fas fa-envelope"></i><strong>Email:</strong> <span class="detail-value">${member.email || 'N/A'}</span></p>
+                                <p><i class="fas fa-fire"></i><strong>Gas Connection:</strong> <span class="detail-value">${member.gasConnection || 'N/A'}</span></p>
+                                <div class="due-status no-due" id="due-${member.id}">
+                                    ${checkDueStatus ? '<i class="fas fa-spinner fa-spin"></i> <span>Checking due...</span>' : '<i class="fas fa-clock"></i> <span>Waiting for update...</span>'}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            listContainer.innerHTML = html;
+
+            // Only check due status if we are online/authenticated (Firebase loaded)
+            if (checkDueStatus && typeof firebase !== 'undefined') {
+                members.forEach(member => checkIndividualDue(member.id));
+            }
         }
 
-        const getDueMonths = async (userId) => {
+        // Check Due for individual member
+        async function checkIndividualDue(userId) {
             try {
-                const contributionsRef = db.collection('contributions').doc(userId).collection('months');
-                const snapshot = await contributionsRef.get();
+                const db = firebase.firestore();
+                const snapshot = await db.collection('contributions').doc(userId).collection('months').get();
                 
-                const allMonths = ['2025-10', '2025-11', '2025-12'];
+                const allMonths = ['2025-10', '2025-11', '2025-12']; // Update as needed
                 const pendingMonths = [];
                 
                 allMonths.forEach(month => {
                     const doc = snapshot.docs.find(d => d.id === month);
-                    if (!doc || !doc.data().paid) {
-                        pendingMonths.push(month);
-                    }
-                });
-                
-                return pendingMonths;
-            } catch (error) {
-                console.error("Error in getDueMonths:", error);
-                return [];
-            }
-        };
-
-        const loadMembers = async () => {
-            const membersList = document.getElementById('membersList');
-            
-            if (!membersList) return;
-
-            try {
-                membersList.innerHTML = '<div class="loading-message">Loading members data...</div>';
-                
-                const usersSnapshot = await db.collection('users').get();
-                
-                if (usersSnapshot.empty) {
-                    membersList.innerHTML = '<div class="col-12 text-center">No members found</div>';
-                    return;
-                }
-
-                let membersHTML = '';
-                const membersArray = [];
-                
-                usersSnapshot.forEach(doc => {
-                    const data = doc.data();
-                    membersArray.push({
-                        id: doc.id,
-                        ...data
-                    });
+                    if (!doc || !doc.data().paid) pendingMonths.push(month);
                 });
 
-                membersArray.sort((a, b) => {
-                    const nameA = a.memberName?.toUpperCase() || '';
-                    const nameB = b.memberName?.toUpperCase() || '';
-                    return nameA.localeCompare(nameB);
-                });
-
-                membersArray.forEach(member => {
-                    membersHTML += `
-                        <div class="col-12 col-md-6 col-lg-4">
-                            <div class="member-card">
-                                <div class="card-body">
-                                    <h3>${member.memberName || 'Unknown'}</h3>
-                                    <p><i class="fas fa-home"></i><strong>House Name:</strong> <span class="detail-value">${member.homeName || 'N/A'}</span></p>
-                                    <p><i class="fas fa-phone"></i><strong>Primary Phone:</strong> <span class="detail-value">${member.primaryMobile || 'N/A'}</span></p>
-                                    <p><i class="fas fa-mobile-alt"></i><strong>Secondary Phone:</strong> <span class="detail-value">${member.secondaryMobile || 'N/A'}</span></p>
-                                    <p><i class="fas fa-envelope"></i><strong>Email:</strong> <span class="detail-value">${member.email || 'N/A'}</span></p>
-                                    <p><i class="fas fa-fire"></i><strong>Gas Connection:</strong> <span class="detail-value">${member.gasConnection || 'N/A'}</span></p>
-                                    <div class="due-status no-due" id="due-${member.id}">
-                                        <i class="fas fa-spinner fa-spin"></i>
-                                        <span>Checking due...</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                });
-
-                membersList.innerHTML = membersHTML;
-                
-                membersArray.forEach(async (member) => {
-                    try {
-                        const pendingMonths = await getDueMonths(member.id);
-                        const dueElement = document.getElementById(`due-${member.id}`);
+                const dueElement = document.getElementById(`due-${userId}`);
+                if (dueElement) {
+                    if (pendingMonths.length === 0) {
+                        dueElement.className = 'due-status no-due';
+                        dueElement.innerHTML = '<i class="fas fa-check-circle"></i><span>No Due</span>';
+                    } else {
+                        const monthNames = pendingMonths.map(m => {
+                            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                            const idx = parseInt(m.split('-')[1]) - 1;
+                            return months[idx];
+                        }).join(', ');
                         
-                        if (dueElement) {
-                            if (pendingMonths.length === 0) {
-                                dueElement.className = 'due-status no-due';
-                                dueElement.innerHTML = '<i class="fas fa-check-circle"></i><span>No Due</span>';
-                            } else {
-                                const monthNames = pendingMonths.map(month => {
-                                    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                                    const m = parseInt(month.split('-')[1]) - 1;
-                                    return months[m] + ' ' + month.split('-')[0].slice(2);
-                                }).join(', ');
-                                
-                                dueElement.className = 'due-status has-due';
-                                dueElement.innerHTML = `<i class="fas fa-exclamation-circle"></i><span>Due: ${monthNames}</span>`;
-                            }
-                        }
-                    } catch (error) {
-                        const dueElement = document.getElementById(`due-${member.id}`);
-                        if (dueElement) {
-                            dueElement.className = 'due-status no-due';
-                            dueElement.innerHTML = '<i class="fas fa-question-circle"></i><span>Status unknown</span>';
-                        }
+                        dueElement.className = 'due-status has-due';
+                        dueElement.innerHTML = `<i class="fas fa-exclamation-circle"></i><span>Due: ${monthNames}</span>`;
                     }
-                });
-
-            } catch (error) {
-                membersList.innerHTML = `
-                    <div class="col-12">
-                        <div class="alert alert-danger">
-                            <i class="fas fa-exclamation-triangle"></i>
-                            Error: ${error.message}
-                        </div>
-                    </div>
-                `;
-            }
-        };
-
-        auth.onAuthStateChanged((user) => {
-            if (!user) {
-                window.location.href = 'login.html';
-            } else {
-                loadMembers();
-            }
-        });
+                }
+            } catch (e) { console.log(e); }
+        }
     </script>
 </body>
 </html>
