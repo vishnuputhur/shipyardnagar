@@ -7,15 +7,13 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://firestore.googleapis.com">
-    <link rel="preconnect" href="https://www.googleapis.com">
-
+    
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="css/style.css">
+    
     <style>
-        /* ... (Existing CSS remains same) ... */
+        /* ✅ ORIGINAL CSS RESTORED */
         :root {
             --primary-orange: #FF6B35;
             --orange-light: #FF8C42;
@@ -26,7 +24,9 @@
             --card-bg: rgba(255, 255, 255, 0.95);
         }
 
-        [data-theme="dark"] { --card-bg: rgba(45, 45, 45, 0.95); }
+        [data-theme="dark"] {
+            --card-bg: rgba(45, 45, 45, 0.95);
+        }
 
         body {
             font-family: 'Poppins', sans-serif;
@@ -35,122 +35,422 @@
             padding-bottom: 0;
             position: relative;
             overflow-x: hidden;
-            margin: 0; padding: 0;
+            margin: 0;
+            padding: 0;
         }
 
         body::before {
-            content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><polygon fill="%23ffffff10" points="0,1000 1000,0 1000,1000"/></svg>');
-            pointer-events: none; z-index: -1;
+            pointer-events: none;
+            z-index: -1;
         }
 
         .header-image {
-            width: 100%; height: auto; max-height: 150px;
-            object-fit: cover; display: block; position: fixed;
-            top: 3mm; left: 0; z-index: 999;
+            width: 100%;
+            height: auto;
+            max-height: 150px;
+            object-fit: cover;
+            display: block;
+            position: fixed;
+            top: 3mm;
+            left: 0;
+            z-index: 999;
         }
 
         .main-card {
-            background: var(--card-bg); backdrop-filter: blur(20px);
-            border-radius: 20px; padding: 20px; box-shadow: var(--shadow);
-            border: 1px solid rgba(255, 255, 255, 0.2); margin-bottom: 50px;
-            position: relative; margin-top: 120px;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 50px;
+            position: relative;
+            margin-top: 120px;
         }
 
         .page-title {
-            font-size: 1.5rem; font-weight: 700; color: #1e3a8a;
-            margin-bottom: 20px; text-align: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e3a8a;
+            margin-bottom: 20px;
+            text-align: center;
         }
-        [data-theme="dark"] .page-title { color: #60a5fa; }
+
+        [data-theme="dark"] .page-title {
+            color: #60a5fa;
+        }
 
         .subs-info {
             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            padding: 15px; border-radius: 12px; margin: 10px 0;
+            padding: 15px;
+            border-radius: 12px;
+            margin: 10px 0;
             border-left: 3px solid var(--primary-orange);
-            font-weight: 500; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            font-weight: 500;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
-        [data-theme="dark"] .subs-info { background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%); color: #fff; }
-        .subs-info i { font-size: 1.2rem; margin-right: 10px; color: var(--primary-orange); }
+
+        [data-theme="dark"] .subs-info {
+            background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+            color: #fff;
+        }
+
+        .subs-info i {
+            font-size: 1.2rem;
+            margin-right: 10px;
+            color: var(--primary-orange);
+        }
+
+        .payment-form {
+            margin-top: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-label {
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        [data-theme="dark"] .form-label {
+            color: #fff;
+        }
 
         .form-control {
-            border-radius: 10px; border: 1px solid #ddd; padding: 10px 15px;
-            font-size: 0.9rem; transition: all 0.3s ease;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            padding: 10px 15px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
         }
-        [data-theme="dark"] .form-control { background: #444; border-color: #555; color: #fff; }
+
+        [data-theme="dark"] .form-control {
+            background: #444;
+            border-color: #555;
+            color: #fff;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-orange);
+            box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.2);
+        }
 
         .pay-btn {
-            background: var(--gradient); border: none; border-radius: 12px;
-            padding: 12px 20px; color: white; font-weight: 500;
-            font-size: 1rem; box-shadow: var(--shadow); transition: all 0.3s ease;
-            position: relative; overflow: hidden; width: 100%; margin-top: 10px;
+            background: var(--gradient);
+            border: none;
+            border-radius: 12px;
+            padding: 12px 20px;
+            color: white;
+            font-weight: 500;
+            font-size: 1rem;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+            margin-top: 10px;
         }
-        .pay-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+
+        .pay-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: 0.5s;
+        }
+
+        .pay-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .pay-btn:hover::before {
+            left: 100%;
+        }
+
+        .pay-btn .app-name {
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        .pay-btn .pay-text {
+            font-size: 0.8rem;
+            font-style: italic;
+            opacity: 0.9;
+        }
+
+        .gpay-btn, .cred-btn, .razorpay-btn {
+            background: var(--gradient);
+        }
+
+        .razorpay-btn .app-name {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .payment-note {
+            font-size: 0.75rem;
+            color: #666;
+            text-align: center;
+            margin-top: 10px;
+            line-height: 1.4;
+        }
+
+        [data-theme="dark"] .payment-note {
+            color: #ccc;
+        }
+
+        .payment-history {
+            margin-top: 30px;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
 
         .payment-table {
-            width: 100%; border-collapse: collapse; background: var(--card-bg);
-            border-radius: 12px; overflow: hidden;
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
         }
-        .payment-table th {
-            background: var(--gradient); color: white; padding: 12px 15px;
-            text-align: left; font-weight: 500; font-size: 0.85rem;
-        }
-        .payment-table td { padding: 12px 15px; border-bottom: 1px solid #eee; font-size: 0.8rem; }
-        [data-theme="dark"] .payment-table td { border-bottom: 1px solid #555; }
 
-        .status-paid { color: #28a745; font-weight: 500; }
-        .status-pending { color: #dc3545; font-weight: 500; }
+        .payment-table th {
+            background: var(--gradient);
+            color: white;
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: 500;
+            font-size: 0.85rem;
+        }
+
+        .payment-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            font-size: 0.8rem;
+        }
+
+        [data-theme="dark"] .payment-table td {
+            border-bottom: 1px solid #555;
+        }
+
+        .payment-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .status-paid {
+            color: #28a745;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            color: #dc3545;
+            font-weight: 500;
+        }
 
         footer {
-            position: fixed; bottom: 0; width: 100%;
-            background: rgba(248, 248, 248, 0.9); backdrop-filter: blur(10px);
-            color: #666; font-size: 0.7rem; z-index: 1000;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background: rgba(248, 248, 248, 0.9);
+            backdrop-filter: blur(10px);
+            color: #666;
+            font-size: 0.7rem;
+            z-index: 1000;
             border-top: 1px solid rgba(255, 107, 53, 0.2);
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 3px 15px; height: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 3px 15px;
+            height: 30px;
         }
-        [data-theme="dark"] footer { background: rgba(45, 45, 45, 0.9); color: #ccc; }
-        .footer-text { flex: 1; text-align: center; }
+
+        [data-theme="dark"] footer {
+            background: rgba(45, 45, 45, 0.9);
+            color: #ccc;
+        }
+
+        .footer-text {
+            flex: 1;
+            text-align: center;
+        }
 
         .theme-toggle-btn {
-            background: transparent; border: 1px solid #ccc; border-radius: 20px;
-            padding: 4px 8px; color: #666; font-size: 0.75rem;
-            cursor: pointer; height: 24px;
+            background: transparent;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            padding: 4px 8px;
+            color: #666;
+            font-size: 0.75rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            height: 24px;
         }
-        [data-theme="dark"] .theme-toggle-btn { border-color: #666; color: #ccc; }
 
-        .speaker-contribution {
-            margin-top: 15px; padding: 15px; border-radius: 12px;
-            background: linear-gradient(135deg, #f0f8ff 0%, #e6f7ff 100%);
-            border: 1px solid #b3d9ff; display: none;
+        [data-theme="dark"] .theme-toggle-btn {
+            border-color: #666;
+            color: #ccc;
         }
+
+        .theme-toggle-btn:hover {
+            background: var(--gradient);
+            color: white;
+            border-color: var(--primary-orange);
+        }
+        
+        .speaker-contribution {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #f0f8ff 0%, #e6f7ff 100%);
+            border: 1px solid #b3d9ff;
+            display: none;
+        }
+        
         [data-theme="dark"] .speaker-contribution {
             background: linear-gradient(135deg, #1a365d 0%, #2d3748 100%);
             border-color: #4a5568;
         }
         
-        .speaker-header { display: flex; align-items: center; margin-bottom: 10px; }
-        .speaker-header i { font-size: 1.2rem; margin-right: 10px; color: #1e40af; }
-        .speaker-title { font-weight: 600; color: #1e40af; }
-        [data-theme="dark"] .speaker-title { color: #60a5fa; }
-        .speaker-description { font-size: 0.85rem; color: #4b5563; margin-bottom: 10px; }
-        [data-theme="dark"] .speaker-description { color: #cbd5e0; }
-        .speaker-amount { font-weight: 600; color: #1e40af; }
+        .speaker-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
         
-        .speaker-status { margin-top: 10px; font-size: 0.85rem; font-weight: 500; }
-        .speaker-status.pending { color: #dc3545; }
-        .speaker-status.paid { color: #28a745; }
+        .speaker-header i {
+            font-size: 1.2rem;
+            margin-right: 10px;
+            color: #1e40af;
+        }
+        
+        .speaker-title {
+            font-weight: 600;
+            color: #1e40af;
+        }
+        
+        [data-theme="dark"] .speaker-title {
+            color: #60a5fa;
+        }
+        
+        .speaker-description {
+            font-size: 0.85rem;
+            color: #4b5563;
+            margin-bottom: 10px;
+        }
+        
+        [data-theme="dark"] .speaker-description {
+            color: #cbd5e0;
+        }
+        
+        .speaker-option {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .speaker-option input {
+            margin-right: 8px;
+        }
+        
+        .speaker-option label {
+            font-size: 0.9rem;
+            color: #374151;
+            cursor: pointer;
+        }
+        
+        [data-theme="dark"] .speaker-option label {
+            color: #e2e8f0;
+        }
+        
+        .speaker-amount {
+            font-weight: 600;
+            color: #1e40af;
+        }
+        
+        .speaker-status {
+            margin-top: 10px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .speaker-status.pending {
+            color: #dc3545;
+        }
+        
+        .speaker-status.paid {
+            color: #28a745;
+        }
 
-        .payment-buttons { display: none; }
+        .payment-buttons {
+            display: none;
+        }
+
         .no-payment-message {
-            display: none; text-align: center; padding: 20px;
+            display: none;
+            text-align: center;
+            padding: 20px;
             background: linear-gradient(135deg, #e8f5e8 0%, #d4edda 100%);
-            border-radius: 12px; border: 1px solid #c3e6cb; margin-top: 15px;
-        }
-        [data-theme="dark"] .no-payment-message {
-            background: linear-gradient(135deg, #1a331a 0%, #2d4a2d 100%); border-color: #4a5568;
+            border-radius: 12px;
+            border: 1px solid #c3e6cb;
+            margin-top: 15px;
         }
 
-        /* ✅ Tip 2: Skeleton Loading CSS */
+        [data-theme="dark"] .no-payment-message {
+            background: linear-gradient(135deg, #1a331a 0%, #2d4a2d 100%);
+            border-color: #4a5568;
+        }
+
+        @media (max-width: 576px) {
+            .header-image {
+                max-height: 120px;
+            }
+            
+            .main-card {
+                padding: 15px;
+                margin: 100px 10px 50px 10px;
+            }
+            
+            .payment-table th, 
+            .payment-table td {
+                padding: 10px 8px;
+                font-size: 0.75rem;
+            }
+            
+            footer {
+                padding: 3px 10px;
+                height: 28px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .payment-table {
+                font-size: 0.7rem;
+            }
+            
+            .payment-table th, 
+            .payment-table td {
+                padding: 8px 6px;
+            }
+        }
+
+        /* ✅ EXTRA: Skeleton Loading Animation */
         .skeleton {
             background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
             background-size: 200% 100%;
@@ -166,12 +466,6 @@
             0% { background-position: 200% 0; }
             100% { background-position: -200% 0; }
         }
-        
-        @media (max-width: 576px) {
-            .header-image { max-height: 120px; }
-            .main-card { padding: 15px; margin: 100px 10px 50px 10px; }
-            footer { padding: 3px 10px; height: 28px; }
-        }
     </style>
 </head>
 <body>
@@ -181,7 +475,9 @@
         <div class="row justify-content-center">
             <div class="col-12 col-md-8 col-lg-6">
                 <div class="main-card">
-                    <div class="page-title">My Subscription</div>
+                    <div class="page-title">
+                        My Subscription
+                    </div>
                     
                     <div class="subs-info">
                         <i class="fas fa-money-bill-wave"></i>
@@ -222,12 +518,15 @@
                                 <button type="button" class="pay-btn gpay-btn" id="gpayButton">
                                     <span class="pay-text">Pay by</span> <span class="app-name">GPay</span>
                                 </button>
+                                
                                 <button type="button" class="pay-btn cred-btn" id="credButton">
                                     <span class="pay-text">Pay by</span> <span class="app-name">CRED</span>
                                 </button>
+                                
                                 <button type="button" class="pay-btn razorpay-btn" id="razorpayButton">
                                     <span class="app-name">Credit Cards, NetBanking, Wallet</span>
                                 </button>
+                                
                                 <div class="payment-note">
                                     Payment will be updated in the system within 4 hours of successful transaction
                                 </div>
@@ -243,10 +542,16 @@
                     
                     <div class="payment-history">
                         <h5 class="mb-3" style="color: #1e3a8a; font-weight: 600;">Payment History</h5>
+                        
                         <div class="table-container">
                             <table class="payment-table">
                                 <thead>
-                                    <tr><th>Month</th><th>Status</th><th>Amount</th><th>Date</th></tr>
+                                    <tr>
+                                        <th>Month</th>
+                                        <th>Status</th>
+                                        <th>Amount</th>
+                                        <th>Date</th>
+                                    </tr>
                                 </thead>
                                 <tbody id="contributionTable">
                                     <tr><td colspan="4" class="skeleton">Loading history...</td></tr>
@@ -262,7 +567,9 @@
     </main>
     
     <footer>
-        <div class="footer-text"><p>Powered by VTSoft 2025</p></div>
+        <div class="footer-text">
+            <p>Powered by VTSoft 2025</p>
+        </div>
         <button id="themeToggle" class="theme-toggle-btn">🌞</button>
     </footer>
 
@@ -271,7 +578,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js" defer></script>
 
     <script>
-        // Wait for load because of defer
+        // ✅ Wait for window load (Optimized Logic)
         window.addEventListener('load', () => {
             const firebaseConfig = {
                 apiKey: "AIzaSyBWswawf9tpxNwVU0BaJ6FCwCvgcjUQXlA",
@@ -284,6 +591,7 @@
             };
 
             if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+            
             const auth = firebase.auth();
             const db = firebase.firestore();
 
@@ -318,8 +626,7 @@
                     window.location.href = 'login.html';
                 } else {
                     currentUserId = user.uid;
-                    // ✅ Tip 3: Parallel Fetching
-                    // ഒരേ സമയം യൂസറിന്റെ വിവരങ്ങളും പേയ്മെന്റ് വിവരങ്ങളും എടുക്കുന്നു
+                    // ✅ Parallel Fetching for Speed
                     await loadDataParallel(user.uid);
                 }
             });
@@ -387,7 +694,7 @@
                     return months;
                 };
 
-                const allMonths = generateMonths(startMonth, currentMonth); // Shows up to current month
+                const allMonths = generateMonths(startMonth, currentMonth);
                 const pendingMonths = [];
                 const contributionTable = document.getElementById('contributionTable');
                 
@@ -397,26 +704,25 @@
                 // Sort reverse
                 const sortedMonths = [...allMonths].sort().reverse();
 
+                const getMonthName = (monthString) => {
+                    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                    const parts = monthString.split('-');
+                    const monthIndex = parseInt(parts[1]) - 1;
+                    return months[monthIndex] + ' ' + parts[0];
+                };
+
                 sortedMonths.forEach(month => {
                     const data = paidData[month] || { paid: false, amount: 0, date: '' };
                     const status = data.paid ? 'Paid' : 'Pending';
                     const amount = data.paid ? '₹200' : '₹0';
-                    
-                    // Format Date nicely
-                    let displayDate = '-';
-                    if(data.date) {
-                         // If date is stored differently, adjust here. Assuming string.
-                         displayDate = data.date;
-                    }
-
-                    const monthName = new Date(month + '-01').toLocaleString('en-US', { month: 'short', year: 'numeric' });
+                    const date = data.date || '-';
 
                     const row = `
                         <tr>
-                            <td>${monthName}</td>
+                            <td>${getMonthName(month)}</td>
                             <td class="${data.paid ? 'status-paid' : 'status-pending'}">${status}</td>
                             <td>${amount}</td>
-                            <td>${displayDate}</td>
+                            <td>${date}</td>
                         </tr>
                     `;
                     contributionTable.innerHTML += row;
@@ -436,7 +742,7 @@
                 dueInfo.textContent = `Due Amount: ₹${monthlyDueAmount}`;
                 
                 if (pendingMonths.length > 0) {
-                     const monthNames = pendingMonths.map(m => new Date(m+'-01').toLocaleString('en-US', {month:'short'})).join(', ');
+                     const monthNames = pendingMonths.map(m => getMonthName(m)).join(', ');
                      pendingInfo.textContent = `Pending: ${monthNames}`;
                 } else {
                      pendingInfo.textContent = 'All months paid';
@@ -445,7 +751,7 @@
                 updateAmountField();
             }
 
-            // Payment Logic (Same as yours, but cleaner functions)
+            // Payment Logic
             function updateAmountField() {
                 const includeSpeaker = document.getElementById('includeSpeaker').checked;
                 let totalAmount = monthlyDueAmount;
@@ -459,7 +765,12 @@
                 const amount = parseFloat(document.getElementById('amount').value);
                 const btns = document.getElementById('paymentButtons');
                 const msg = document.getElementById('noPaymentMessage');
+                const speakerSection = document.getElementById('speakerSection');
                 
+                if (speakerPaid) {
+                     speakerSection.style.display = 'none';
+                }
+
                 if (amount > 0) {
                     btns.style.display = 'block';
                     msg.style.display = 'none';
@@ -478,7 +789,7 @@
                 const amount = document.getElementById('amount').value;
                 if (amount < 10) return alert('Please enter minimum ₹10!');
                 
-                // Disable button momentarily to prevent double clicks
+                // Visual feedback
                 const btns = document.querySelectorAll('.pay-btn');
                 btns.forEach(b => b.style.opacity = '0.7');
                 
@@ -495,8 +806,8 @@
             document.getElementById('credButton').addEventListener('click', () => {
                 const amt = document.getElementById('amount').value;
                 const upiId = 'BHARATPE.8P0O1J0O8P31576@fbpe';
-                const note = `Member ${currentMemberNumber} Sub`;
-                handlePayment(`upi://pay?pa=${upiId}&pn=Shipyard&am=${amt}&cu=INR&tn=${encodeURIComponent(note)}`);
+                const note = `Member ${currentMemberNumber} Monthly Subscription`;
+                handlePayment(`upi://pay?pa=${upiId}&pn=Shipyard%20Nagar&am=${amt}&cu=INR&tn=${encodeURIComponent(note)}`);
             });
 
             document.getElementById('razorpayButton').addEventListener('click', () => {
