@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
     <style>
+        /* CSS Styles remain the same */
         :root {
             --primary-orange: #FF6B35;
             --orange-light: #FF8C42;
@@ -27,7 +28,7 @@
             font-family: 'Poppins', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding-bottom: 30px; /* Added padding for footer */
+            padding-bottom: 30px;
             position: relative;
             overflow-x: hidden;
             margin: 0;
@@ -46,7 +47,6 @@
             z-index: -1;
         }
 
-        /* Header Image - Fixed at top */
         .header-image {
             width: 100%;
             height: auto;
@@ -54,15 +54,14 @@
             object-fit: cover;
             display: block;
             position: fixed;
-            top: 3mm; /* 3mm gap from top */
+            top: 3mm;
             left: 0;
             z-index: 999;
         }
 
-        /* Logo Container - Reduced top gap by 25% */
         .logo-container {
             text-align: center;
-            margin: 120px 0 15px 0; /* Reduced from 160px to 120px (25% reduction) */
+            margin: 120px 0 15px 0;
         }
 
         .logo-container img {
@@ -79,7 +78,6 @@
             box-shadow: var(--shadow-hover);
         }
 
-        /* Main Card - Removed orange line */
         .main-card {
             background: var(--card-bg);
             backdrop-filter: blur(20px);
@@ -91,22 +89,20 @@
             position: relative;
         }
 
-        /* User Greeting - Dark blue and bold */
         .user-greeting {
             font-size: 1.2rem;
-            font-weight: 700; /* Bold */
-            color: #1e3a8a; /* Dark blue color */
+            font-weight: 700;
+            color: #1e3a8a;
             margin-bottom: 8px;
             text-align: center;
         }
 
         [data-theme="dark"] .user-greeting {
-            color: #60a5fa; /* Lighter blue for dark theme */
+            color: #60a5fa;
         }
 
-        /* Loading message style */
         .loading-message {
-            color: #8B0000; /* Dark red color */
+            color: #8B0000;
             font-weight: 600;
             font-size: 1.2rem;
             text-align: center;
@@ -129,18 +125,9 @@
             color: #fff;
         }
 
-        /* Due Status Styles */
-        .due-status-good {
-            color: #22c55e; /* Green color */
-            font-weight: 600;
-        }
+        .due-status-good { color: #22c55e; font-weight: 600; }
+        .due-status-pending { color: #ef4444; font-weight: 600; }
 
-        .due-status-pending {
-            color: #ef4444; /* Red color */
-            font-weight: 600;
-        }
-
-        /* Button Grid - FIXED: All buttons same size */
         .button-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -165,7 +152,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            width: 100%; /* Ensure full width */
+            width: 100%;
         }
 
         .app-btn::before {
@@ -184,22 +171,15 @@
             box-shadow: var(--shadow-hover);
         }
 
-        .app-btn:hover::before {
-            left: 100%;
-        }
-
-        .app-btn i {
-            font-size: 1.1rem;
-            margin-bottom: 4px;
-        }
-
+        .app-btn:hover::before { left: 100%; }
+        .app-btn i { font-size: 1.1rem; margin-bottom: 4px; }
+        
         .admin-btn {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             margin-top: 10px;
             grid-column: span 2;
         }
 
-        /* Profile Incomplete Warning - FIXED: Positioned below profile button */
         .profile-warning {
             position: absolute;
             bottom: -25px;
@@ -223,19 +203,12 @@
             50% { opacity: 0.7; }
         }
 
-        /* Profile button container with relative positioning - FIXED */
         .profile-btn-container {
             position: relative;
             grid-column: span 1;
         }
+        .profile-btn-container .app-btn { height: 65px; width: 100%; }
 
-        /* Make sure the profile button inside container has same styling */
-        .profile-btn-container .app-btn {
-            height: 65px;
-            width: 100%;
-        }
-
-        /* Footer - Fixed position */
         footer {
             position: fixed;
             bottom: 0;
@@ -258,28 +231,21 @@
             color: #ccc;
         }
 
-        .footer-text {
-            flex: 1;
-            text-align: center;
-        }
+        .footer-text { flex: 1; text-align: center; }
 
-        /* Theme Toggle - Slightly larger */
         .theme-toggle-btn {
             background: transparent;
             border: 1px solid #ccc;
             border-radius: 20px;
-            padding: 4px 8px; /* Increased padding */
+            padding: 4px 8px;
             color: #666;
-            font-size: 0.75rem; /* Slightly larger font */
+            font-size: 0.75rem;
             transition: all 0.3s ease;
             cursor: pointer;
-            height: 24px; /* Increased height */
+            height: 24px;
         }
 
-        [data-theme="dark"] .theme-toggle-btn {
-            border-color: #666;
-            color: #ccc;
-        }
+        [data-theme="dark"] .theme-toggle-btn { border-color: #666; color: #ccc; }
 
         .theme-toggle-btn:hover {
             background: var(--gradient);
@@ -287,57 +253,21 @@
             border-color: var(--primary-orange);
         }
 
-        /* Responsive */
         @media (max-width: 576px) {
-            .button-grid {
-                grid-template-columns: 1fr;
-                gap: 8px;
-            }
-            
-            .admin-btn {
-                grid-column: span 1;
-            }
-            
-            .header-image {
-                max-height: 120px;
-            }
-            
-            .logo-container {
-                margin: 90px 0 15px 0; /* Adjusted for mobile */
-            }
-            
-            .logo-container img {
-                max-height: 130px;
-            }
-            
-            .main-card {
-                padding: 15px;
-                margin: 0 10px 50px 10px;
-            }
-            
-            .app-btn {
-                height: 60px;
-                font-size: 0.75rem;
-            }
-            
-            .app-btn i {
-                font-size: 1rem;
-            }
-            
-            footer {
-                padding: 3px 10px;
-                height: 28px;
-            }
-
-            .profile-warning {
-                font-size: 0.65rem;
-                padding: 5px 10px;
-            }
+            .button-grid { grid-template-columns: 1fr; gap: 8px; }
+            .admin-btn { grid-column: span 1; }
+            .header-image { max-height: 120px; }
+            .logo-container { margin: 90px 0 15px 0; }
+            .logo-container img { max-height: 130px; }
+            .main-card { padding: 15px; margin: 0 10px 50px 10px; }
+            .app-btn { height: 60px; font-size: 0.75rem; }
+            .app-btn i { font-size: 1rem; }
+            footer { padding: 3px 10px; height: 28px; }
+            .profile-warning { font-size: 0.65rem; padding: 5px 10px; }
         }
     </style>
 </head>
 <body>
-    <!-- Header Image - Fixed at top -->
     <img src="assets/head.png" alt="Header" class="header-image">
     
     <main class="container">
@@ -349,11 +279,11 @@
             <div class="col-12 col-md-8 col-lg-6">
                 <div class="main-card">
                     <div class="welcome-text">
-                        <p class="user-greeting">Hi, <span id="user-name" class="loading-message">Loading.. please wait</span> & family! 👋</p>
+                        <p class="user-greeting">Hi, <span id="user-name" class="loading-message">Loading..</span> & family! 👋</p>
                         
                         <div class="wealth-info">
                             <i class="fas fa-coins me-2"></i>
-                            <span id="totalWealth">Our Total Wealth: ₹0</span>
+                            <span id="totalWealth">Our Total Wealth: ₹...</span>
                         </div>
                         
                         <div class="due-info">
@@ -362,46 +292,25 @@
                         </div>
                     </div>
                     
-                    <!-- Reordered buttons with Password button at the end -->
                     <div class="button-grid">
                         <div class="profile-btn-container">
                             <button id="profileBtn" class="app-btn">
-                                <i class="fas fa-user-circle"></i>
-                                Profile
+                                <i class="fas fa-user-circle"></i> Profile
                             </button>
                             <div id="profileWarning" class="profile-warning">
                                 <i class="fas fa-exclamation-triangle me-1"></i> Please update your profile
                             </div>
                         </div>
-                        <button id="subscriptionBtn" class="app-btn">
-                            <i class="fas fa-credit-card"></i>
-                            Subscription
-                        </button>
-                        <button id="expensesBtn" class="app-btn">
-                            <i class="fas fa-receipt"></i>
-                            Expenses
-                        </button>
-                        <button id="memberListBtn" class="app-btn">
-                            <i class="fas fa-users"></i>
-                            Members
-                        </button>
-                        <button id="chittiBtn" class="app-btn">
-                            <i class="fas fa-hand-holding-usd"></i>
-                            Chitti
-                        </button>
-                        <button id="loanBtn" class="app-btn">
-                            <i class="fas fa-university"></i>
-                            Loan
-                        </button>
-                        <button id="passwordBtn" class="app-btn">
-                            <i class="fas fa-key"></i>
-                            Change Password
-                        </button>
+                        <button id="subscriptionBtn" class="app-btn"><i class="fas fa-credit-card"></i> Subscription</button>
+                        <button id="expensesBtn" class="app-btn"><i class="fas fa-receipt"></i> Expenses</button>
+                        <button id="memberListBtn" class="app-btn"><i class="fas fa-users"></i> Members</button>
+                        <button id="chittiBtn" class="app-btn"><i class="fas fa-hand-holding-usd"></i> Chitti</button>
+                        <button id="loanBtn" class="app-btn"><i class="fas fa-university"></i> Loan</button>
+                        <button id="passwordBtn" class="app-btn"><i class="fas fa-key"></i> Change Password</button>
                         
                         <div id="adminTab" style="display: none;">
                             <button id="adminBtn" class="app-btn admin-btn">
-                                <i class="fas fa-cog"></i>
-                                Admin Dashboard
+                                <i class="fas fa-cog"></i> Admin Dashboard
                             </button>
                         </div>
                     </div>
@@ -410,25 +319,47 @@
         </div>
     </main>
     
-    <!-- Footer - Fixed position -->
     <footer>
-        <div class="footer-text">
-            <p>Powered by VTSoft 2025</p>
-        </div>
+        <div class="footer-text"><p>Powered by VTSoft 2025</p></div>
         <button id="themeToggle" class="theme-toggle-btn">🌞</button>
     </footer>
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js" defer></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js" defer></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js" defer></script>
 
     <script>
-        // ✅ Check Firebase SDK
-        if (typeof firebase === 'undefined') {
-            alert('Error: Firebase SDK not loaded. Check network or script tags.');
-        } else {
-            // ✅ Firebase Config
+        // ✅ 1. OPTIMIZATION: Load cached data IMMEDIATELY
+        document.addEventListener('DOMContentLoaded', () => {
+            const cachedName = localStorage.getItem('cached_userName');
+            const cachedWealth = localStorage.getItem('cached_totalWealth');
+            const cachedDue = localStorage.getItem('cached_monthlyDue');
+            const cachedRole = localStorage.getItem('cached_userRole');
+
+            if(cachedName) {
+                const el = document.getElementById('user-name');
+                el.textContent = cachedName;
+                el.classList.remove('loading-message');
+            }
+            if(cachedWealth) document.getElementById('totalWealth').textContent = cachedWealth;
+            if(cachedDue) document.getElementById('monthlyDue').innerHTML = cachedDue;
+            if(cachedRole === 'admin') document.getElementById('adminTab').style.display = 'block';
+            
+            // Set Theme from Cache
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            const themeBtn = document.getElementById('themeToggle');
+            if(themeBtn) themeBtn.textContent = savedTheme === 'light' ? '🌞' : '🌙';
+        });
+
+        // Wait for Firebase to load (since we used defer)
+        window.addEventListener('load', () => {
+            
+            if (typeof firebase === 'undefined') {
+                // If firebase fails to load (offline etc)
+                return;
+            }
+
             const firebaseConfig = {
                 apiKey: "AIzaSyBWswawf9tpxNwVU0BaJ6FCwCvgcjUQXlA",
                 authDomain: "shipyard-nagar.firebaseapp.com",
@@ -439,78 +370,55 @@
                 measurementId: "G-V8CQ4YCCQ5"
             };
 
-            // ✅ Initialize only once
-            if (!firebase.apps.length) {
-                firebase.initializeApp(firebaseConfig);
-            }
+            if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 
             const auth = firebase.auth();
             const db = firebase.firestore();
 
-            // ✅ UI elements
+            // UI Elements
             const userNameEl = document.getElementById('user-name');
             const totalWealth = document.getElementById('totalWealth');
             const monthlyDue = document.getElementById('monthlyDue');
             const adminTab = document.getElementById('adminTab');
-            const adminBtn = document.getElementById('adminBtn');
-            const chittiBtn = document.getElementById('chittiBtn');
-            const loanBtn = document.getElementById('loanBtn');
-            const memberListBtn = document.getElementById('memberListBtn');
-            const subscriptionBtn = document.getElementById('subscriptionBtn');
-            const profileBtn = document.getElementById('profileBtn');
-            const expensesBtn = document.getElementById('expensesBtn');
-            const passwordBtn = document.getElementById('passwordBtn');
             const profileWarning = document.getElementById('profileWarning');
 
-            // ✅ Auth State Listener
+            // ✅ Auth State Listener with CACHING
             auth.onAuthStateChanged((user) => {
                 if (user) {
-                    // ✅ Fetch user data dynamically
+                    // Fetch user data
                     db.collection('users').doc(user.uid).get()
                         .then((doc) => {
                             if (doc.exists) {
                                 const data = doc.data();
-                                // Remove loading class and set actual user name
-                                userNameEl.classList.remove('loading-message');
-                                userNameEl.textContent = data.memberName || "Guest";
+                                const name = data.memberName || "Guest";
                                 
-                                // Show admin button only for admin users
+                                // Update UI
+                                userNameEl.textContent = name;
+                                userNameEl.classList.remove('loading-message');
+                                
+                                // ✅ Save to Cache
+                                localStorage.setItem('cached_userName', name);
+                                localStorage.setItem('cached_userRole', data.role);
+
                                 if (data.role === "admin") {
                                     adminTab.style.display = 'block';
                                 } else {
                                     adminTab.style.display = 'none';
                                 }
 
-                                // Check if profile is complete - FIXED
                                 checkProfileComplete(data);
-
-                                // Calculate and display total wealth
-                                calculateTotalWealth();
+                                calculateTotalWealth(); // Refresh wealth
+                                calculateMonthlyDue(user.uid); // Refresh due
                                 
-                                // Calculate and display monthly due - FIXED with subscription page logic
-                                calculateMonthlyDue(user.uid);
-                                
-                            } else {
-                                userNameEl.classList.remove('loading-message');
-                                userNameEl.textContent = "Guest";
-                                adminTab.style.display = 'none';
                             }
                         })
-                        .catch((error) => {
-                            console.error("Error getting document:", error);
-                            userNameEl.classList.remove('loading-message');
-                            userNameEl.textContent = "Guest";
-                            adminTab.style.display = 'none';
-                        });
+                        .catch((error) => console.error("Error:", error));
                 } else {
-                    // Redirect to login if not authenticated
                     window.location.href = 'login.html';
                 }
             });
 
-            // ✅ Check Profile Complete - FIXED based on profile.html
             function checkProfileComplete(userData) {
-                // Check the specific fields that are required from profile.html
                 const isComplete = userData.homeName && 
                                  userData.homeName.trim() !== '' &&
                                  userData.homeName !== 'N/A' &&
@@ -518,13 +426,6 @@
                                  userData.gasConnection.trim() !== '' &&
                                  userData.gasConnection !== 'N/A';
 
-                console.log('Profile completeness check:', {
-                    homeName: userData.homeName,
-                    gasConnection: userData.gasConnection,
-                    isComplete: isComplete
-                });
-
-                // Show warning only if profile is incomplete
                 if (!isComplete) {
                     profileWarning.style.display = 'block';
                 } else {
@@ -532,7 +433,6 @@
                 }
             }
 
-            // ✅ Calculate Total Wealth
             async function calculateTotalWealth() {
                 try {
                     let totalIncome = 0, totalExpense = 0;
@@ -543,21 +443,22 @@
                         if (t.type === 'expense') totalExpense += t.amount || 0;
                     });
                     const wealth = totalIncome - totalExpense;
-                    totalWealth.textContent = `Our Total Wealth: ₹${wealth}`;
+                    const wealthText = `Our Total Wealth: ₹${wealth}`;
+                    
+                    // Update and Cache
+                    totalWealth.textContent = wealthText;
+                    localStorage.setItem('cached_totalWealth', wealthText);
                 } catch (error) {
-                    console.error('Error calculating total wealth:', error);
-                    totalWealth.textContent = 'Our Total Wealth: ₹0';
+                    console.error('Wealth Error:', error);
                 }
             }
 
-            // ✅ Calculate Monthly Due - FIXED using subscription page logic
             async function calculateMonthlyDue(userId) {
                 try {
                     const currentDate = new Date();
-                    const currentMonth = currentDate.toISOString().slice(0, 7); // YYYY-MM
+                    const currentMonth = currentDate.toISOString().slice(0, 7); 
                     const startMonth = '2025-10';
                     
-                    // Generate all months from start to current
                     const generateMonths = (start, end) => {
                         const months = [];
                         let current = new Date(start + '-01');
@@ -570,79 +471,53 @@
                     };
 
                     const allMonths = generateMonths(startMonth, currentMonth);
-
                     const contributionsSnap = await db.collection('contributions').doc(userId).collection('months').get();
                     const paidData = {};
-                    contributionsSnap.forEach(doc => {
-                        paidData[doc.id] = doc.data();
-                    });
+                    contributionsSnap.forEach(doc => { paidData[doc.id] = doc.data(); });
 
                     let unpaidMonths = 0;
                     allMonths.forEach(month => {
                         const data = paidData[month] || { paid: false };
-                        if (!data.paid) {
-                            unpaidMonths++;
-                        }
+                        if (!data.paid) unpaidMonths++;
                     });
 
-                    const monthNames = ["January", "February", "March", "April", "May", "June",
-                        "July", "August", "September", "October", "November", "December"];
+                    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
                     const currentMonthName = monthNames[new Date().getMonth()];
 
+                    let htmlContent = '';
                     if (unpaidMonths === 0) {
-                        monthlyDue.innerHTML = `<span class="due-status-good">Good, you have no Due</span>`;
+                        htmlContent = `<span class="due-status-good">Good, you have no Due</span>`;
                     } else {
-                        monthlyDue.innerHTML = `<span class="due-status-pending">${currentMonthName} Due Pending</span>`;
+                        htmlContent = `<span class="due-status-pending">${currentMonthName} Due Pending</span>`;
                     }
+
+                    // Update and Cache
+                    monthlyDue.innerHTML = htmlContent;
+                    localStorage.setItem('cached_monthlyDue', htmlContent);
+
                 } catch (error) {
-                    console.error('Error calculating monthly due:', error);
-                    monthlyDue.textContent = 'Your Monthly Due: Error checking due';
+                    console.error('Due Error:', error);
                 }
             }
 
-            // ✅ Navigation buttons
-            if (profileBtn) {
-                profileBtn.addEventListener('click', () => {
-                    window.location.href = 'profile.html';
-                });
-            }
-            if (subscriptionBtn) {
-                subscriptionBtn.addEventListener('click', () => {
-                    window.location.href = 'subscription.html';
-                });
-            }
-            if (memberListBtn) {
-                memberListBtn.addEventListener('click', () => {
-                    window.location.href = 'members.html';
-                });
-            }
-            if (chittiBtn) {
-                chittiBtn.addEventListener('click', () => {
-                    window.location.href = 'chitty.html';
-                });
-            }
-            if (loanBtn) {
-                loanBtn.addEventListener('click', () => {
-                    window.location.href = 'loan.html';
-                });
-            }
-            if (adminBtn) {
-                adminBtn.addEventListener('click', () => {
-                    window.location.href = 'dashboard.html';
-                });
-            }
-            if (expensesBtn) {
-                expensesBtn.addEventListener('click', () => {
-                    window.location.href = 'wealth-user.html';
-                });
-            }
-            if (passwordBtn) {
-                passwordBtn.addEventListener('click', () => {
-                    window.location.href = 'pass.html';
-                });
+            // Setup Buttons
+            const buttons = {
+                'profileBtn': 'profile.html',
+                'subscriptionBtn': 'subscription.html',
+                'expensesBtn': 'wealth-user.html',
+                'memberListBtn': 'members.html',
+                'chittiBtn': 'chitty.html',
+                'loanBtn': 'loan.html',
+                'adminBtn': 'dashboard.html',
+                'passwordBtn': 'pass.html'
+            };
+
+            for (const [id, url] of Object.entries(buttons)) {
+                const btn = document.getElementById(id);
+                if (btn) btn.addEventListener('click', () => window.location.href = url);
             }
 
-            // ✅ Theme Toggle
+            // Theme Toggle Logic
             const themeToggle = document.getElementById('themeToggle');
             if (themeToggle) {
                 themeToggle.addEventListener('click', () => {
@@ -651,17 +526,10 @@
                     const newTheme = currentTheme === 'light' ? 'dark' : 'light';
                     html.setAttribute('data-theme', newTheme);
                     localStorage.setItem('theme', newTheme);
-                    
-                    // Update button emoji
                     themeToggle.textContent = newTheme === 'light' ? '🌞' : '🌙';
                 });
-
-                // Set initial theme and button
-                const savedTheme = localStorage.getItem('theme') || 'light';
-                document.documentElement.setAttribute('data-theme', savedTheme);
-                themeToggle.textContent = savedTheme === 'light' ? '🌞' : '🌙';
             }
-        }
+        });
     </script>
 </body>
 </html>
