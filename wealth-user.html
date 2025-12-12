@@ -8,6 +8,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* Styles kept identical to your provided code */
         :root {
             --primary-orange: #FF6B35;
             --orange-light: #FF8C42;
@@ -18,9 +19,7 @@
             --card-bg: rgba(255, 255, 255, 0.95);
         }
 
-        [data-theme="dark"] {
-            --card-bg: rgba(45, 45, 45, 0.95);
-        }
+        [data-theme="dark"] { --card-bg: rgba(45, 45, 45, 0.95); }
 
         body {
             font-family: 'Poppins', sans-serif;
@@ -34,444 +33,262 @@
         }
 
         body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><polygon fill="%23ffffff10" points="0,1000 1000,0 1000,1000"/></svg>');
-            pointer-events: none;
-            z-index: -1;
+            pointer-events: none; z-index: -1;
         }
 
-        /* Header Image - Fixed at top */
         .header-image {
-            width: 100%;
-            height: auto;
-            max-height: 150px;
-            object-fit: cover;
-            display: block;
-            position: fixed;
-            top: 3mm;
-            left: 0;
-            z-index: 999;
+            width: 100%; height: auto; max-height: 150px;
+            object-fit: cover; display: block; position: fixed;
+            top: 3mm; left: 0; z-index: 999;
         }
 
-        /* Main Card - Reduced top gap */
         .main-card {
-            background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            border-radius: 20px;
-            padding: 20px;
-            box-shadow: var(--shadow);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            margin-bottom: 50px;
-            position: relative;
-            margin-top: 120px;
+            background: var(--card-bg); backdrop-filter: blur(20px);
+            border-radius: 20px; padding: 20px; box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.2); margin-bottom: 50px;
+            position: relative; margin-top: 120px;
         }
 
-        /* Footer - Reduced height */
         footer {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            background: rgba(248, 248, 248, 0.9);
-            backdrop-filter: blur(10px);
-            color: #666;
-            font-size: 0.7rem;
-            z-index: 1000;
+            position: fixed; bottom: 0; width: 100%;
+            background: rgba(248, 248, 248, 0.9); backdrop-filter: blur(10px);
+            color: #666; font-size: 0.7rem; z-index: 1000;
             border-top: 1px solid rgba(255, 107, 53, 0.2);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 3px 15px;
-            height: 30px;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 3px 15px; height: 30px;
         }
 
-        [data-theme="dark"] footer {
-            background: rgba(45, 45, 45, 0.9);
-            color: #ccc;
-        }
+        [data-theme="dark"] footer { background: rgba(45, 45, 45, 0.9); color: #ccc; }
+        .footer-text { flex: 1; text-align: center; }
 
-        .footer-text {
-            flex: 1;
-            text-align: center;
-        }
-
-        /* Theme Toggle - Slightly larger */
         .theme-toggle-btn {
-            background: transparent;
-            border: 1px solid #ccc;
-            border-radius: 20px;
-            padding: 4px 8px;
-            color: #666;
-            font-size: 0.75rem;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            height: 24px;
+            background: transparent; border: 1px solid #ccc; border-radius: 20px;
+            padding: 4px 8px; color: #666; font-size: 0.75rem;
+            transition: all 0.3s ease; cursor: pointer; height: 24px;
         }
 
-        [data-theme="dark"] .theme-toggle-btn {
-            border-color: #666;
-            color: #ccc;
-        }
+        [data-theme="dark"] .theme-toggle-btn { border-color: #666; color: #ccc; }
+        .theme-toggle-btn:hover { background: var(--gradient); color: white; border-color: var(--primary-orange); }
 
-        .theme-toggle-btn:hover {
-            background: var(--gradient);
-            color: white;
-            border-color: var(--primary-orange);
-        }
-
-        /* Card Styling */
         .card {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
+            margin-top: 20px; padding: 15px; border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); transition: all 0.3s ease;
         }
+        .card:hover { box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15); }
 
-        .card:hover {
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-        }
-
-        /* Loading Spinner */
         #loadingSpinner {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 2rem;
-            color: #0288d1;
-            z-index: 9999;
+            display: none; position: fixed; top: 50%; left: 50%;
+            transform: translate(-50%, -50%); font-size: 2rem; color: #0288d1; z-index: 9999;
         }
 
-        /* Wealth Display */
         .wealth-display {
             background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%);
-            color: white;
-            padding: 25px;
-            border-radius: 15px;
-            text-align: center;
-            margin-bottom: 20px;
-            box-shadow: var(--shadow);
+            color: white; padding: 25px; border-radius: 15px;
+            text-align: center; margin-bottom: 20px; box-shadow: var(--shadow);
         }
 
-        .balance-label {
-            font-size: 0.9rem;
-            opacity: 0.9;
-            margin-bottom: 5px;
-            font-weight: 500;
-        }
+        .balance-label { font-size: 0.9rem; opacity: 0.9; margin-bottom: 5px; font-weight: 500; }
+        .wealth-amount { font-size: 2.5rem; font-weight: 700; margin: 5px 0; }
+        .last-updated { font-size: 0.8rem; opacity: 0.8; margin-top: 8px; font-style: italic; }
 
-        .wealth-amount {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin: 5px 0;
-        }
-
-        .last-updated {
-            font-size: 0.8rem;
-            opacity: 0.8;
-            margin-top: 8px;
-            font-style: italic;
-        }
-
-        /* Transactions List */
-        .transactions-list {
-            max-height: 500px;
-            overflow-y: auto;
-        }
-
+        .transactions-list { max-height: 500px; overflow-y: auto; }
         .transaction-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 15px;
-            border-bottom: 1px solid #eee;
-            transition: all 0.3s ease;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 15px; border-bottom: 1px solid #eee; transition: all 0.3s ease;
         }
+        [data-theme="dark"] .transaction-item { border-bottom: 1px solid #555; }
+        .transaction-item:last-child { border-bottom: none; }
+        .transaction-item:hover { background-color: rgba(0, 0, 0, 0.03); }
+        [data-theme="dark"] .transaction-item:hover { background-color: rgba(255, 255, 255, 0.05); }
 
-        [data-theme="dark"] .transaction-item {
-            border-bottom: 1px solid #555;
-        }
+        .transaction-details { flex: 1; }
+        .transaction-type { font-weight: 600; font-size: 0.9rem; }
+        .transaction-income { color: #28a745; }
+        .transaction-expense { color: #dc3545; }
+        .transaction-narration { font-size: 0.85rem; color: #666; margin-top: 2px; }
+        [data-theme="dark"] .transaction-narration { color: #ccc; }
+        .transaction-date { font-size: 0.8rem; color: #999; }
+        .transaction-amount { font-weight: 600; font-size: 1rem; }
+        .no-transactions { text-align: center; padding: 30px; color: #666; font-style: italic; }
 
-        .transaction-item:last-child {
-            border-bottom: none;
-        }
-
-        .transaction-item:hover {
-            background-color: rgba(0, 0, 0, 0.03);
-        }
-
-        [data-theme="dark"] .transaction-item:hover {
-            background-color: rgba(255, 255, 255, 0.05);
-        }
-
-        .transaction-details {
-            flex: 1;
-        }
-
-        .transaction-type {
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-
-        .transaction-income {
-            color: #28a745;
-        }
-
-        .transaction-expense {
-            color: #dc3545;
-        }
-
-        .transaction-narration {
-            font-size: 0.85rem;
-            color: #666;
-            margin-top: 2px;
-        }
-
-        [data-theme="dark"] .transaction-narration {
-            color: #ccc;
-        }
-
-        .transaction-date {
-            font-size: 0.8rem;
-            color: #999;
-        }
-
-        .transaction-amount {
-            font-weight: 600;
-            font-size: 1rem;
-        }
-
-        /* No Transactions Message */
-        .no-transactions {
-            text-align: center;
-            padding: 30px;
-            color: #666;
-            font-style: italic;
-        }
-
-        /* Responsive */
         @media (max-width: 576px) {
-            .header-image {
-                max-height: 120px;
-            }
-            
-            .main-card {
-                padding: 15px;
-                margin: 100px 10px 50px 10px;
-            }
-            
-            .wealth-amount {
-                font-size: 2rem;
-            }
-            
-            .balance-label {
-                font-size: 0.8rem;
-            }
-            
-            footer {
-                padding: 3px 10px;
-                height: 28px;
-            }
+            .header-image { max-height: 120px; }
+            .main-card { padding: 15px; margin: 100px 10px 50px 10px; }
+            .wealth-amount { font-size: 2rem; }
+            .balance-label { font-size: 0.8rem; }
+            footer { padding: 3px 10px; height: 28px; }
         }
     </style>
 </head>
 <body>
-    <!-- Header Image - Fixed at top -->
     <img src="assets/head.png" alt="Header" class="header-image">
     
     <main class="container">
         <div class="row justify-content-center">
             <div class="col-12 col-md-10 col-lg-8">
                 <div class="main-card">
-                    <!-- Wealth Display with "Our Current Balance" label -->
                     <div class="wealth-display">
                         <div class="balance-label">Our Current Balance</div>
                         <div class="wealth-amount" id="totalWealth">₹0</div>
                         <div class="last-updated" id="lastUpdated">Last updated: -</div>
                     </div>
 
-                    <!-- All Transactions -->
                     <div class="card">
                         <h5>All Transactions</h5>
                         <div class="transactions-list" id="transactionsList">
-                            <!-- Transactions will be loaded here -->
-                        </div>
+                            </div>
                     </div>
                 </div>
             </div>
         </div>
     </main>
     
-    <!-- Footer -->
     <footer>
-        <div class="footer-text">
-            <p>Powered by VTSoft 2025</p>
-        </div>
+        <div class="footer-text"><p>Powered by VTSoft 2025</p></div>
         <button id="themeToggle" class="theme-toggle-btn">🌞</button>
     </footer>
 
-    <!-- Loading Spinner -->
     <div id="loadingSpinner">⏳ Loading...</div>
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js" defer></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js" defer></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js" defer></script>
 
     <script>
-        // Firebase Config
-        const firebaseConfig = {
-            apiKey: "AIzaSyBWswawf9tpxNwVU0BaJ6FCwCvgcjUQXlA",
-            authDomain: "shipyard-nagar.firebaseapp.com",
-            projectId: "shipyard-nagar",
-            storageBucket: "shipyard-nagar.firebasestorage.app",
-            messagingSenderId: "552855824221",
-            appId: "1:552855824221:web:f709da953077475be9eab4",
-            measurementId: "G-V8CQ4YCCQ5"
-        };
-
-        // Initialize Firebase
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
-
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-
-        // DOM Content Loaded
+        // ✅ 1. Load Cached Wealth & Transactions IMMEDIATELY
         document.addEventListener('DOMContentLoaded', () => {
+            const cachedWealth = localStorage.getItem('cached_totalWealth');
+            const cachedTransactions = localStorage.getItem('cached_transactionsHTML');
+            const cachedLastUpdated = localStorage.getItem('cached_lastUpdated');
+
+            if (cachedWealth) document.getElementById('totalWealth').textContent = cachedWealth;
+            if (cachedTransactions) document.getElementById('transactionsList').innerHTML = cachedTransactions;
+            if (cachedLastUpdated) document.getElementById('lastUpdated').textContent = cachedLastUpdated;
+
+            // Theme Setting
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            const btn = document.getElementById('themeToggle');
+            if(btn) btn.textContent = savedTheme === 'light' ? '🌞' : '🌙';
+        });
+
+        // Firebase Logic (Runs after load)
+        window.addEventListener('load', () => {
+            if (typeof firebase === 'undefined') return;
+
+            const firebaseConfig = {
+                apiKey: "AIzaSyBWswawf9tpxNwVU0BaJ6FCwCvgcjUQXlA",
+                authDomain: "shipyard-nagar.firebaseapp.com",
+                projectId: "shipyard-nagar",
+                storageBucket: "shipyard-nagar.firebasestorage.app",
+                messagingSenderId: "552855824221",
+                appId: "1:552855824221:web:f709da953077475be9eab4",
+                measurementId: "G-V8CQ4YCCQ5"
+            };
+
+            if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+            const auth = firebase.auth();
+            const db = firebase.firestore();
+
             const loadingSpinner = document.getElementById('loadingSpinner');
             const transactionsList = document.getElementById('transactionsList');
             const totalWealth = document.getElementById('totalWealth');
             const lastUpdated = document.getElementById('lastUpdated');
 
-            // Auth State Check
-            auth.onAuthStateChanged(async (user) => {
-                if (!user) {
-                    alert('No user logged in. Redirecting to login...');
-                    window.location.href = 'login.html';
-                    return;
-                }
-
-                loadingSpinner.style.display = 'none';
-                
-                // Load initial data
-                loadWealthAndTransactions();
+            // Theme Toggle Logic
+            document.getElementById('themeToggle').addEventListener('click', () => {
+                const html = document.documentElement;
+                const newTheme = html.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+                html.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+                document.getElementById('themeToggle').textContent = newTheme === 'light' ? '🌞' : '🌙';
             });
 
-            // Load Wealth and Transactions - SAME AS HOME PAGE
-            const loadWealthAndTransactions = async () => {
+            // Auth Check
+            auth.onAuthStateChanged((user) => {
+                if (!user) {
+                    window.location.href = 'login.html';
+                } else {
+                    loadingSpinner.style.display = 'none';
+                    fetchWealthAndTransactions();
+                }
+            });
+
+            // ✅ Fetch & Cache Logic
+            async function fetchWealthAndTransactions() {
                 try {
                     let totalIncome = 0, totalExpense = 0;
                     let latestUpdateDate = null;
+
+                    // Get Transactions
+                    const snapshot = await db.collection('transactions').orderBy('createdAt', 'desc').get();
                     
-                    // Get all transactions without limit - SAME AS HOME PAGE
-                    const transactionsSnapshot = await db.collection('transactions').get();
-                    
-                    transactionsList.innerHTML = '';
-                    
-                    if (transactionsSnapshot.empty) {
+                    if (snapshot.empty) {
                         transactionsList.innerHTML = '<div class="no-transactions">No transactions found</div>';
                         totalWealth.textContent = '₹0';
                         lastUpdated.textContent = 'Last updated: Never';
+                        localStorage.removeItem('cached_transactionsHTML');
                         return;
                     }
-                    
-                    // Process transactions for wealth calculation - SAME AS HOME PAGE
-                    transactionsSnapshot.forEach(doc => {
-                        const transaction = doc.data();
+
+                    // Generate HTML string to cache later
+                    let transactionsHTML = '';
+
+                    snapshot.forEach(doc => {
+                        const t = doc.data();
                         
-                        // Calculate total wealth - SAME AS HOME PAGE
-                        if (transaction.type === 'income') {
-                            totalIncome += transaction.amount || 0;
-                        } else if (transaction.type === 'expense') {
-                            totalExpense += transaction.amount || 0;
+                        // Calc Wealth
+                        if (t.type === 'income') totalIncome += t.amount || 0;
+                        if (t.type === 'expense') totalExpense += t.amount || 0;
+
+                        // Find Latest Date
+                        if (t.createdAt) {
+                            const date = new Date(t.createdAt.seconds * 1000);
+                            if (!latestUpdateDate || date > latestUpdateDate) latestUpdateDate = date;
                         }
-                        
-                        // Find latest update date (using createdAt timestamp)
-                        const transactionTimestamp = transaction.createdAt;
-                        if (transactionTimestamp) {
-                            const transactionDate = new Date(transactionTimestamp.seconds * 1000);
-                            if (!latestUpdateDate || transactionDate > latestUpdateDate) {
-                                latestUpdateDate = transactionDate;
-                            }
-                        }
-                    });
 
-                    // Update wealth display - SAME AS HOME PAGE
-                    const wealth = totalIncome - totalExpense;
-                    totalWealth.textContent = `₹${wealth}`;
-                    
-                    // Update last updated date
-                    if (latestUpdateDate) {
-                        const formattedDate = latestUpdateDate.toLocaleDateString('en-IN', {
-                            day: '2-digit',
-                            month: '2-digit',
-                            year: 'numeric'
-                        });
-                        lastUpdated.textContent = `Last updated: ${formattedDate}`;
-                    } else {
-                        lastUpdated.textContent = 'Last updated: Never';
-                    }
-
-                    // Display all transactions in descending order
-                    const sortedTransactions = await db.collection('transactions')
-                        .orderBy('createdAt', 'desc')
-                        .get();
-
-                    sortedTransactions.forEach(doc => {
-                        const transaction = doc.data();
+                        // Build HTML
+                        const typeClass = t.type === 'income' ? 'transaction-income' : 'transaction-expense';
+                        const typeText = t.type === 'income' ? 'Income' : 'Expense';
                         
-                        const transactionItem = document.createElement('div');
-                        transactionItem.className = 'transaction-item';
-                        
-                        const typeClass = transaction.type === 'income' ? 'transaction-income' : 'transaction-expense';
-                        const typeText = transaction.type === 'income' ? 'Income' : 'Expense';
-                        
-                        transactionItem.innerHTML = `
-                            <div class="transaction-details">
-                                <div class="transaction-type ${typeClass}">${typeText}</div>
-                                <div class="transaction-narration">${transaction.narration || 'No description'}</div>
-                                <div class="transaction-date">${transaction.date || 'No date'}</div>
+                        transactionsHTML += `
+                            <div class="transaction-item">
+                                <div class="transaction-details">
+                                    <div class="transaction-type ${typeClass}">${typeText}</div>
+                                    <div class="transaction-narration">${t.narration || 'No description'}</div>
+                                    <div class="transaction-date">${t.date || 'No date'}</div>
+                                </div>
+                                <div class="transaction-amount ${typeClass}">₹${t.amount || 0}</div>
                             </div>
-                            <div class="transaction-amount ${typeClass}">₹${transaction.amount || 0}</div>
                         `;
-                        
-                        transactionsList.appendChild(transactionItem);
                     });
-                    
+
+                    // Update UI
+                    const wealth = totalIncome - totalExpense;
+                    const wealthText = `₹${wealth}`;
+                    totalWealth.textContent = wealthText;
+                    transactionsList.innerHTML = transactionsHTML;
+
+                    let dateText = 'Last updated: Never';
+                    if (latestUpdateDate) {
+                        const formatted = latestUpdateDate.toLocaleDateString('en-IN', {
+                            day: '2-digit', month: '2-digit', year: 'numeric'
+                        });
+                        dateText = `Last updated: ${formatted}`;
+                    }
+                    lastUpdated.textContent = dateText;
+
+                    // ✅ SAVE TO CACHE
+                    localStorage.setItem('cached_totalWealth', wealthText);
+                    localStorage.setItem('cached_transactionsHTML', transactionsHTML);
+                    localStorage.setItem('cached_lastUpdated', dateText);
+
                 } catch (error) {
-                    console.error('Error loading transactions:', error);
-                    transactionsList.innerHTML = '<div class="no-transactions">Error loading transactions</div>';
-                    totalWealth.textContent = '₹0 (Error)';
-                    lastUpdated.textContent = 'Last updated: Error';
+                    console.error('Error:', error);
+                    // Don't clear UI if cache exists, just log error
                 }
-            };
-
-            // Theme Toggle
-            const themeToggle = document.getElementById('themeToggle');
-            if (themeToggle) {
-                themeToggle.addEventListener('click', () => {
-                    const html = document.documentElement;
-                    const currentTheme = html.getAttribute('data-theme');
-                    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-                    html.setAttribute('data-theme', newTheme);
-                    localStorage.setItem('theme', newTheme);
-                    
-                    // Update button emoji
-                    themeToggle.textContent = newTheme === 'light' ? '🌞' : '🌙';
-                });
-
-                // Set initial theme and button
-                const savedTheme = localStorage.getItem('theme') || 'light';
-                document.documentElement.setAttribute('data-theme', savedTheme);
-                themeToggle.textContent = savedTheme === 'light' ? '🌞' : '🌙';
             }
         });
     </script>
