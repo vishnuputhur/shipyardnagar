@@ -16,10 +16,6 @@
         :root {
             --primary-orange: #FF6B35;
             --orange-light: #FF8C42;
-            --orange-dark: #E55A2B;
-            --gradient: linear-gradient(135deg, #FF6B35 0%, #FF8C42 50%, #FFA726 100%);
-            --shadow: 0 8px 25px rgba(255, 107, 53, 0.15);
-            --shadow-hover: 0 12px 35px rgba(255, 107, 53, 0.25);
             --card-bg: rgba(255, 255, 255, 0.95);
         }
 
@@ -32,17 +28,10 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding-bottom: 0;
-            position: relative;
-            overflow-x: hidden;
             margin: 0; padding: 0;
         }
 
-        body::before {
-            content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><polygon fill="%23ffffff10" points="0,1000 1000,0 1000,1000"/></svg>');
-            pointer-events: none; z-index: -1;
-        }
-
+        /* Fixed Header */
         .header-image {
             width: 100%; height: auto; max-height: 150px;
             object-fit: cover; display: block; position: fixed;
@@ -51,115 +40,95 @@
 
         .main-card {
             background: var(--card-bg); backdrop-filter: blur(20px);
-            border-radius: 20px; padding: 20px; box-shadow: var(--shadow);
-            border: 1px solid rgba(255, 255, 255, 0.2); margin-bottom: 50px;
-            position: relative; margin-top: 120px;
+            border-radius: 20px; padding: 15px; 
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            margin-top: 130px; margin-bottom: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
-        /* Wealth Display Box */
+        /* Compact Wealth Display */
         .wealth-display {
-            background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%);
-            color: white; padding: 30px 20px; border-radius: 15px;
-            text-align: center; margin-bottom: 25px; box-shadow: var(--shadow);
-            position: relative; overflow: hidden;
-        }
-        
-        .wealth-display::before {
-            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
-            pointer-events: none;
+            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+            color: white; padding: 20px; border-radius: 15px;
+            text-align: center; margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(30, 58, 138, 0.3);
         }
 
-        .balance-label { font-size: 0.9rem; opacity: 0.9; margin-bottom: 5px; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; }
-        .wealth-amount { font-size: 2.8rem; font-weight: 700; margin: 5px 0; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-        .last-updated { font-size: 0.75rem; opacity: 0.7; margin-top: 10px; font-style: italic; }
+        .balance-label { font-size: 0.8rem; opacity: 0.9; font-weight: 500; letter-spacing: 1px; text-transform: uppercase; }
+        .wealth-amount { font-size: 2rem; font-weight: 700; margin-top: 5px; line-height: 1.2; }
 
-        /* Transaction List Styling */
+        /* Compact Transaction List */
         .section-title {
-            color: #1e3a8a; font-weight: 700; font-size: 1.2rem;
-            margin-bottom: 15px; display: flex; align-items: center;
+            color: #1e3a8a; font-weight: 600; font-size: 1rem;
+            margin-bottom: 10px; display: flex; align-items: center;
         }
         [data-theme="dark"] .section-title { color: #60a5fa; }
-        .section-title i { margin-right: 10px; color: var(--primary-orange); }
+        .section-title i { margin-right: 8px; color: var(--primary-orange); }
 
-        .transactions-container { max-height: 500px; overflow-y: auto; padding-right: 5px; }
-
-        /* New Card Style for Transactions */
-        .trans-card {
-            background: rgba(255, 255, 255, 0.5);
-            border-radius: 15px;
-            padding: 15px;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            transition: transform 0.2s;
+        .transactions-container {
+            max-height: 450px; overflow-y: auto;
+            background: rgba(255,255,255,0.5);
+            border-radius: 12px;
         }
+        [data-theme="dark"] .transactions-container { background: rgba(0,0,0,0.2); }
+
+        .trans-item {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 12px; border-bottom: 1px solid rgba(0,0,0,0.05);
+            transition: background 0.2s;
+        }
+        [data-theme="dark"] .trans-item { border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .trans-item:last-child { border-bottom: none; }
         
-        [data-theme="dark"] .trans-card {
-            background: rgba(0, 0, 0, 0.2);
-            border-color: rgba(255, 255, 255, 0.05);
-        }
-
+        .trans-left { display: flex; align-items: center; gap: 12px; flex: 1; }
+        
         .trans-icon {
-            width: 45px; height: 45px; border-radius: 12px;
+            width: 35px; height: 35px; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            font-size: 1.2rem; margin-right: 15px; flex-shrink: 0;
+            font-size: 0.9rem; flex-shrink: 0;
         }
 
-        .trans-details { flex: 1; }
-        .trans-title { font-weight: 600; font-size: 0.95rem; color: #333; margin-bottom: 2px; }
-        [data-theme="dark"] .trans-title { color: #e0e0e0; }
+        .trans-info { display: flex; flex-direction: column; line-height: 1.2; }
+        .trans-name { font-weight: 500; font-size: 0.85rem; color: #333; }
+        [data-theme="dark"] .trans-name { color: #e0e0e0; }
+        .trans-date { font-size: 0.7rem; color: #888; }
+
+        .trans-amount { font-weight: 600; font-size: 0.9rem; white-space: nowrap; }
+
+        /* Colors */
+        .income-style .trans-icon { background: #dcfce7; color: #166534; }
+        .income-style .trans-amount { color: #166534; }
         
-        .trans-date { font-size: 0.75rem; color: #666; }
-        [data-theme="dark"] .trans-date { color: #999; }
+        .expense-style .trans-icon { background: #fee2e2; color: #991b1b; }
+        .expense-style .trans-amount { color: #991b1b; }
 
-        .trans-amount { font-weight: 700; font-size: 1rem; text-align: right; }
-
-        /* Income/Expense Specifics */
-        .type-income .trans-icon { background: rgba(40, 167, 69, 0.1); color: #28a745; }
-        .type-income .trans-amount { color: #28a745; }
-        
-        .type-expense .trans-icon { background: rgba(220, 53, 69, 0.1); color: #dc3545; }
-        .type-expense .trans-amount { color: #dc3545; }
-
-        .no-transactions {
-            text-align: center; padding: 40px 20px; color: #666;
-            background: rgba(0,0,0,0.02); border-radius: 15px;
-        }
+        .subscription-style .trans-icon { background: #e0f2fe; color: #075985; }
+        .subscription-style .trans-amount { color: #075985; }
 
         /* Footer */
         footer {
             position: fixed; bottom: 0; width: 100%;
-            background: rgba(248, 248, 248, 0.9); backdrop-filter: blur(10px);
+            background: rgba(248, 248, 248, 0.95); backdrop-filter: blur(5px);
             color: #666; font-size: 0.7rem; z-index: 1000;
             border-top: 1px solid rgba(255, 107, 53, 0.2);
             display: flex; justify-content: space-between; align-items: center;
-            padding: 3px 15px; height: 30px;
+            padding: 0 15px; height: 30px;
         }
-        [data-theme="dark"] footer { background: rgba(45, 45, 45, 0.9); color: #ccc; }
-        .footer-text { flex: 1; text-align: center; }
-        .theme-toggle-btn {
-            background: transparent; border: 1px solid #ccc; border-radius: 20px;
-            padding: 4px 8px; color: #666; font-size: 0.75rem; cursor: pointer; height: 24px;
-        }
-        [data-theme="dark"] .theme-toggle-btn { border-color: #666; color: #ccc; }
+        [data-theme="dark"] footer { background: rgba(30, 30, 30, 0.95); color: #ccc; }
+        
+        .theme-toggle-btn { background: none; border: none; font-size: 1rem; cursor: pointer; }
 
-        /* Skeleton Loading */
+        /* Skeleton */
         .skeleton {
-            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-            background-size: 200% 100%; animation: loading 1.5s infinite;
-            border-radius: 8px; color: transparent !important; user-select: none;
+            background: #e0e0e0; border-radius: 4px; color: transparent !important;
+            animation: pulse 1.5s infinite;
         }
-        [data-theme="dark"] .skeleton { background: linear-gradient(90deg, #333 25%, #444 50%, #333 75%); }
-        @keyframes loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
 
         @media (max-width: 576px) {
             .header-image { max-height: 120px; }
-            .main-card { padding: 15px; margin: 100px 10px 50px 10px; }
-            .wealth-amount { font-size: 2.2rem; }
-            footer { padding: 3px 10px; height: 28px; }
+            .main-card { margin-top: 110px; padding: 12px; }
+            .wealth-amount { font-size: 1.8rem; }
         }
     </style>
 </head>
@@ -168,7 +137,7 @@
     
     <main class="container">
         <div class="row justify-content-center">
-            <div class="col-12 col-md-10 col-lg-8">
+            <div class="col-12 col-md-8 col-lg-6">
                 <div class="main-card">
                     
                     <div class="wealth-display">
@@ -176,29 +145,22 @@
                         <div class="wealth-amount" id="totalWealth">
                             <span class="skeleton">₹00,000</span>
                         </div>
-                        <div class="last-updated" id="lastUpdated">Last updated: Checking...</div>
                     </div>
 
                     <div class="section-title">
-                        <i class="fas fa-list-alt"></i> Recent Transactions
+                        <i class="fas fa-history"></i> Recent Transactions
                     </div>
 
                     <div class="transactions-container" id="transactionsList">
-                        <div class="trans-card">
-                            <div class="trans-icon skeleton"></div>
-                            <div class="trans-details">
-                                <div class="trans-title skeleton" style="width: 60%">Loading...</div>
-                                <div class="trans-date skeleton" style="width: 40%">Date</div>
+                        <div class="trans-item">
+                            <div class="trans-left">
+                                <div class="trans-icon skeleton"></div>
+                                <div class="trans-info">
+                                    <span class="trans-name skeleton" style="width: 100px">Loading</span>
+                                    <span class="trans-date skeleton" style="width: 60px">Date</span>
+                                </div>
                             </div>
-                            <div class="trans-amount skeleton" style="width: 20%">000</div>
-                        </div>
-                        <div class="trans-card">
-                            <div class="trans-icon skeleton"></div>
-                            <div class="trans-details">
-                                <div class="trans-title skeleton" style="width: 50%">Loading...</div>
-                                <div class="trans-date skeleton" style="width: 30%">Date</div>
-                            </div>
-                            <div class="trans-amount skeleton" style="width: 20%">000</div>
+                            <div class="trans-amount skeleton" style="width: 50px">000</div>
                         </div>
                     </div>
 
@@ -208,7 +170,7 @@
     </main>
     
     <footer>
-        <div class="footer-text"><p>Powered by VTSoft 2025</p></div>
+        <div class="footer-text" style="flex:1; text-align:center;">Powered by VTSoft 2025</div>
         <button id="themeToggle" class="theme-toggle-btn">🌞</button>
     </footer>
 
@@ -236,112 +198,113 @@
             const themeToggle = document.getElementById('themeToggle');
             const savedTheme = localStorage.getItem('theme') || 'light';
             document.documentElement.setAttribute('data-theme', savedTheme);
-            if(themeToggle) {
-                themeToggle.textContent = savedTheme === 'light' ? '🌞' : '🌙';
-                themeToggle.addEventListener('click', () => {
-                    const newTheme = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-                    document.documentElement.setAttribute('data-theme', newTheme);
-                    localStorage.setItem('theme', newTheme);
-                    themeToggle.textContent = newTheme === 'light' ? '🌞' : '🌙';
-                });
-            }
+            themeToggle.textContent = savedTheme === 'light' ? '🌞' : '🌙';
+            themeToggle.addEventListener('click', () => {
+                const newTheme = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+                document.documentElement.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+                themeToggle.textContent = newTheme === 'light' ? '🌞' : '🌙';
+            });
 
             auth.onAuthStateChanged((user) => {
                 if (!user) {
                     window.location.href = 'login.html';
                 } else {
-                    fetchWealthAndTransactions();
+                    calculateWealthAndTransactions();
                 }
             });
 
-            async function fetchWealthAndTransactions() {
-                const transactionsList = document.getElementById('transactionsList');
-                const totalWealth = document.getElementById('totalWealth');
-                const lastUpdated = document.getElementById('lastUpdated');
-
+            async function calculateWealthAndTransactions() {
                 try {
+                    // 1. Fetch Manual Transactions
+                    const transSnapshot = await db.collection('transactions').orderBy('createdAt', 'desc').get();
+                    
+                    // 2. Fetch ALL Online Subscriptions (Group Query)
+                    // Note: This fetches all paid months from all users
+                    const subSnapshot = await db.collectionGroup('months').where('paid', '==', true).get();
+
                     let totalIncome = 0;
                     let totalExpense = 0;
-                    let latestUpdateDate = null;
+                    let totalSubscription = 0;
+                    let allItems = [];
 
-                    // Fetch Transactions sorted by date
-                    const snapshot = await db.collection('transactions').orderBy('createdAt', 'desc').get();
+                    // --- Process Transactions ---
+                    transSnapshot.forEach(doc => {
+                        const t = doc.data();
+                        const amount = Number(t.amount) || 0;
+                        
+                        if (t.type === 'income') totalIncome += amount;
+                        if (t.type === 'expense') totalExpense += amount;
+
+                        allItems.push({
+                            type: t.type, // 'income' or 'expense'
+                            name: t.narration || 'Transaction',
+                            amount: amount,
+                            dateObj: t.createdAt ? t.createdAt.toDate() : new Date(),
+                            dateStr: t.date || '-'
+                        });
+                    });
+
+                    // --- Process Subscriptions ---
+                    // This adds the subscription money to the total wealth
+                    subSnapshot.forEach(doc => {
+                        const s = doc.data();
+                        const subAmount = Number(s.amount) || 200; // Default to 200 if not saved
+                        
+                        totalSubscription += subAmount;
+
+                        // Optional: Add to list if you want to see individual payments
+                        // For compactness, we might skip adding 100s of payments to the list
+                        // Or add them but mark them as subscription
+                    });
+
+                    // 3. Final Calculation
+                    // Total Wealth = (Manual Income + Online Subscriptions) - Expenses
+                    const finalWealth = (totalIncome + totalSubscription) - totalExpense;
+
+                    // Display Wealth
+                    document.getElementById('totalWealth').textContent = `₹${finalWealth.toLocaleString('en-IN')}`;
+
+                    // --- Render List (Compact) ---
+                    const listContainer = document.getElementById('transactionsList');
                     
-                    if (snapshot.empty) {
-                        transactionsList.innerHTML = '<div class="no-transactions"><i class="fas fa-inbox mb-2" style="font-size:2rem; opacity:0.5;"></i><br>No transactions found</div>';
-                        totalWealth.textContent = '₹0';
-                        lastUpdated.textContent = 'Last updated: Never';
+                    if (allItems.length === 0) {
+                        listContainer.innerHTML = '<div style="text-align:center; padding:20px; color:#999; font-size:0.8rem;">No recent transactions</div>';
                         return;
                     }
 
-                    let transactionsHTML = '';
+                    // Sort items by date (Newest first)
+                    // Note: Subscriptions are not mixed in the list here to keep it clean, 
+                    // but they ARE included in the Total Balance above.
+                    
+                    let listHTML = '';
+                    allItems.forEach(item => {
+                        const isIncome = item.type === 'income';
+                        const styleClass = isIncome ? 'income-style' : 'expense-style';
+                        const icon = isIncome ? 'fa-arrow-down' : 'fa-arrow-up';
+                        const sign = isIncome ? '+' : '-';
 
-                    snapshot.forEach(doc => {
-                        const t = doc.data();
-                        
-                        // ✅ FIX: Ensure amount is treated as a Number
-                        const amount = Number(t.amount) || 0;
-                        const type = (t.type || '').toLowerCase().trim(); // Case insensitive check
-
-                        // Wealth Calculation
-                        if (type === 'income') {
-                            totalIncome += amount;
-                        } else if (type === 'expense') {
-                            totalExpense += amount;
-                        }
-
-                        // Date Handling
-                        if (t.createdAt) {
-                            const date = new Date(t.createdAt.seconds * 1000);
-                            if (!latestUpdateDate || date > latestUpdateDate) latestUpdateDate = date;
-                        }
-
-                        // Style Setup based on Type
-                        const isIncome = type === 'income';
-                        const typeClass = isIncome ? 'type-income' : 'type-expense';
-                        const icon = isIncome ? 'fa-arrow-down' : 'fa-arrow-up'; // Arrow down for money coming in (into pocket)
-                        const displayType = isIncome ? 'Income' : 'Expense';
-
-                        // Create Styled Card
-                        transactionsHTML += `
-                            <div class="trans-card ${typeClass}">
-                                <div class="trans-icon">
-                                    <i class="fas ${icon}"></i>
+                        listHTML += `
+                            <div class="trans-item ${styleClass}">
+                                <div class="trans-left">
+                                    <div class="trans-icon">
+                                        <i class="fas ${icon}"></i>
+                                    </div>
+                                    <div class="trans-info">
+                                        <span class="trans-name">${item.name}</span>
+                                        <span class="trans-date">${item.dateStr}</span>
+                                    </div>
                                 </div>
-                                <div class="trans-details">
-                                    <div class="trans-title">${t.narration || displayType}</div>
-                                    <div class="trans-date">${t.date || 'No Date'}</div>
-                                </div>
-                                <div class="trans-amount">
-                                    ${isIncome ? '+' : '-'} ₹${amount.toLocaleString('en-IN')}
-                                </div>
+                                <div class="trans-amount">${sign} ₹${item.amount}</div>
                             </div>
                         `;
                     });
 
-                    // Update UI
-                    transactionsList.innerHTML = transactionsHTML;
-
-                    // Calculate Final Wealth
-                    const wealth = totalIncome - totalExpense;
-                    
-                    // Animate number (optional visual flair) or just set it
-                    totalWealth.textContent = `₹${wealth.toLocaleString('en-IN')}`;
-
-                    // Set Last Updated Date
-                    if (latestUpdateDate) {
-                        const formattedDate = latestUpdateDate.toLocaleDateString('en-IN', {
-                            day: '2-digit', month: '2-digit', year: 'numeric',
-                            hour: '2-digit', minute: '2-digit'
-                        });
-                        lastUpdated.textContent = `Last updated: ${formattedDate}`;
-                    } else {
-                        lastUpdated.textContent = 'Last updated: Just now';
-                    }
+                    listContainer.innerHTML = listHTML;
 
                 } catch (error) {
-                    console.error('Error:', error);
-                    transactionsList.innerHTML = '<div class="no-transactions">Error loading data. Try refreshing.</div>';
+                    console.error("Error calculating wealth:", error);
+                    document.getElementById('totalWealth').textContent = "Error";
                 }
             }
         });
