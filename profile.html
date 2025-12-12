@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
     <style>
+        /* CSS Same as provided */
         :root {
             --primary-orange: #FF6B35;
             --orange-light: #FF8C42;
@@ -19,9 +20,7 @@
             --card-bg: rgba(255, 255, 255, 0.95);
         }
 
-        [data-theme="dark"] {
-            --card-bg: rgba(45, 45, 45, 0.95);
-        }
+        [data-theme="dark"] { --card-bg: rgba(45, 45, 45, 0.95); }
 
         body {
             font-family: 'Poppins', sans-serif;
@@ -35,269 +34,106 @@
         }
 
         body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><polygon fill="%23ffffff10" points="0,1000 1000,0 1000,1000"/></svg>');
-            pointer-events: none;
-            z-index: -1;
+            pointer-events: none; z-index: -1;
         }
 
-        /* Header Image - Fixed at top */
         .header-image {
-            width: 100%;
-            height: auto;
-            max-height: 150px;
-            object-fit: cover;
-            display: block;
-            position: fixed;
-            top: 3mm;
-            left: 0;
-            z-index: 999;
+            width: 100%; height: auto; max-height: 150px;
+            object-fit: cover; display: block; position: fixed;
+            top: 3mm; left: 0; z-index: 999;
         }
 
-        /* Page Title - Less gap after header */
         .page-title {
-            text-align: center;
-            margin: 120px 0 20px 0; /* Reduced margin */
-            color: white;
-            font-weight: 600;
-            font-size: 1.8rem;
+            text-align: center; margin: 120px 0 20px 0;
+            color: white; font-weight: 600; font-size: 1.8rem;
             text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
         }
 
-        /* Profile Card */
         .profile-card {
-            background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            border-radius: 20px;
-            padding: 25px;
-            box-shadow: var(--shadow);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            margin-bottom: 20px;
+            background: var(--card-bg); backdrop-filter: blur(20px);
+            border-radius: 20px; padding: 25px; box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.2); margin-bottom: 20px;
         }
 
         .member-name {
-            font-size: 1.4rem;
-            font-weight: 700;
-            color: #1e3a8a;
-            text-align: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
+            font-size: 1.4rem; font-weight: 700; color: #1e3a8a;
+            text-align: center; margin-bottom: 20px; padding-bottom: 15px;
             border-bottom: 2px solid var(--orange-light);
         }
 
-        [data-theme="dark"] .member-name {
-            color: #60a5fa;
-        }
+        [data-theme="dark"] .member-name { color: #60a5fa; }
+        .profile-info { margin-bottom: 15px; }
+        .profile-label { font-weight: 600; color: var(--primary-orange); margin-bottom: 5px; }
+        .profile-value { color: #333; font-size: 1rem; margin-bottom: 10px; }
+        [data-theme="dark"] .profile-value { color: #e0e0e0; }
 
-        .profile-info {
-            margin-bottom: 15px;
-        }
-
-        .profile-label {
-            font-weight: 600;
-            color: var(--primary-orange);
-            margin-bottom: 5px;
-        }
-
-        .profile-value {
-            color: #333;
-            font-size: 1rem;
-            margin-bottom: 10px;
-        }
-
-        [data-theme="dark"] .profile-value {
-            color: #e0e0e0;
-        }
-
-        /* Buttons */
-        .profile-buttons {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-top: 25px;
-        }
-
+        .profile-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 25px; }
         .btn-edit {
-            background: var(--gradient);
-            border: none;
-            border-radius: 12px;
-            padding: 12px 20px;
-            color: white;
-            font-weight: 600;
-            box-shadow: var(--shadow);
-            transition: all 0.3s ease;
+            background: var(--gradient); border: none; border-radius: 12px;
+            padding: 12px 20px; color: white; font-weight: 600;
+            box-shadow: var(--shadow); transition: all 0.3s ease;
         }
-
-        .btn-edit:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-hover);
-        }
+        .btn-edit:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
 
         .btn-signout {
             background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-            border: none;
-            border-radius: 12px;
-            padding: 12px 20px;
-            color: white;
-            font-weight: 600;
-            box-shadow: var(--shadow);
+            border: none; border-radius: 12px; padding: 12px 20px;
+            color: white; font-weight: 600; box-shadow: var(--shadow);
             transition: all 0.3s ease;
         }
+        .btn-signout:hover { transform: translateY(-2px); box-shadow: 0 12px 35px rgba(220, 53, 69, 0.25); }
 
-        .btn-signout:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 35px rgba(220, 53, 69, 0.25);
-        }
-
-        /* Edit Form */
         .edit-form {
-            background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            border-radius: 20px;
-            padding: 25px;
-            box-shadow: var(--shadow);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            margin-top: 20px;
-            display: none;
+            background: var(--card-bg); backdrop-filter: blur(20px);
+            border-radius: 20px; padding: 25px; box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.2); margin-top: 20px; display: none;
         }
-
-        .edit-form h2 {
-            color: var(--primary-orange);
-            font-weight: 600;
-            margin-bottom: 20px;
-            text-align: center;
+        .edit-form h2 { color: var(--primary-orange); font-weight: 600; margin-bottom: 20px; text-align: center; }
+        .form-control, .form-select {
+            border-radius: 10px; padding: 12px 15px; border: 2px solid #e9ecef;
+            transition: all 0.3s ease; margin-bottom: 15px;
         }
-
-        .form-control {
-            border-radius: 10px;
-            padding: 12px 15px;
-            border: 2px solid #e9ecef;
-            transition: all 0.3s ease;
-            margin-bottom: 15px;
-        }
-
-        .form-control:focus {
-            border-color: var(--primary-orange);
-            box-shadow: 0 0 0 0.2rem rgba(255, 107, 53, 0.25);
-        }
-
-        .form-select {
-            border-radius: 10px;
-            padding: 12px 15px;
-            border: 2px solid #e9ecef;
-            transition: all 0.3s ease;
-            margin-bottom: 15px;
-        }
-
-        .form-select:focus {
-            border-color: var(--primary-orange);
-            box-shadow: 0 0 0 0.2rem rgba(255, 107, 53, 0.25);
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-orange); box-shadow: 0 0 0 0.2rem rgba(255, 107, 53, 0.25);
         }
 
         .btn-save {
-            background: var(--gradient);
-            border: none;
-            border-radius: 12px;
-            padding: 12px 30px;
-            color: white;
-            font-weight: 600;
-            width: 100%;
-            transition: all 0.3s ease;
-            margin-top: 10px;
+            background: var(--gradient); border: none; border-radius: 12px;
+            padding: 12px 30px; color: white; font-weight: 600; width: 100%;
+            transition: all 0.3s ease; margin-top: 10px;
         }
+        .btn-save:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
 
-        .btn-save:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-hover);
-        }
-
-        /* Footer */
         footer {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            background: rgba(248, 248, 248, 0.9);
-            backdrop-filter: blur(10px);
-            color: #666;
-            font-size: 0.7rem;
-            z-index: 1000;
+            position: fixed; bottom: 0; width: 100%;
+            background: rgba(248, 248, 248, 0.9); backdrop-filter: blur(10px);
+            color: #666; font-size: 0.7rem; z-index: 1000;
             border-top: 1px solid rgba(255, 107, 53, 0.2);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 3px 15px;
-            height: 30px;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 3px 15px; height: 30px;
         }
-
-        [data-theme="dark"] footer {
-            background: rgba(45, 45, 45, 0.9);
-            color: #ccc;
-        }
-
-        .footer-text {
-            flex: 1;
-            text-align: center;
-        }
-
-        /* Larger Sun Button */
+        [data-theme="dark"] footer { background: rgba(45, 45, 45, 0.9); color: #ccc; }
+        .footer-text { flex: 1; text-align: center; }
         .theme-toggle-btn {
-            background: transparent;
-            border: 1px solid #ccc;
-            border-radius: 20px;
-            padding: 6px 12px; /* Larger padding */
-            color: #666;
-            font-size: 1rem; /* Larger font */
-            transition: all 0.3s ease;
-            cursor: pointer;
-            height: 30px; /* Larger height */
+            background: transparent; border: 1px solid #ccc; border-radius: 20px;
+            padding: 6px 12px; color: #666; font-size: 1rem;
+            transition: all 0.3s ease; cursor: pointer; height: 30px;
         }
+        [data-theme="dark"] .theme-toggle-btn { border-color: #666; color: #ccc; }
+        .theme-toggle-btn:hover { background: var(--gradient); color: white; border-color: var(--primary-orange); }
 
-        [data-theme="dark"] .theme-toggle-btn {
-            border-color: #666;
-            color: #ccc;
-        }
-
-        .theme-toggle-btn:hover {
-            background: var(--gradient);
-            color: white;
-            border-color: var(--primary-orange);
-        }
-
-        /* Responsive */
         @media (max-width: 576px) {
-            .header-image {
-                max-height: 120px;
-            }
-            
-            .page-title {
-                margin: 100px 0 15px 0; /* Further reduced for mobile */
-                font-size: 1.5rem;
-            }
-            
-            .profile-card, .edit-form {
-                padding: 20px;
-                margin: 0 10px 20px 10px;
-            }
-            
-            .profile-buttons {
-                grid-template-columns: 1fr;
-                gap: 10px;
-            }
-            
-            footer {
-                padding: 3px 10px;
-                height: 28px;
-            }
+            .header-image { max-height: 120px; }
+            .page-title { margin: 100px 0 15px 0; font-size: 1.5rem; }
+            .profile-card, .edit-form { padding: 20px; margin: 0 10px 20px 10px; }
+            .profile-buttons { grid-template-columns: 1fr; gap: 10px; }
+            footer { padding: 3px 10px; height: 28px; }
         }
     </style>
 </head>
 <body>
-    <!-- Header Image - Fixed at top -->
     <img src="assets/head.png" alt="Header" class="header-image">
     
     <main class="container">
@@ -305,70 +141,28 @@
         
         <div class="row justify-content-center">
             <div class="col-12 col-md-8 col-lg-6">
-                <!-- Profile Display -->
                 <div class="profile-card">
                     <div class="member-name" id="memberName">Loading...</div>
-                    
-                    <div class="profile-info">
-                        <div class="profile-label">Member Number</div>
-                        <div class="profile-value" id="memberNumber">Loading...</div>
-                    </div>
-                    
-                    <div class="profile-info">
-                        <div class="profile-label">House Name</div>
-                        <div class="profile-value" id="homeName">Loading...</div>
-                    </div>
-                    
-                    <div class="profile-info">
-                        <div class="profile-label">Email</div>
-                        <div class="profile-value" id="email">Loading...</div>
-                    </div>
-                    
-                    <div class="profile-info">
-                        <div class="profile-label">Primary Mobile</div>
-                        <div class="profile-value" id="primaryMobile">Loading...</div>
-                    </div>
-                    
-                    <div class="profile-info">
-                        <div class="profile-label">Secondary Mobile</div>
-                        <div class="profile-value" id="secondaryMobile">Loading...</div>
-                    </div>
-                    
-                    <div class="profile-info">
-                        <div class="profile-label">Gas Connection</div>
-                        <div class="profile-value" id="gasConnection">Loading...</div>
-                    </div>
+                    <div class="profile-info"><div class="profile-label">Member Number</div><div class="profile-value" id="memberNumber">...</div></div>
+                    <div class="profile-info"><div class="profile-label">House Name</div><div class="profile-value" id="homeName">...</div></div>
+                    <div class="profile-info"><div class="profile-label">Email</div><div class="profile-value" id="email">...</div></div>
+                    <div class="profile-info"><div class="profile-label">Primary Mobile</div><div class="profile-value" id="primaryMobile">...</div></div>
+                    <div class="profile-info"><div class="profile-label">Secondary Mobile</div><div class="profile-value" id="secondaryMobile">...</div></div>
+                    <div class="profile-info"><div class="profile-label">Gas Connection</div><div class="profile-value" id="gasConnection">...</div></div>
                     
                     <div class="profile-buttons">
-                        <button class="btn-edit" id="editProfileBtn">
-                            <i class="fas fa-edit me-2"></i>Edit Profile
-                        </button>
-                        <button class="btn-signout" id="signoutBtn">
-                            <i class="fas fa-sign-out-alt me-2"></i>Sign Out
-                        </button>
+                        <button class="btn-edit" id="editProfileBtn"><i class="fas fa-edit me-2"></i>Edit Profile</button>
+                        <button class="btn-signout" id="signoutBtn"><i class="fas fa-sign-out-alt me-2"></i>Sign Out</button>
                     </div>
                 </div>
 
-                <!-- Edit Form -->
                 <div class="edit-form" id="editForm">
                     <h2>Edit Profile</h2>
                     <form id="profileForm">
-                        <div class="mb-3">
-                            <label for="editHomeName" class="form-label">House Name:</label>
-                            <input type="text" class="form-control" id="editHomeName">
-                        </div>
-                        <div class="mb-3">
-                            <label for="editEmail" class="form-label">Email:</label>
-                            <input type="email" class="form-control" id="editEmail">
-                        </div>
-                        <div class="mb-3">
-                            <label for="editPrimaryMobile" class="form-label">Primary Mobile:</label>
-                            <input type="text" class="form-control" id="editPrimaryMobile">
-                        </div>
-                        <div class="mb-3">
-                            <label for="editSecondaryMobile" class="form-label">Secondary Mobile:</label>
-                            <input type="text" class="form-control" id="editSecondaryMobile">
-                        </div>
+                        <div class="mb-3"><label for="editHomeName" class="form-label">House Name:</label><input type="text" class="form-control" id="editHomeName"></div>
+                        <div class="mb-3"><label for="editEmail" class="form-label">Email:</label><input type="email" class="form-control" id="editEmail"></div>
+                        <div class="mb-3"><label for="editPrimaryMobile" class="form-label">Primary Mobile:</label><input type="text" class="form-control" id="editPrimaryMobile"></div>
+                        <div class="mb-3"><label for="editSecondaryMobile" class="form-label">Secondary Mobile:</label><input type="text" class="form-control" id="editSecondaryMobile"></div>
                         <div class="mb-3">
                             <label for="editGasConnection" class="form-label">Gas Connection:</label>
                             <select id="editGasConnection" class="form-select">
@@ -378,92 +172,98 @@
                                 <option value="Others">Others</option>
                             </select>
                         </div>
-                        <button type="submit" class="btn-save">
-                            <i class="fas fa-save me-2"></i>Save Changes
-                        </button>
+                        <button type="submit" class="btn-save"><i class="fas fa-save me-2"></i>Save Changes</button>
                     </form>
                 </div>
             </div>
         </div>
     </main>
     
-    <!-- Footer -->
     <footer>
-        <div class="footer-text">
-            <p>Powered by VTSoft 2025</p>
-        </div>
+        <div class="footer-text"><p>Powered by VTSoft 2025</p></div>
         <button id="themeToggle" class="theme-toggle-btn">🌞</button>
     </footer>
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js" defer></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js" defer></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js" defer></script>
 
     <script>
-        // Firebase Config
-        const firebaseConfig = {
-            apiKey: "AIzaSyBWswawf9tpxNwVU0BaJ6FCwCvgcjUQXlA",
-            authDomain: "shipyard-nagar.firebaseapp.com",
-            projectId: "shipyard-nagar",
-            storageBucket: "shipyard-nagar.firebasestorage.app",
-            messagingSenderId: "552855824221",
-            appId: "1:552855824221:web:f709da953077475be9eab4",
-            measurementId: "G-V8CQ4YCCQ5"
-        };
-
-        // Initialize Firebase
-        let auth, db;
-        try {
-            firebase.initializeApp(firebaseConfig);
-            auth = firebase.auth();
-            db = firebase.firestore();
-            console.log('Firebase initialized successfully');
-        } catch (error) {
-            alert('Firebase Initialization Error: ' + error.message);
-            console.error('Firebase Init Error:', error);
-        }
-
-        // Theme Toggle
-        const themeToggle = document.getElementById('themeToggle');
-        if (themeToggle) {
-            themeToggle.addEventListener('click', () => {
-                const html = document.documentElement;
-                const currentTheme = html.getAttribute('data-theme');
-                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-                html.setAttribute('data-theme', newTheme);
-                localStorage.setItem('theme', newTheme);
-                
-                // Update button emoji
-                themeToggle.textContent = newTheme === 'light' ? '🌞' : '🌙';
-            });
-
-            // Set initial theme and button
+        // ✅ 1. Load Cached Profile IMMEDIATELY
+        document.addEventListener('DOMContentLoaded', () => {
+            loadFromCache();
+            
+            // Theme Logic
             const savedTheme = localStorage.getItem('theme') || 'light';
             document.documentElement.setAttribute('data-theme', savedTheme);
-            themeToggle.textContent = savedTheme === 'light' ? '🌞' : '🌙';
+            const tBtn = document.getElementById('themeToggle');
+            if(tBtn) tBtn.textContent = savedTheme === 'light' ? '🌞' : '🌙';
+            
+            // Edit Button Toggle
+            document.getElementById('editProfileBtn').addEventListener('click', () => {
+                const form = document.getElementById('editForm');
+                form.style.display = form.style.display === 'block' ? 'none' : 'block';
+                if(form.style.display === 'block') form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+
+        // Function to load data from LocalStorage
+        function loadFromCache() {
+            const data = JSON.parse(localStorage.getItem('cached_userProfile') || '{}');
+            if (Object.keys(data).length > 0) {
+                updateUI(data);
+            }
         }
 
-        // DOM Content Loaded
-        document.addEventListener('DOMContentLoaded', () => {
-            const memberNameEl = document.getElementById('memberName');
-            const memberNumberEl = document.getElementById('memberNumber');
-            const homeNameEl = document.getElementById('homeName');
-            const emailEl = document.getElementById('email');
-            const primaryMobileEl = document.getElementById('primaryMobile');
-            const secondaryMobileEl = document.getElementById('secondaryMobile');
-            const gasConnectionEl = document.getElementById('gasConnection');
-            const editProfileBtn = document.getElementById('editProfileBtn');
-            const editForm = document.getElementById('editForm');
-            const profileForm = document.getElementById('profileForm');
-            const signoutBtn = document.getElementById('signoutBtn');
+        // Function to Update UI elements
+        function updateUI(data) {
+            document.getElementById('memberName').textContent = data.memberName || 'N/A';
+            document.getElementById('memberNumber').textContent = data.memberNumber || 'N/A';
+            document.getElementById('homeName').textContent = data.homeName || 'N/A';
+            document.getElementById('email').textContent = data.email || 'N/A';
+            document.getElementById('primaryMobile').textContent = data.primaryMobile || 'N/A';
+            document.getElementById('secondaryMobile').textContent = data.secondaryMobile || 'N/A';
+            document.getElementById('gasConnection').textContent = data.gasConnection || 'N/A';
 
-            if (!memberNameEl || !editProfileBtn || !signoutBtn) {
-                console.error('Required DOM elements not found');
-                return;
+            // Pre-fill Edit Form
+            document.getElementById('editHomeName').value = data.homeName || '';
+            document.getElementById('editEmail').value = data.email || '';
+            document.getElementById('editPrimaryMobile').value = data.primaryMobile || '';
+            document.getElementById('editSecondaryMobile').value = data.secondaryMobile || '';
+            document.getElementById('editGasConnection').value = data.gasConnection || 'Indian';
+        }
+
+        // Firebase Logic (Runs after load)
+        window.addEventListener('load', () => {
+            if (typeof firebase === 'undefined') return;
+
+            const firebaseConfig = {
+                apiKey: "AIzaSyBWswawf9tpxNwVU0BaJ6FCwCvgcjUQXlA",
+                authDomain: "shipyard-nagar.firebaseapp.com",
+                projectId: "shipyard-nagar",
+                storageBucket: "shipyard-nagar.firebasestorage.app",
+                messagingSenderId: "552855824221",
+                appId: "1:552855824221:web:f709da953077475be9eab4",
+                measurementId: "G-V8CQ4YCCQ5"
+            };
+
+            if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+            const auth = firebase.auth();
+            const db = firebase.firestore();
+
+            // Theme Toggle
+            const themeToggle = document.getElementById('themeToggle');
+            if (themeToggle) {
+                themeToggle.addEventListener('click', () => {
+                    const html = document.documentElement;
+                    const newTheme = html.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+                    html.setAttribute('data-theme', newTheme);
+                    localStorage.setItem('theme', newTheme);
+                    themeToggle.textContent = newTheme === 'light' ? '🌞' : '🌙';
+                });
             }
 
-            // Auth State Check and Data Load
+            // Auth Check & Fetch Data
             auth.onAuthStateChanged(async (user) => {
                 if (!user) {
                     window.location.href = 'login.html';
@@ -474,96 +274,73 @@
                     const userDoc = await db.collection('users').doc(user.uid).get();
                     if (userDoc.exists) {
                         const userData = userDoc.data();
-                        console.log('User Data:', userData);
-
-                        memberNameEl.textContent = userData.memberName || 'N/A';
-                        memberNumberEl.textContent = userData.memberNumber || 'N/A';
-                        homeNameEl.textContent = userData.homeName || 'N/A';
-                        emailEl.textContent = userData.email || 'N/A';
-                        primaryMobileEl.textContent = userData.primaryMobile || 'N/A';
-                        secondaryMobileEl.textContent = userData.secondaryMobile || 'N/A';
-                        gasConnectionEl.textContent = userData.gasConnection || 'N/A';
-
-                        // Pre-fill Edit Form
-                        document.getElementById('editHomeName').value = userData.homeName || '';
-                        document.getElementById('editEmail').value = userData.email || '';
-                        document.getElementById('editPrimaryMobile').value = userData.primaryMobile || '';
-                        document.getElementById('editSecondaryMobile').value = userData.secondaryMobile || '';
-                        document.getElementById('editGasConnection').value = userData.gasConnection || 'Indian';
-                    } else {
-                        console.error(`User data not found for UID: ${user.uid}`);
-                        memberNameEl.textContent = 'N/A';
-                        memberNumberEl.textContent = 'N/A';
-                        homeNameEl.textContent = 'N/A';
-                        emailEl.textContent = 'N/A';
-                        primaryMobileEl.textContent = 'N/A';
-                        secondaryMobileEl.textContent = 'N/A';
-                        gasConnectionEl.textContent = 'N/A';
+                        
+                        // ✅ Update UI & Cache
+                        updateUI(userData);
+                        localStorage.setItem('cached_userProfile', JSON.stringify(userData));
                     }
                 } catch (error) {
-                    console.error('Error fetching user data:', error);
-                    alert('Error loading profile data: ' + error.message);
-                    memberNameEl.textContent = 'N/A';
-                    memberNumberEl.textContent = 'N/A';
-                    homeNameEl.textContent = 'N/A';
-                    emailEl.textContent = 'N/A';
-                    primaryMobileEl.textContent = 'N/A';
-                    secondaryMobileEl.textContent = 'N/A';
-                    gasConnectionEl.textContent = 'N/A';
+                    console.error('Fetch Error:', error);
                 }
             });
 
-            // Edit Profile Button with auto scroll
-            editProfileBtn.addEventListener('click', () => {
-                if (editForm) {
-                    editForm.style.display = 'block';
-                    // Auto scroll to edit form
-                    editForm.scrollIntoView({ 
-                        behavior: 'smooth', 
-                        block: 'start' 
-                    });
-                } else {
-                    console.error('Edit form element not found');
-                }
-            });
-
-            // Form Submission
+            // Handle Profile Update
+            const profileForm = document.getElementById('profileForm');
             if (profileForm) {
                 profileForm.addEventListener('submit', async (e) => {
                     e.preventDefault();
                     const user = auth.currentUser;
+                    const submitBtn = profileForm.querySelector('button[type="submit"]');
+                    const originalText = submitBtn.innerHTML;
+
                     if (user) {
                         try {
-                            await db.collection('users').doc(user.uid).update({
+                            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+                            submitBtn.disabled = true;
+
+                            const newData = {
                                 homeName: document.getElementById('editHomeName').value,
                                 email: document.getElementById('editEmail').value,
                                 primaryMobile: document.getElementById('editPrimaryMobile').value,
                                 secondaryMobile: document.getElementById('editSecondaryMobile').value,
                                 gasConnection: document.getElementById('editGasConnection').value
-                            });
+                            };
+
+                            // Update Firebase
+                            await db.collection('users').doc(user.uid).update(newData);
+
+                            // ✅ Update Local Data Instantly (No reload needed)
+                            // We need to merge with existing data to keep fields like memberName/memberNumber
+                            const currentData = JSON.parse(localStorage.getItem('cached_userProfile') || '{}');
+                            const mergedData = { ...currentData, ...newData };
+                            
+                            updateUI(mergedData);
+                            localStorage.setItem('cached_userProfile', JSON.stringify(mergedData));
+
                             alert('Profile updated successfully!');
-                            if (editForm) editForm.style.display = 'none';
-                            // Reload page to reflect updated data
-                            window.location.reload();
+                            document.getElementById('editForm').style.display = 'none';
+
                         } catch (error) {
-                            alert('Error saving profile: ' + error.message);
-                            console.error('Save Error:', error);
+                            alert('Error saving: ' + error.message);
+                        } finally {
+                            submitBtn.innerHTML = originalText;
+                            submitBtn.disabled = false;
                         }
                     }
                 });
             }
 
-            // Signout Button
-            signoutBtn.addEventListener('click', () => {
-                auth.signOut()
-                    .then(() => {
-                        alert('Signed out successfully!');
-                        window.location.href = 'login.html';
-                    })
-                    .catch((error) => {
-                        alert('Signout Error: ' + error.message);
-                        console.error('Signout Error:', error);
-                    });
+            // Sign Out
+            document.getElementById('signoutBtn').addEventListener('click', () => {
+                auth.signOut().then(() => {
+                    // ✅ Clear Cache on Logout for Security
+                    localStorage.removeItem('cached_userProfile');
+                    localStorage.removeItem('cached_userName');
+                    localStorage.removeItem('cached_totalWealth');
+                    localStorage.removeItem('cached_monthlyDue');
+                    
+                    window.location.href = 'login.html';
+                }).catch(error => alert('Error: ' + error.message));
             });
         });
     </script>
