@@ -47,8 +47,8 @@
             box-shadow: 0 4px 15px rgba(30, 58, 138, 0.3);
         }
 
-        .balance-label { font-size: 0.8rem; opacity: 0.9; font-weight: 500; text-transform: uppercase; }
-        .wealth-amount { font-size: 2rem; font-weight: 700; margin-top: 5px; }
+        .balance-label { font-size: 0.8rem; opacity: 0.9; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; }
+        .wealth-amount { font-size: 2rem; font-weight: 700; margin-top: 5px; line-height: 1.2; }
 
         /* Compact Transaction List */
         .section-title {
@@ -85,8 +85,10 @@
         .trans-date { font-size: 0.7rem; color: #888; }
         .trans-amount { font-weight: 600; font-size: 0.9rem; white-space: nowrap; }
 
+        /* Style for Income & Expense */
         .income-style .trans-icon { background: #dcfce7; color: #166534; }
         .income-style .trans-amount { color: #166534; }
+        
         .expense-style .trans-icon { background: #fee2e2; color: #991b1b; }
         .expense-style .trans-amount { color: #991b1b; }
 
@@ -99,8 +101,10 @@
             padding: 0 15px; height: 30px;
         }
         [data-theme="dark"] footer { background: rgba(30, 30, 30, 0.95); color: #ccc; }
+        .footer-text { flex: 1; text-align: center; }
         .theme-toggle-btn { background: none; border: none; font-size: 1rem; cursor: pointer; }
 
+        /* Skeleton Loading Animation */
         .skeleton {
             background: #e0e0e0; border-radius: 4px; color: transparent !important;
             animation: pulse 1.5s infinite;
@@ -121,6 +125,7 @@
         <div class="row justify-content-center">
             <div class="col-12 col-md-8 col-lg-6">
                 <div class="main-card">
+                    
                     <div class="wealth-display">
                         <div class="balance-label">Our Current Balance</div>
                         <div class="wealth-amount" id="totalWealth">
@@ -143,22 +148,34 @@
                             </div>
                             <div class="trans-amount skeleton" style="width: 50px">000</div>
                         </div>
+                        <div class="trans-item">
+                            <div class="trans-left">
+                                <div class="trans-icon skeleton"></div>
+                                <div class="trans-info">
+                                    <span class="trans-name skeleton" style="width: 80px">Loading</span>
+                                    <span class="trans-date skeleton" style="width: 50px">Date</span>
+                                </div>
+                            </div>
+                            <div class="trans-amount skeleton" style="width: 50px">000</div>
+                        </div>
                     </div>
+
                 </div>
             </div>
         </div>
     </main>
     
     <footer>
-        <div class="footer-text" style="flex:1; text-align:center;">Powered by VTSoft 2025</div>
+        <div class="footer-text">Powered by VTSoft 2025</div>
         <button id="themeToggle" class="theme-toggle-btn">🌞</button>
     </footer>
 
-    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js" defer></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js" defer></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js" defer></script>
 
     <script>
+        // Use 'load' event to ensure scripts are ready
         window.addEventListener('load', () => {
             const firebaseConfig = {
                 apiKey: "AIzaSyBWswawf9tpxNwVU0BaJ6FCwCvgcjUQXlA",
@@ -174,10 +191,11 @@
             const auth = firebase.auth();
             const db = firebase.firestore();
 
-            // Theme Toggle Logic
+            // Theme Toggle
             const themeToggle = document.getElementById('themeToggle');
             const savedTheme = localStorage.getItem('theme') || 'light';
             document.documentElement.setAttribute('data-theme', savedTheme);
+            
             if(themeToggle) {
                 themeToggle.textContent = savedTheme === 'light' ? '🌞' : '🌙';
                 themeToggle.addEventListener('click', () => {
@@ -188,6 +206,7 @@
                 });
             }
 
+            // Auth State
             auth.onAuthStateChanged((user) => {
                 if (!user) {
                     window.location.href = 'login.html';
@@ -196,88 +215,70 @@
                 }
             });
 
+            // ✅ ORIGINAL CALCULATION LOGIC ONLY
             async function calculateWealthAndTransactions() {
                 try {
-                    // 1. Fetch Manual Transactions
-                    const transSnapshot = await db.collection('transactions').orderBy('createdAt', 'desc').get();
+                    // Fetch Transactions from 'transactions' collection
+                    const transactionsSnapshot = await db.collection('transactions').orderBy('createdAt', 'desc').get();
                     
                     let totalIncome = 0;
                     let totalExpense = 0;
-                    let totalSubscription = 0;
-                    let allItems = [];
-
-                    // Process Manual Transactions
-                    transSnapshot.forEach(doc => {
-                        const t = doc.data();
-                        const amount = Number(t.amount) || 0;
-                        if (t.type === 'income') totalIncome += amount;
-                        if (t.type === 'expense') totalExpense += amount;
-
-                        allItems.push({
-                            type: t.type,
-                            name: t.narration || 'Transaction',
-                            amount: amount,
-                            dateStr: t.date || '-'
-                        });
-                    });
-
-                    // 2. Fetch Subscription Totals (With Error Handling)
-                    // If this fails, we will alert the user but show the rest of the data
-                    try {
-                        const subSnapshot = await db.collectionGroup('months').where('paid', '==', true).get();
-                        
-                        if (subSnapshot.empty) {
-                            console.log("No subscriptions found or permission denied");
-                        } else {
-                            subSnapshot.forEach(doc => {
-                                const s = doc.data();
-                                totalSubscription += (Number(s.amount) || 200);
-                            });
-                        }
-                    } catch (subError) {
-                        console.error("Subscription Error:", subError);
-                        // If index is missing, this alert will show up
-                        alert("Note: Subscription data failed to load. " + subError.message);
-                    }
-
-                    // 3. Final Calculation
-                    const finalWealth = (totalIncome + totalSubscription) - totalExpense;
-                    document.getElementById('totalWealth').textContent = `₹${finalWealth.toLocaleString('en-IN')}`;
-
-                    // 4. Render List
-                    const listContainer = document.getElementById('transactionsList');
-                    
-                    if (allItems.length === 0) {
-                        listContainer.innerHTML = '<div style="text-align:center; padding:20px; color:#999; font-size:0.8rem;">No recent transactions</div>';
-                        return;
-                    }
-
                     let listHTML = '';
-                    allItems.forEach(item => {
-                        const isIncome = item.type === 'income';
+
+                    if (transactionsSnapshot.empty) {
+                         document.getElementById('transactionsList').innerHTML = '<div style="text-align:center; padding:20px; color:#999; font-size:0.8rem;">No transactions found</div>';
+                         document.getElementById('totalWealth').textContent = '₹0';
+                         return;
+                    }
+
+                    transactionsSnapshot.forEach(doc => {
+                        const t = doc.data();
+                        
+                        // Ensure amounts are numbers
+                        const amount = Number(t.amount) || 0;
+                        const type = (t.type || '').toLowerCase();
+
+                        // Simple Calculation (Income - Expense)
+                        if (type === 'income') {
+                            totalIncome += amount;
+                        } else if (type === 'expense') {
+                            totalExpense += amount;
+                        }
+
+                        // Determine Styles
+                        const isIncome = type === 'income';
                         const styleClass = isIncome ? 'income-style' : 'expense-style';
                         const icon = isIncome ? 'fa-arrow-down' : 'fa-arrow-up';
                         const sign = isIncome ? '+' : '-';
+                        const narration = t.narration || 'Transaction';
+                        const date = t.date || '-';
 
+                        // Create Compact List Item
                         listHTML += `
                             <div class="trans-item ${styleClass}">
                                 <div class="trans-left">
                                     <div class="trans-icon"><i class="fas ${icon}"></i></div>
                                     <div class="trans-info">
-                                        <span class="trans-name">${item.name}</span>
-                                        <span class="trans-date">${item.dateStr}</span>
+                                        <span class="trans-name">${narration}</span>
+                                        <span class="trans-date">${date}</span>
                                     </div>
                                 </div>
-                                <div class="trans-amount">${sign} ₹${item.amount}</div>
+                                <div class="trans-amount">${sign} ₹${amount.toLocaleString('en-IN')}</div>
                             </div>
                         `;
                     });
-                    listContainer.innerHTML = listHTML;
+
+                    // Update UI
+                    document.getElementById('transactionsList').innerHTML = listHTML;
+
+                    // Final Wealth Calculation (Income - Expense)
+                    const wealth = totalIncome - totalExpense;
+                    document.getElementById('totalWealth').textContent = `₹${wealth.toLocaleString('en-IN')}`;
 
                 } catch (error) {
-                    console.error("Main Error:", error);
-                    document.getElementById('totalWealth').textContent = "Error";
-                    alert("App Error: " + error.message);
+                    console.error('Error calculating wealth:', error);
+                    document.getElementById('totalWealth').textContent = 'Error';
+                    document.getElementById('transactionsList').innerHTML = '<div style="text-align:center; padding:20px; color:red;">Network Error</div>';
                 }
             }
         });
