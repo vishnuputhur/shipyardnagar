@@ -49,6 +49,10 @@
 
         .balance-label { font-size: 0.8rem; opacity: 0.9; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; }
         .wealth-amount { font-size: 2rem; font-weight: 700; margin-top: 5px; line-height: 1.2; }
+        .last-updated {
+            font-size: 0.7rem; margin-top: 5px; opacity: 0.8; 
+            color: rgba(255, 255, 255, 0.9);
+        }
 
         /* Compact Transaction List */
         .section-title {
@@ -131,6 +135,7 @@
                         <div class="wealth-amount" id="totalWealth">
                             <span class="skeleton">₹00,000</span>
                         </div>
+                        <div class="last-updated" id="lastUpdated"></div>
                     </div>
 
                     <div class="section-title">
@@ -215,22 +220,24 @@
                 }
             });
 
-            // ✅ ORIGINAL CALCULATION LOGIC ONLY
+            // ✅ ശരിയായ CALCULATION FORMULA (പഴയ കോഡിൽ നിന്നും)
             async function calculateWealthAndTransactions() {
                 try {
-                    // Fetch Transactions from 'transactions' collection
-                    const transactionsSnapshot = await db.collection('transactions').orderBy('createdAt', 'desc').get();
+                    // Fetch all transactions for calculation (no order needed for calculation)
+                    const transactionsSnapshot = await db.collection('transactions').get();
                     
                     let totalIncome = 0;
                     let totalExpense = 0;
-                    let listHTML = '';
+                    let latestUpdateDate = null;
 
                     if (transactionsSnapshot.empty) {
-                         document.getElementById('transactionsList').innerHTML = '<div style="text-align:center; padding:20px; color:#999; font-size:0.8rem;">No transactions found</div>';
-                         document.getElementById('totalWealth').textContent = '₹0';
-                         return;
+                        document.getElementById('transactionsList').innerHTML = '<div style="text-align:center; padding:20px; color:#999; font-size:0.8rem;">No transactions found</div>';
+                        document.getElementById('totalWealth').innerHTML = '₹0';
+                        document.getElementById('lastUpdated').textContent = 'Last updated: Never';
+                        return;
                     }
 
+                    // Calculate total income and expense from ALL transactions
                     transactionsSnapshot.forEach(doc => {
                         const t = doc.data();
                         
@@ -238,12 +245,50 @@
                         const amount = Number(t.amount) || 0;
                         const type = (t.type || '').toLowerCase();
 
-                        // Simple Calculation (Income - Expense)
+                        // Calculate total wealth (Income - Expense) - ശരിയായ formula
                         if (type === 'income') {
                             totalIncome += amount;
                         } else if (type === 'expense') {
                             totalExpense += amount;
                         }
+
+                        // Find latest update date
+                        const transactionTimestamp = t.createdAt;
+                        if (transactionTimestamp) {
+                            const transactionDate = new Date(transactionTimestamp.seconds * 1000);
+                            if (!latestUpdateDate || transactionDate > latestUpdateDate) {
+                                latestUpdateDate = transactionDate;
+                            }
+                        }
+                    });
+
+                    // Final Wealth Calculation (Income - Expense) - ശരിയായ formula
+                    const wealth = totalIncome - totalExpense;
+                    document.getElementById('totalWealth').innerHTML = `₹${wealth.toLocaleString('en-IN')}`;
+                    
+                    // Update last updated date
+                    if (latestUpdateDate) {
+                        const formattedDate = latestUpdateDate.toLocaleDateString('en-IN', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric'
+                        });
+                        document.getElementById('lastUpdated').textContent = `Last updated: ${formattedDate}`;
+                    } else {
+                        document.getElementById('lastUpdated').textContent = 'Last updated: Never';
+                    }
+
+                    // Now fetch transactions for display (ordered by date)
+                    const sortedTransactionsSnapshot = await db.collection('transactions')
+                        .orderBy('createdAt', 'desc')
+                        .get();
+
+                    let listHTML = '';
+
+                    sortedTransactionsSnapshot.forEach(doc => {
+                        const t = doc.data();
+                        const amount = Number(t.amount) || 0;
+                        const type = (t.type || '').toLowerCase();
 
                         // Determine Styles
                         const isIncome = type === 'income';
@@ -271,13 +316,10 @@
                     // Update UI
                     document.getElementById('transactionsList').innerHTML = listHTML;
 
-                    // Final Wealth Calculation (Income - Expense)
-                    const wealth = totalIncome - totalExpense;
-                    document.getElementById('totalWealth').textContent = `₹${wealth.toLocaleString('en-IN')}`;
-
                 } catch (error) {
                     console.error('Error calculating wealth:', error);
-                    document.getElementById('totalWealth').textContent = 'Error';
+                    document.getElementById('totalWealth').innerHTML = 'Error';
+                    document.getElementById('lastUpdated').textContent = 'Last updated: Error';
                     document.getElementById('transactionsList').innerHTML = '<div style="text-align:center; padding:20px; color:red;">Network Error</div>';
                 }
             }
