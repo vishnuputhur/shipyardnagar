@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shipyard Nagar - Speaker Payment Admin</title>
+    <title>Shipyard Nagar - Special Payment Admin</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -73,7 +73,7 @@
             font-size: 1.5rem;
             font-weight: 700;
             color: #1e3a8a;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             text-align: center;
         }
 
@@ -81,20 +81,25 @@
             color: #60a5fa;
         }
 
+        /* COMPACT STATS CONTAINER */
         .stats-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+            justify-content: center;
         }
 
         .stat-card {
             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            padding: 15px;
+            padding: 8px 12px;
             border-radius: 12px;
             text-align: center;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             border-left: 3px solid var(--primary-orange);
+            flex: 1;
+            min-width: 120px;
+            max-width: 180px;
         }
 
         [data-theme="dark"] .stat-card {
@@ -103,25 +108,74 @@
         }
 
         .stat-value {
-            font-size: 1.5rem;
+            font-size: 1rem;
             font-weight: 700;
             color: var(--primary-orange);
+            margin-bottom: 2px;
         }
 
         .stat-label {
-            font-size: 0.85rem;
+            font-size: 0.75rem;
             color: #666;
-            margin-top: 5px;
         }
 
         [data-theme="dark"] .stat-label {
             color: #ccc;
         }
 
+        .amount-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 10px 15px;
+            border-radius: 12px;
+            border-left: 3px solid #667eea;
+        }
+
+        [data-theme="dark"] .amount-control {
+            background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+        }
+
+        .amount-label {
+            font-weight: 500;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+
+        .amount-input {
+            flex: 1;
+            max-width: 150px;
+        }
+
+        .total-amount {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 10px 15px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            border-left: 3px solid #28a745;
+            font-weight: 600;
+            font-size: 1rem;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="dark"] .total-amount {
+            background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+            color: #fff;
+        }
+
+        .total-amount .amount {
+            color: #28a745;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
         .search-filter {
             display: flex;
             gap: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             flex-wrap: wrap;
         }
 
@@ -137,8 +191,8 @@
         .form-control, .form-select {
             border-radius: 10px;
             border: 1px solid #ddd;
-            padding: 10px 15px;
-            font-size: 0.9rem;
+            padding: 8px 12px;
+            font-size: 0.85rem;
             transition: all 0.3s ease;
         }
 
@@ -158,7 +212,7 @@
             overflow-x: auto;
             border-radius: 12px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .member-table {
@@ -172,14 +226,14 @@
         .member-table th {
             background: var(--gradient);
             color: white;
-            padding: 12px 15px;
+            padding: 10px 12px;
             text-align: left;
             font-weight: 500;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
         }
 
         .member-table td {
-            padding: 12px 15px;
+            padding: 10px 12px;
             border-bottom: 1px solid #eee;
             font-size: 0.8rem;
         }
@@ -212,18 +266,19 @@
             display: flex;
             gap: 10px;
             justify-content: center;
-            margin-top: 20px;
+            margin-top: 15px;
         }
 
         .btn-primary {
             background: var(--gradient);
             border: none;
             border-radius: 12px;
-            padding: 10px 20px;
+            padding: 8px 16px;
             color: white;
             font-weight: 500;
             box-shadow: var(--shadow);
             transition: all 0.3s ease;
+            font-size: 0.9rem;
         }
 
         .btn-primary:hover {
@@ -235,10 +290,11 @@
             background: #6c757d;
             border: none;
             border-radius: 12px;
-            padding: 10px 20px;
+            padding: 8px 16px;
             color: white;
             font-weight: 500;
             transition: all 0.3s ease;
+            font-size: 0.9rem;
         }
 
         footer {
@@ -301,10 +357,11 @@
             display: none;
             background: #f8d7da;
             color: #721c24;
-            padding: 15px;
+            padding: 12px;
             border-radius: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             text-align: center;
+            font-size: 0.85rem;
         }
 
         @media (max-width: 768px) {
@@ -319,6 +376,17 @@
             .search-box, .filter-select {
                 width: 100%;
             }
+
+            .amount-control {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+
+            .amount-input {
+                max-width: 100%;
+                width: 100%;
+            }
         }
 
         @media (max-width: 576px) {
@@ -331,19 +399,28 @@
                 margin: 100px 10px 50px 10px;
             }
             
-            .stats-container {
-                grid-template-columns: 1fr;
-            }
-            
             .member-table th, 
             .member-table td {
-                padding: 10px 8px;
+                padding: 8px 10px;
                 font-size: 0.75rem;
             }
             
             footer {
                 padding: 3px 10px;
                 height: 28px;
+            }
+
+            .stat-card {
+                min-width: 100px;
+                padding: 6px 10px;
+            }
+
+            .stat-value {
+                font-size: 0.9rem;
+            }
+
+            .stat-label {
+                font-size: 0.7rem;
             }
         }
     </style>
@@ -357,8 +434,8 @@
             <div class="col-12 col-lg-10">
                 <div class="main-card">
                     <div class="page-title">
-                        <i class="fas fa-volume-up me-2"></i>
-                        Speaker Payment Management
+                        <i class="fas fa-money-bill-wave me-2"></i>
+                        Special Payment Management
                     </div>
                     
                     <!-- Error Message -->
@@ -372,24 +449,38 @@
                         <p class="mt-2">Loading admin data...</p>
                     </div>
                     
-                    <!-- Stats Cards -->
+                    <!-- COMPACT Stats Cards -->
                     <div class="stats-container" id="statsContainer">
                         <div class="stat-card">
                             <div class="stat-value" id="totalMembers">0</div>
                             <div class="stat-label">Total Members</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-value" id="speakerPaid">0</div>
-                            <div class="stat-label">Speaker Paid</div>
+                            <div class="stat-value" id="specialPaid">0</div>
+                            <div class="stat-label">Special Paid</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-value" id="speakerPending">0</div>
-                            <div class="stat-label">Speaker Pending</div>
+                            <div class="stat-value" id="specialPending">0</div>
+                            <div class="stat-label">Special Pending</div>
                         </div>
-                        <div class="stat-card">
-                            <div class="stat-value">₹500</div>
-                            <div class="stat-label">Per Member</div>
+                    </div>
+
+                    <!-- Amount Control for Admin -->
+                    <div class="amount-control" id="amountControl">
+                        <div class="amount-label">
+                            <i class="fas fa-rupee-sign me-1"></i>
+                            Set Payment Amount:
                         </div>
+                        <input type="number" class="form-control amount-input" id="paymentAmount" value="500" min="1" step="1">
+                        <button class="btn btn-sm btn-primary" id="setAmountBtn">
+                            <i class="fas fa-check"></i> Set
+                        </button>
+                    </div>
+
+                    <!-- Total Amount -->
+                    <div class="total-amount" id="totalAmountDisplay">
+                        <i class="fas fa-calculator me-2"></i>
+                        Total Amount: ₹<span class="amount" id="totalAmount">0</span>
                     </div>
                     
                     <!-- Search and Filter -->
@@ -400,8 +491,8 @@
                         <div class="filter-select">
                             <select class="form-select" id="paymentFilter">
                                 <option value="all">All Members</option>
-                                <option value="paid">Speaker Paid</option>
-                                <option value="pending">Speaker Pending</option>
+                                <option value="paid">Special Paid</option>
+                                <option value="pending">Special Pending</option>
                             </select>
                         </div>
                     </div>
@@ -413,7 +504,7 @@
                                 <tr>
                                     <th>Member No</th>
                                     <th>Name</th>
-                                    <th>Speaker Status</th>
+                                    <th>Special Status</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -427,7 +518,7 @@
                     <div class="action-buttons" id="actionButtons">
                         <button class="btn btn-primary" id="saveChangesBtn">
                             <i class="fas fa-save me-2"></i>
-                            Save Speaker Payments
+                            Save Special Payments
                         </button>
                         <button class="btn btn-secondary" id="refreshBtn">
                             <i class="fas fa-sync-alt me-2"></i>
@@ -473,11 +564,14 @@
         const db = firebase.firestore();
 
         let allMembers = [];
+        let paymentAmount = 500; // Default amount
 
         // Show loading spinner
         function showLoading() {
             document.getElementById('loadingSpinner').style.display = 'block';
             document.getElementById('statsContainer').style.display = 'none';
+            document.getElementById('amountControl').style.display = 'none';
+            document.getElementById('totalAmountDisplay').style.display = 'none';
             document.getElementById('searchFilter').style.display = 'none';
             document.getElementById('actionButtons').style.display = 'none';
             document.getElementById('memberTableBody').innerHTML = '';
@@ -486,7 +580,9 @@
         // Hide loading spinner
         function hideLoading() {
             document.getElementById('loadingSpinner').style.display = 'none';
-            document.getElementById('statsContainer').style.display = 'grid';
+            document.getElementById('statsContainer').style.display = 'flex';
+            document.getElementById('amountControl').style.display = 'flex';
+            document.getElementById('totalAmountDisplay').style.display = 'block';
             document.getElementById('searchFilter').style.display = 'flex';
             document.getElementById('actionButtons').style.display = 'flex';
         }
@@ -514,7 +610,14 @@
             hideError();
 
             try {
-                // Directly load members without admin check
+                // Load payment amount setting
+                const settingsSnap = await db.collection('settings').doc('specialPayment').get();
+                if (settingsSnap.exists()) {
+                    paymentAmount = settingsSnap.data().amount || 500;
+                }
+                document.getElementById('paymentAmount').value = paymentAmount;
+                
+                // Load members
                 await loadMembers();
                 hideLoading();
                 
@@ -525,7 +628,7 @@
             }
         });
 
-        // Load all members and their speaker payment status
+        // Load all members and their special payment status
         const loadMembers = async () => {
             try {
                 const usersSnap = await db.collection('users').get();
@@ -540,12 +643,14 @@
                     allMembers.push({
                         id: userDoc.id,
                         memberNumber: userData.memberNumber || 'N/A',
-                        name: userData.memberName || userData.name || 'Unknown', // Use memberName first
-                        speakerPaid: userData.speakerPaid || false
+                        name: userData.memberName || userData.name || 'Unknown',
+                        specialPaid: userData.specialPaid || false,
+                        specialAmount: userData.specialAmount || paymentAmount
                     });
                 }
                 
                 updateStats();
+                calculateTotalAmount();
                 renderMemberTable();
                 
             } catch (error) {
@@ -557,12 +662,19 @@
         // Update statistics
         const updateStats = () => {
             const totalMembers = allMembers.length;
-            const speakerPaid = allMembers.filter(m => m.speakerPaid).length;
-            const speakerPending = totalMembers - speakerPaid;
+            const specialPaid = allMembers.filter(m => m.specialPaid).length;
+            const specialPending = totalMembers - specialPaid;
             
             document.getElementById('totalMembers').textContent = totalMembers;
-            document.getElementById('speakerPaid').textContent = speakerPaid;
-            document.getElementById('speakerPending').textContent = speakerPending;
+            document.getElementById('specialPaid').textContent = specialPaid;
+            document.getElementById('specialPending').textContent = specialPending;
+        };
+
+        // Calculate and display total amount
+        const calculateTotalAmount = () => {
+            const specialPaidCount = allMembers.filter(m => m.specialPaid).length;
+            const totalAmount = specialPaidCount * paymentAmount;
+            document.getElementById('totalAmount').textContent = totalAmount.toFixed(2);
         };
 
         // Render member table
@@ -580,19 +692,19 @@
             }
             
             filteredMembers.forEach(member => {
-                const speakerStatus = member.speakerPaid ? 
-                    `<span class="status-paid"><i class="fas fa-check-circle me-1"></i>Paid</span>` : 
-                    `<span class="status-pending"><i class="fas fa-clock me-1"></i>Pending</span>`;
+                const specialStatus = member.specialPaid ? 
+                    `<span class="status-paid"><i class="fas fa-check-circle me-1"></i>Paid (₹${member.specialAmount})</span>` : 
+                    `<span class="status-pending"><i class="fas fa-clock me-1"></i>Pending (₹${paymentAmount})</span>`;
                 
                 tableBody.innerHTML += `
                     <tr>
                         <td>${member.memberNumber}</td>
                         <td>${member.name}</td>
-                        <td>${speakerStatus}</td>
+                        <td>${specialStatus}</td>
                         <td>
                             <div class="form-check form-switch">
-                                <input class="form-check-input speaker-checkbox" type="checkbox" 
-                                    data-userid="${member.id}" ${member.speakerPaid ? 'checked' : ''}
+                                <input class="form-check-input special-checkbox" type="checkbox" 
+                                    data-userid="${member.id}" ${member.specialPaid ? 'checked' : ''}
                                     style="width: 3em; height: 1.5em; cursor: pointer;">
                                 <label class="form-check-label">Mark as Paid</label>
                             </div>
@@ -619,39 +731,74 @@
             
             // Apply payment status filter
             if (paymentFilter === 'paid') {
-                filtered = filtered.filter(member => member.speakerPaid);
+                filtered = filtered.filter(member => member.specialPaid);
             } else if (paymentFilter === 'pending') {
-                filtered = filtered.filter(member => !member.speakerPaid);
+                filtered = filtered.filter(member => !member.specialPaid);
             }
             
             renderMemberTable(filtered);
         };
 
-        // Save speaker payment changes to Firebase
+        // Set payment amount
+        const setPaymentAmount = async () => {
+            const newAmount = parseInt(document.getElementById('paymentAmount').value);
+            
+            if (isNaN(newAmount) || newAmount < 1) {
+                showError('Please enter a valid amount (minimum ₹1)');
+                return;
+            }
+            
+            showLoading();
+            
+            try {
+                paymentAmount = newAmount;
+                
+                // Save to settings
+                await db.collection('settings')
+                    .doc('specialPayment')
+                    .set({
+                        amount: paymentAmount,
+                        updatedAt: new Date()
+                    });
+                
+                hideLoading();
+                alert(`✅ Special payment amount set to ₹${paymentAmount}`);
+                await loadMembers(); // Reload to update amounts
+                
+            } catch (error) {
+                hideLoading();
+                console.error('Error setting amount:', error);
+                showError('Error setting amount: ' + error.message);
+            }
+        };
+
+        // Save special payment changes to Firebase
         const saveChanges = async () => {
-            const speakerCheckboxes = document.querySelectorAll('.speaker-checkbox');
+            const specialCheckboxes = document.querySelectorAll('.special-checkbox');
             
             showLoading();
             
             try {
                 let updatedCount = 0;
                 
-                for (let i = 0; i < speakerCheckboxes.length; i++) {
-                    const userId = speakerCheckboxes[i].dataset.userid;
-                    const speakerPaid = speakerCheckboxes[i].checked;
+                for (let i = 0; i < specialCheckboxes.length; i++) {
+                    const userId = specialCheckboxes[i].dataset.userid;
+                    const specialPaid = specialCheckboxes[i].checked;
                     
-                    // Update speaker payment status
+                    // Update special payment status
                     await db.collection('users')
                         .doc(userId)
                         .update({
-                            speakerPaid: speakerPaid
+                            specialPaid: specialPaid,
+                            specialAmount: paymentAmount,
+                            specialPaidDate: specialPaid ? new Date() : null
                         });
                     
                     updatedCount++;
                 }
                 
                 hideLoading();
-                alert(`✅ Speaker payment status updated for ${updatedCount} members!`);
+                alert(`✅ Special payment status updated for ${updatedCount} members!`);
                 await loadMembers(); // Reload data to reflect changes
                 
             } catch (error) {
@@ -669,6 +816,8 @@
             showLoading();
             loadMembers();
         });
+        document.getElementById('setAmountBtn').addEventListener('click', setPaymentAmount);
+        document.getElementById('paymentAmount').addEventListener('change', setPaymentAmount);
 
         // Theme Toggle
         const themeToggle = document.getElementById('themeToggle');
