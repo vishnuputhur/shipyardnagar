@@ -117,6 +117,13 @@
             font-weight: 500;
             font-size: 0.9rem;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .wealth-info:hover, .due-info:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
         [data-theme="dark"] .wealth-info, 
@@ -281,12 +288,12 @@
                     <div class="welcome-text">
                         <p class="user-greeting">Hi, <span id="user-name" class="loading-message">Loading..</span> & family! 👋</p>
                         
-                        <div class="wealth-info">
+                        <div class="wealth-info" id="wealthInfo">
                             <i class="fas fa-coins me-2"></i>
                             <span id="totalWealth">Our Total Wealth: ₹...</span>
                         </div>
                         
-                        <div class="due-info">
+                        <div class="due-info" id="dueInfo">
                             <i class="fas fa-calendar-alt me-2"></i>
                             <span id="monthlyDue">Your Monthly Due: Checking...</span>
                         </div>
@@ -320,7 +327,7 @@
     </main>
     
     <footer>
-        <div class="footer-text"><p>Powered by VTSoft 2025</p></div>
+        <div class="footer-text"><p>Powered by VTSoft 2026</p></div>
         <button id="themeToggle" class="theme-toggle-btn">🌞</button>
     </footer>
 
@@ -350,6 +357,15 @@
             document.documentElement.setAttribute('data-theme', savedTheme);
             const themeBtn = document.getElementById('themeToggle');
             if(themeBtn) themeBtn.textContent = savedTheme === 'light' ? '🌞' : '🌙';
+
+            // ✅ 2. Add click event listeners for wealth and due info
+            document.getElementById('wealthInfo').addEventListener('click', () => {
+                window.location.href = 'wealth-user.html';
+            });
+            
+            document.getElementById('dueInfo').addEventListener('click', () => {
+                window.location.href = 'subscription.html';
+            });
         });
 
         // Wait for Firebase to load (since we used defer)
@@ -443,7 +459,9 @@
                         if (t.type === 'expense') totalExpense += t.amount || 0;
                     });
                     const wealth = totalIncome - totalExpense;
-                    const wealthText = `Our Total Wealth: ₹${wealth}`;
+                    // ✅ 3. Format wealth to 2 decimal places
+                    const wealthFormatted = wealth.toFixed(2);
+                    const wealthText = `Our Total Wealth: ₹${wealthFormatted}`;
                     
                     // Update and Cache
                     totalWealth.textContent = wealthText;
