@@ -8,7 +8,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* CSS REMAINS EXACTLY SAME AS BEFORE - NO CHANGES */
         :root {
             --primary-orange: #FF6B35;
             --orange-light: #FF8C42;
@@ -534,7 +533,7 @@
     <!-- Footer -->
     <footer>
         <div class="footer-text">
-            <p>Powered by VTSoft 2025</p>
+            <p>Powered by VTSoft 2026</p>
         </div>
         <button id="themeToggle" class="theme-toggle-btn">🌞</button>
     </footer>
@@ -545,7 +544,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 
     <script>
-        // Firebase Config - SAME AS YOUR ORIGINAL PAGE
+        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyBWswawf9tpxNwVU0BaJ6FCwCvgcjUQXlA",
             authDomain: "shipyard-nagar.firebaseapp.com",
@@ -556,7 +555,7 @@
             measurementId: "G-V8CQ4YCCQ5"
         };
 
-        // Initialize Firebase - SAME AS YOUR ORIGINAL PAGE
+        // Initialize Firebase
         if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
         }
@@ -567,7 +566,35 @@
         let allMembers = [];
         let paymentAmount = 500; // Default amount
 
-        // Show loading spinner - SAME AS YOUR ORIGINAL PAGE
+        // ✅ FIXED: Load amount from cache first
+        async function loadSpecialPaymentAmount() {
+            try {
+                // 1. First check localStorage for cached amount
+                const cachedAmount = localStorage.getItem('specialPaymentAmount');
+                if (cachedAmount) {
+                    paymentAmount = parseInt(cachedAmount);
+                    document.getElementById('paymentAmount').value = paymentAmount;
+                    console.log('Loaded from cache:', paymentAmount);
+                }
+                
+                // 2. Then try to get from Firebase
+                const settingsDoc = await db.collection('settings').doc('specialPayment').get();
+                if (settingsDoc.exists()) {
+                    const dbAmount = settingsDoc.data().amount || 500;
+                    paymentAmount = dbAmount;
+                    document.getElementById('paymentAmount').value = paymentAmount;
+                    
+                    // ✅ Update localStorage with fresh value
+                    localStorage.setItem('specialPaymentAmount', paymentAmount);
+                    console.log('Loaded from Firebase and cached:', paymentAmount);
+                }
+                
+            } catch (error) {
+                console.log('Using default amount:', paymentAmount);
+            }
+        }
+
+        // Show loading spinner
         function showLoading() {
             document.getElementById('loadingSpinner').style.display = 'block';
             document.getElementById('statsContainer').style.display = 'none';
@@ -578,7 +605,7 @@
             document.getElementById('memberTableBody').innerHTML = '';
         }
 
-        // Hide loading spinner - SAME AS YOUR ORIGINAL PAGE
+        // Hide loading spinner
         function hideLoading() {
             document.getElementById('loadingSpinner').style.display = 'none';
             document.getElementById('statsContainer').style.display = 'flex';
@@ -588,19 +615,19 @@
             document.getElementById('actionButtons').style.display = 'flex';
         }
 
-        // Show error message - SAME AS YOUR ORIGINAL PAGE
+        // Show error message
         function showError(message) {
             const errorDiv = document.getElementById('errorMessage');
             errorDiv.textContent = message;
             errorDiv.style.display = 'block';
         }
 
-        // Hide error message - SAME AS YOUR ORIGINAL PAGE
+        // Hide error message
         function hideError() {
             document.getElementById('errorMessage').style.display = 'none';
         }
 
-        // Auth State Listener - EXACTLY SAME AS YOUR ORIGINAL PAGE
+        // Auth State Listener - SIMPLIFIED VERSION
         auth.onAuthStateChanged(async (user) => {
             if (!user) {
                 window.location.href = 'login.html';
@@ -611,12 +638,10 @@
             hideError();
 
             try {
-                // ✅ FIX 1: Use 'speakerPaid' field as per your original page
-                // Don't use 'specialPayment' settings, just use the amount field if exists
+                // ✅ FIXED: First load payment amount
+                await loadSpecialPaymentAmount();
                 
-                // ✅ FIX 2: Use the SAME FIELD NAMES as your original page
-                // Your original page uses 'speakerPaid' field
-                
+                // Then load members
                 await loadMembers();
                 hideLoading();
                 
@@ -627,22 +652,19 @@
             }
         });
 
-        // Load all members and their special payment status - SIMPLIFIED VERSION
+        // Load all members and their special payment status
         const loadMembers = async () => {
             try {
-                // ✅ FIX 3: Use batched query for better performance
                 const usersSnap = await db.collection('users').get();
                 allMembers = [];
                 
-                // ✅ FIX 4: Use for loop instead of forEach for better error handling
                 for (let i = 0; i < usersSnap.docs.length; i++) {
                     const userDoc = usersSnap.docs[i];
                     const userData = userDoc.data();
                     
-                    // ✅ FIX 5: Check if user has member number (same as original)
+                    // Skip if no member number (might be admin)
                     if (!userData.memberNumber) continue;
                     
-                    // ✅ FIX 6: Use 'speakerPaid' field as in your original page
                     const speakerPaid = userData.speakerPaid || false;
                     
                     allMembers.push({
@@ -650,11 +672,11 @@
                         memberNumber: userData.memberNumber || 'N/A',
                         name: userData.memberName || userData.name || 'Unknown',
                         speakerPaid: speakerPaid, // Using speakerPaid field
-                        amount: userData.speakerAmount || 500 // Using speakerAmount if exists
+                        amount: userData.speakerAmount || paymentAmount // Using current paymentAmount
                     });
                 }
                 
-                // ✅ FIX 7: Update stats immediately
+                // ✅ Update stats immediately
                 updateStats();
                 calculateTotalAmount();
                 renderMemberTable();
@@ -665,7 +687,7 @@
             }
         };
 
-        // Update statistics - SAME LOGIC AS YOUR ORIGINAL PAGE
+        // Update statistics
         const updateStats = () => {
             const totalMembers = allMembers.length;
             const specialPaid = allMembers.filter(m => m.speakerPaid).length;
@@ -676,14 +698,14 @@
             document.getElementById('specialPending').textContent = specialPending;
         };
 
-        // Calculate and display total amount - FIXED FOR PENDING AMOUNT
+        // Calculate and display total amount
         const calculateTotalAmount = () => {
             const specialPaidCount = allMembers.filter(m => m.speakerPaid).length;
             const totalAmount = specialPaidCount * paymentAmount;
             document.getElementById('totalAmount').textContent = totalAmount.toFixed(2);
         };
 
-        // Render member table - FIXED FOR PENDING AMOUNT DISPLAY
+        // Render member table - ✅ FIXED TO SHOW CURRENT AMOUNT
         const renderMemberTable = (filteredMembers = allMembers) => {
             const tableBody = document.getElementById('memberTableBody');
             tableBody.innerHTML = '';
@@ -697,7 +719,7 @@
                 return;
             }
             
-            // ✅ FIX 8: Show amount for both paid and pending
+            // ✅ FIXED: Show CURRENT paymentAmount for both paid and pending
             filteredMembers.forEach(member => {
                 const memberAmount = member.amount || paymentAmount;
                 const specialStatus = member.speakerPaid ? 
@@ -722,7 +744,7 @@
             });
         };
 
-        // Filter members based on search and filter criteria - SAME AS YOUR ORIGINAL PAGE
+        // Filter members based on search and filter criteria
         const filterMembers = () => {
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             const paymentFilter = document.getElementById('paymentFilter').value;
@@ -747,7 +769,7 @@
             renderMemberTable(filtered);
         };
 
-        // Set payment amount - SIMPLIFIED VERSION
+        // ✅ FIXED: Set payment amount with proper caching
         const setPaymentAmount = async () => {
             const newAmount = parseInt(document.getElementById('paymentAmount').value);
             
@@ -756,15 +778,37 @@
                 return;
             }
             
-            paymentAmount = newAmount;
-            alert(`✅ Special payment amount set to ₹${paymentAmount}`);
+            showLoading();
             
-            // ✅ FIX 9: Recalculate and render immediately without reloading
-            calculateTotalAmount();
-            renderMemberTable();
+            try {
+                paymentAmount = newAmount;
+                
+                // ✅ FIXED: Save to Firebase settings
+                await db.collection('settings')
+                    .doc('specialPayment')
+                    .set({
+                        amount: paymentAmount,
+                        updatedAt: new Date()
+                    });
+                
+                // ✅ FIXED: Save to localStorage for instant access
+                localStorage.setItem('specialPaymentAmount', paymentAmount);
+                
+                hideLoading();
+                alert(`✅ Special payment amount set to ₹${paymentAmount}`);
+                
+                // ✅ FIXED: Update UI without reloading entire page
+                calculateTotalAmount();
+                renderMemberTable();
+                
+            } catch (error) {
+                hideLoading();
+                console.error('Error setting amount:', error);
+                showError('Error setting amount: ' + error.message);
+            }
         };
 
-        // Save special payment changes to Firebase - USING YOUR ORIGINAL FIELDS
+        // Save special payment changes to Firebase
         const saveChanges = async () => {
             const specialCheckboxes = document.querySelectorAll('.special-checkbox');
             
@@ -773,12 +817,10 @@
             try {
                 let updatedCount = 0;
                 
-                // ✅ FIX 10: Use the SAME field names as your original page
                 for (let i = 0; i < specialCheckboxes.length; i++) {
                     const userId = specialCheckboxes[i].dataset.userid;
                     const speakerPaid = specialCheckboxes[i].checked;
                     
-                    // ✅ FIX 11: Update using 'speakerPaid' and 'speakerAmount' fields
                     await db.collection('users')
                         .doc(userId)
                         .update({
@@ -792,8 +834,8 @@
                 hideLoading();
                 alert(`✅ Special payment status updated for ${updatedCount} members!`);
                 
-                // ✅ FIX 12: Reload only the necessary data, not everything
-                await loadMembers(); 
+                // Reload only the necessary data
+                await loadMembers();
                 
             } catch (error) {
                 hideLoading();
@@ -802,7 +844,7 @@
             }
         };
 
-        // Event Listeners - SAME AS YOUR ORIGINAL PAGE
+        // Event Listeners
         document.getElementById('searchInput').addEventListener('input', filterMembers);
         document.getElementById('paymentFilter').addEventListener('change', filterMembers);
         document.getElementById('saveChangesBtn').addEventListener('click', saveChanges);
@@ -813,7 +855,7 @@
         document.getElementById('setAmountBtn').addEventListener('click', setPaymentAmount);
         document.getElementById('paymentAmount').addEventListener('change', setPaymentAmount);
 
-        // Theme Toggle - SAME AS YOUR ORIGINAL PAGE
+        // Theme Toggle
         const themeToggle = document.getElementById('themeToggle');
         if (themeToggle) {
             themeToggle.addEventListener('click', () => {
