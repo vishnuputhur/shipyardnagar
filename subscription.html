@@ -314,7 +314,7 @@
             border-color: var(--primary-orange);
         }
         
-        .speaker-contribution {
+        .special-contribution {
             margin-top: 15px;
             padding: 15px;
             border-radius: 12px;
@@ -323,78 +323,78 @@
             display: none;
         }
         
-        [data-theme="dark"] .speaker-contribution {
+        [data-theme="dark"] .special-contribution {
             background: linear-gradient(135deg, #1a365d 0%, #2d3748 100%);
             border-color: #4a5568;
         }
         
-        .speaker-header {
+        .special-header {
             display: flex;
             align-items: center;
             margin-bottom: 10px;
         }
         
-        .speaker-header i {
+        .special-header i {
             font-size: 1.2rem;
             margin-right: 10px;
             color: #1e40af;
         }
         
-        .speaker-title {
+        .special-title {
             font-weight: 600;
             color: #1e40af;
         }
         
-        [data-theme="dark"] .speaker-title {
+        [data-theme="dark"] .special-title {
             color: #60a5fa;
         }
         
-        .speaker-description {
+        .special-description {
             font-size: 0.85rem;
             color: #4b5563;
             margin-bottom: 10px;
         }
         
-        [data-theme="dark"] .speaker-description {
+        [data-theme="dark"] .special-description {
             color: #cbd5e0;
         }
         
-        .speaker-option {
+        .special-option {
             display: flex;
             align-items: center;
             margin-bottom: 8px;
         }
         
-        .speaker-option input {
+        .special-option input {
             margin-right: 8px;
         }
         
-        .speaker-option label {
+        .special-option label {
             font-size: 0.9rem;
             color: #374151;
             cursor: pointer;
         }
         
-        [data-theme="dark"] .speaker-option label {
+        [data-theme="dark"] .special-option label {
             color: #e2e8f0;
         }
         
-        .speaker-amount {
+        .special-amount {
             font-weight: 600;
             color: #1e40af;
         }
         
-        .speaker-status {
+        .special-status {
             margin-top: 10px;
             font-size: 0.85rem;
             font-weight: 500;
         }
         
-        .speaker-status.pending {
+        .special-status.pending {
             color: #dc3545;
         }
         
-        .speaker-status.paid {
+        .special-status.paid {
             color: #28a745;
         }
 
@@ -499,19 +499,19 @@
                                 <small class="form-text text-muted">You can edit the amount if needed</small>
                             </div>
                             
-                            <div class="speaker-contribution" id="speakerSection">
-                                <div class="speaker-header">
-                                    <i class="fas fa-volume-up"></i>
-                                    <span class="speaker-title">New Year Celebration 2025</span>
+                            <div class="special-contribution" id="specialSection">
+                                <div class="special-header">
+                                    <i class="fas fa-money-bill-wave"></i>
+                                    <span class="special-title" id="specialTitle">Special Contribution</span>
                                 </div>
-                                <div class="speaker-description">
-                                    For the New Year celebrations on 31-12-2025, please contribute ₹500.
+                                <div class="special-description" id="specialDescription">
+                                    Special contribution amount as set by admin.
                                 </div>
-                                <div class="speaker-option">
-                                    <input type="checkbox" id="includeSpeaker" name="includeSpeaker" value="500" checked>
-                                    <label for="includeSpeaker">Include New Year celebration contribution of <span class="speaker-amount">₹500</span></label>
+                                <div class="special-option">
+                                    <input type="checkbox" id="includeSpecial" name="includeSpecial" value="500" checked>
+                                    <label for="includeSpecial">Include special contribution of <span class="special-amount" id="specialAmountDisplay">₹500</span></label>
                                 </div>
-                                <div id="speakerStatus" class="speaker-status pending">New Year Contribution: Pending</div>
+                                <div id="specialStatus" class="special-status pending">Special Contribution: Pending</div>
                             </div>
                             
                             <div class="payment-buttons" id="paymentButtons">
@@ -597,8 +597,9 @@
 
             let currentUserId = '';
             let currentMemberNumber = '';
-            let speakerPaid = false;
+            let speakerPaid = false; // Using same field name as admin page
             let monthlyDueAmount = 0;
+            let specialPaymentAmount = 500; // Default value
 
             // Check for payment success
             const urlParams = new URLSearchParams(window.location.search);
@@ -626,10 +627,32 @@
                     window.location.href = 'login.html';
                 } else {
                     currentUserId = user.uid;
-                    // ✅ Parallel Fetching for Speed
+                    // ✅ Fetch special payment amount from admin settings
+                    await loadSpecialPaymentAmount();
+                    // ✅ Then load user data
                     await loadDataParallel(user.uid);
                 }
             });
+
+            // ✅ NEW: Load special payment amount from settings
+            async function loadSpecialPaymentAmount() {
+                try {
+                    // Try to get from settings collection first
+                    const settingsDoc = await db.collection('settings').doc('specialPayment').get();
+                    if (settingsDoc.exists()) {
+                        specialPaymentAmount = settingsDoc.data().amount || 500;
+                    }
+                    
+                    // Update UI with the amount
+                    document.getElementById('includeSpecial').value = specialPaymentAmount;
+                    document.getElementById('specialAmountDisplay').textContent = `₹${specialPaymentAmount}`;
+                    
+                } catch (error) {
+                    console.log('Using default special amount');
+                    // Use default if error
+                    specialPaymentAmount = 500;
+                }
+            }
 
             async function loadDataParallel(uid) {
                 try {
@@ -647,21 +670,24 @@
                     // 1. Process User Data
                     const userData = userDoc.data();
                     currentMemberNumber = userData.memberNumber || 'Unknown';
-                    speakerPaid = userData.speakerPaid || false;
+                    speakerPaid = userData.speakerPaid || false; // Using same field name
 
-                    // Update Speaker UI
-                    const speakerStatus = document.getElementById('speakerStatus');
-                    const speakerSection = document.getElementById('speakerSection');
+                    // Update Special UI
+                    const specialStatus = document.getElementById('specialStatus');
+                    const specialSection = document.getElementById('specialSection');
                     
                     if (speakerPaid) {
-                        speakerStatus.textContent = 'New Year Contribution: Paid';
-                        speakerStatus.className = 'speaker-status paid';
-                        speakerSection.style.display = 'none';
+                        specialStatus.textContent = 'Special Contribution: Paid';
+                        specialStatus.className = 'special-status paid';
+                        specialSection.style.display = 'none';
                     } else {
-                        speakerStatus.textContent = 'New Year Contribution: Pending';
-                        speakerStatus.className = 'speaker-status pending';
-                        speakerSection.style.display = 'block';
+                        specialStatus.textContent = 'Special Contribution: Pending';
+                        specialStatus.className = 'special-status pending';
+                        specialSection.style.display = 'block';
                     }
+
+                    // Update special amount in checkbox
+                    document.getElementById('includeSpecial').value = specialPaymentAmount;
 
                     // 2. Process Contributions
                     processContributions(contributionsSnap);
@@ -753,9 +779,9 @@
 
             // Payment Logic
             function updateAmountField() {
-                const includeSpeaker = document.getElementById('includeSpeaker').checked;
+                const includeSpecial = document.getElementById('includeSpecial').checked;
                 let totalAmount = monthlyDueAmount;
-                if (includeSpeaker && !speakerPaid) totalAmount += 500;
+                if (includeSpecial && !speakerPaid) totalAmount += parseInt(specialPaymentAmount);
                 
                 document.getElementById('amount').value = totalAmount;
                 togglePaymentButtons();
@@ -765,10 +791,10 @@
                 const amount = parseFloat(document.getElementById('amount').value);
                 const btns = document.getElementById('paymentButtons');
                 const msg = document.getElementById('noPaymentMessage');
-                const speakerSection = document.getElementById('speakerSection');
+                const specialSection = document.getElementById('specialSection');
                 
                 if (speakerPaid) {
-                     speakerSection.style.display = 'none';
+                     specialSection.style.display = 'none';
                 }
 
                 if (amount > 0) {
@@ -781,7 +807,7 @@
             }
 
             // Event Listeners
-            document.getElementById('includeSpeaker').addEventListener('change', updateAmountField);
+            document.getElementById('includeSpecial').addEventListener('change', updateAmountField);
             document.getElementById('amount').addEventListener('input', togglePaymentButtons);
 
             // Button Actions
