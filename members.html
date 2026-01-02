@@ -281,18 +281,39 @@
             }
         }
 
-        // Check Due for individual member
+        // ✅ FIXED: Check Due for individual member with ALL MONTHS
         async function checkIndividualDue(userId) {
             try {
                 const db = firebase.firestore();
                 const snapshot = await db.collection('contributions').doc(userId).collection('months').get();
                 
-                const allMonths = ['2025-10', '2025-11', '2025-12']; // Update as needed
+                // ✅ FIXED: All months from 2025-10 to current month
+                const getMonthRange = () => {
+                    const months = [];
+                    const startDate = new Date(2025, 9, 1); // 2025-10 (October)
+                    const currentDate = new Date();
+                    
+                    let current = new Date(startDate);
+                    while (current <= currentDate) {
+                        const year = current.getFullYear();
+                        const month = String(current.getMonth() + 1).padStart(2, '0');
+                        months.push(`${year}-${month}`);
+                        current.setMonth(current.getMonth() + 1);
+                    }
+                    return months;
+                };
+                
+                const allMonths = getMonthRange();
+                console.log(`Checking due for ${userId}, months to check:`, allMonths);
+                
                 const pendingMonths = [];
                 
                 allMonths.forEach(month => {
                     const doc = snapshot.docs.find(d => d.id === month);
-                    if (!doc || !doc.data().paid) pendingMonths.push(month);
+                    if (!doc || !doc.data().paid) {
+                        pendingMonths.push(month);
+                        console.log(`Month ${month} pending for ${userId}`);
+                    }
                 });
 
                 const dueElement = document.getElementById(`due-${userId}`);
@@ -300,18 +321,27 @@
                     if (pendingMonths.length === 0) {
                         dueElement.className = 'due-status no-due';
                         dueElement.innerHTML = '<i class="fas fa-check-circle"></i><span>No Due</span>';
+                        console.log(`✅ ${userId}: No Due`);
                     } else {
                         const monthNames = pendingMonths.map(m => {
                             const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                             const idx = parseInt(m.split('-')[1]) - 1;
-                            return months[idx];
+                            return months[idx] + ' ' + m.split('-')[0];
                         }).join(', ');
                         
                         dueElement.className = 'due-status has-due';
                         dueElement.innerHTML = `<i class="fas fa-exclamation-circle"></i><span>Due: ${monthNames}</span>`;
+                        console.log(`⚠️ ${userId}: Due for ${monthNames}`);
                     }
                 }
-            } catch (e) { console.log(e); }
+            } catch (e) { 
+                console.log(`Error checking due for ${userId}:`, e); 
+                const dueElement = document.getElementById(`due-${userId}`);
+                if (dueElement) {
+                    dueElement.className = 'due-status has-due';
+                    dueElement.innerHTML = '<i class="fas fa-exclamation-triangle"></i><span>Error checking due</span>';
+                }
+            }
         }
     </script>
 </body>
