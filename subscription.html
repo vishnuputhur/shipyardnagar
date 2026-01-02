@@ -321,7 +321,6 @@
             border-radius: 12px;
             background: linear-gradient(135deg, #f0f8ff 0%, #e6f7ff 100%);
             border: 1px solid #b3d9ff;
-            display: none; /* Hidden by default until narration loads */
         }
         
         [data-theme="dark"] .special-contribution {
@@ -489,10 +488,11 @@
                                 <small class="form-text text-muted">You can edit the amount if needed</small>
                             </div>
                             
+                            <!-- ✅ SPECIAL CONTRIBUTION BOX -->
                             <div class="special-contribution" id="specialSection">
                                 <div class="special-header">
                                     <i class="fas fa-money-bill-wave"></i>
-                                    <span class="special-title" id="narrationText"></span>
+                                    <span class="special-title" id="narrationText">New Year Function Expense</span>
                                 </div>
                                 <div class="special-description">
                                     Amount: <span class="special-amount" id="specialAmountDisplay">₹0</span> - 
@@ -500,7 +500,7 @@
                                 </div>
                                 <div class="special-option">
                                     <input type="checkbox" id="includeSpecial" name="includeSpecial" checked>
-                                    <label for="includeSpecial">Include additional collection</label>
+                                    <label for="includeSpecial">Include New Year Function Expense</label>
                                 </div>
                             </div>
                             
@@ -588,7 +588,6 @@
             let currentMemberNumber = '';
             let specialPaid = false;
             let specialAmount = 0;
-            let narration = "";
             let monthlyDueAmount = 0;
             let pendingMonths = [];
 
@@ -617,67 +616,12 @@
 
             async function loadAllData(uid) {
                 try {
-                    // ✅ നാരേഷൻ ആദ്യം ലോഡ് ചെയ്യുന്നു എന്ന് ഉറപ്പാക്കുന്നു
-                    await loadNarration();
                     await loadUserData(uid);
                     await loadContributions(uid);
-                    // ലോഡിംഗിന് ശേഷം ടോട്ടൽ ഒന്നുകൂടി ചെക്ക് ചെയ്യുന്നു
                     updateTotalAmount();
                     togglePaymentButtons();
                 } catch (error) {
                     console.error('Error loading data:', error);
-                }
-            }
-
-            // ✅ FIXED: Load narration with better logic
-            async function loadNarration() {
-                try {
-                    console.log('Loading narration from Firebase...');
-                    const settingsDoc = await db.collection('settings').doc('specialPayment').get();
-                    
-                    if (settingsDoc.exists()) {
-                        const data = settingsDoc.data();
-                        console.log('Firebase settings data:', data);
-                        
-                        if (data.narration !== undefined && data.narration !== null && data.narration.trim() !== "") {
-                            narration = data.narration.trim();
-                            console.log('✅ Narration loaded:', narration);
-                        } else {
-                            narration = "";
-                            console.log('❌ Narration is empty or not set');
-                        }
-                    } else {
-                        narration = "";
-                        console.log('❌ No settings document found');
-                    }
-                    
-                    updateNarrationUI();
-                } catch (error) {
-                    console.error('Error loading narration:', error);
-                    narration = "";
-                    updateNarrationUI();
-                }
-            }
-
-            function updateNarrationUI() {
-                const narrationEl = document.getElementById('narrationText');
-                const specialSection = document.getElementById('specialSection');
-                
-                console.log('Updating UI with narration:', narration);
-                
-                if (specialSection) {
-                    // ✅ FIXED: Always show the box, but manage the title
-                    specialSection.style.display = 'block';
-                    
-                    if (narrationEl) {
-                        if (narration && narration.trim() !== "") {
-                            narrationEl.textContent = narration;
-                            console.log('✅ Narration displayed in UI');
-                        } else {
-                            narrationEl.textContent = ""; // Empty title
-                            console.log('❌ No narration, keeping title empty');
-                        }
-                    }
                 }
             }
 
@@ -690,7 +634,7 @@
                         const userData = userDoc.data();
                         currentMemberNumber = userData.memberNumber || 'Unknown';
                         specialPaid = userData.speakerPaid || false;
-                        specialAmount = userData.speakerAmount || 0;
+                        specialAmount = userData.speakerAmount || 500;
                         
                         console.log('✅ User data loaded:', {
                             member: currentMemberNumber,
@@ -743,9 +687,11 @@
                 }
                 
                 if (specialSection) {
+                    // ✅ FIXED: Hide box if status is PAID
                     if (specialPaid) {
-                        specialSection.style.opacity = '0.7';
+                        specialSection.style.display = 'none';
                     } else {
+                        specialSection.style.display = 'block';
                         specialSection.style.opacity = '1';
                     }
                 }
@@ -826,8 +772,8 @@
                 const includeSpecial = document.getElementById('includeSpecial');
                 let totalAmount = monthlyDueAmount;
                 
-                // ✅ Add special amount only if includeSpecial exists and is checked
-                if (includeSpecial && includeSpecial.checked) {
+                // ✅ Add special amount only if includeSpecial exists and is checked AND status is PENDING
+                if (includeSpecial && includeSpecial.checked && !specialPaid) {
                     totalAmount += specialAmount;
                 }
                 
@@ -839,6 +785,7 @@
                 console.log('Total amount updated:', {
                     monthlyDue: monthlyDueAmount,
                     specialAmount: specialAmount,
+                    specialPaid: specialPaid,
                     includeSpecial: includeSpecial ? includeSpecial.checked : false,
                     total: totalAmount
                 });
@@ -888,7 +835,7 @@
             document.getElementById('credButton').addEventListener('click', () => {
                 const amt = document.getElementById('amount').value;
                 const upiId = 'BHARATPE.8P0O1J0O8P31576@fbpe';
-                const note = `Member ${currentMemberNumber} - ${narration || 'Monthly Subscription'}`;
+                const note = `Member ${currentMemberNumber} - New Year Function Expense`;
                 handlePayment(`upi://pay?pa=${upiId}&pn=Shipyard%20Nagar&am=${amt}&cu=INR&tn=${encodeURIComponent(note)}`);
             });
 
