@@ -321,6 +321,7 @@
             border-radius: 12px;
             background: linear-gradient(135deg, #f0f8ff 0%, #e6f7ff 100%);
             border: 1px solid #b3d9ff;
+            display: none; /* Hidden by default until narration loads */
         }
         
         [data-theme="dark"] .special-contribution {
@@ -440,18 +441,6 @@
             }
         }
 
-        @media (max-width: 400px) {
-            .payment-table {
-                font-size: 0.7rem;
-            }
-            
-            .payment-table th, 
-            .payment-table td {
-                padding: 8px 6px;
-            }
-        }
-
-        /* ✅ Skeleton Loading Animation */
         .skeleton {
             background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
             background-size: 200% 100%;
@@ -500,7 +489,6 @@
                                 <small class="form-text text-muted">You can edit the amount if needed</small>
                             </div>
                             
-                            <!-- ✅ SPECIAL CONTRIBUTION BOX -->
                             <div class="special-contribution" id="specialSection">
                                 <div class="special-header">
                                     <i class="fas fa-money-bill-wave"></i>
@@ -604,13 +592,6 @@
             let monthlyDueAmount = 0;
             let pendingMonths = [];
 
-            // Check for payment success
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('payment') === 'success') {
-                alert('✅ Payment successful! Your records are being updated.');
-                window.history.replaceState({}, document.title, window.location.pathname);
-            }
-
             // Theme Logic
             const themeToggle = document.getElementById('themeToggle');
             const savedTheme = localStorage.getItem('theme') || 'light';
@@ -636,51 +617,33 @@
 
             async function loadAllData(uid) {
                 try {
-                    // ✅ ആദ്യം നാരേഷൻ ലോഡ് ചെയ്യുക
+                    // ✅ നാരേഷൻ ആദ്യം ലോഡ് ചെയ്യുന്നു എന്ന് ഉറപ്പാക്കുന്നു
                     await loadNarration();
-                    
-                    // ✅ പിന്നെ user data
                     await loadUserData(uid);
-                    
-                    // ✅ പിന്നെ contributions
                     await loadContributions(uid);
-                    
+                    // ലോഡിംഗിന് ശേഷം ടോട്ടൽ ഒന്നുകൂടി ചെക്ക് ചെയ്യുന്നു
+                    updateTotalAmount();
+                    togglePaymentButtons();
                 } catch (error) {
                     console.error('Error loading data:', error);
                 }
             }
 
-            // ✅ FIXED: Load narration from settings
+            // ✅ FIXED: Load narration with better logic
             async function loadNarration() {
                 try {
-                    console.log('Loading narration from Firebase...');
-                    
                     const settingsDoc = await db.collection('settings').doc('specialPayment').get();
-                    
                     if (settingsDoc.exists()) {
                         const data = settingsDoc.data();
-                        console.log('Settings data from Firebase:', data);
-                        
-                        // ✅ FIXED: Check for narration field
-                        if (data.narration !== undefined && data.narration !== null && data.narration.trim() !== "") {
+                        if (data.narration && data.narration.trim() !== "") {
                             narration = data.narration.trim();
-                            console.log('✅ Narration found and loaded:', narration);
                         } else {
-                            // ✅ FIXED: If narration is empty or not set
                             narration = "";
-                            console.log('❌ No narration found in Firebase or empty');
                         }
-                    } else {
-                        // ✅ FIXED: No settings document found
-                        narration = "";
-                        console.log('❌ No settings document found in Firebase');
                     }
-                    
-                    // ✅ Update UI immediately
                     updateNarrationUI();
-                    
                 } catch (error) {
-                    console.error('❌ Error loading narration from Firebase:', error);
+                    console.error('Error loading narration:', error);
                     narration = "";
                     updateNarrationUI();
                 }
@@ -690,102 +653,58 @@
                 const narrationEl = document.getElementById('narrationText');
                 const specialSection = document.getElementById('specialSection');
                 
-                console.log('Updating UI with narration:', narration);
-                
-                if (narrationEl) {
-                    // ✅ FIXED: Show narration only if it exists and is not empty
-                    if (narration && narration.trim() !== "") {
-                        narrationEl.textContent = narration;
-                        console.log('✅ UI updated with narration:', narration);
-                        // ✅ Show the section if narration exists
-                        if (specialSection) {
-                            specialSection.style.display = 'block';
-                        }
-                    } else {
-                        // ✅ FIXED: If no narration, hide only the title (narrationText)
-                        narrationEl.textContent = "";
-                        if (specialSection) {
-                            // ✅ Only hide narration title, keep the rest of the box visible
-                            specialSection.style.display = 'block'; // Keep box visible
-                        }
-                        console.log('❌ No narration to display, hiding narration text only');
-                    }
+                if (narration && narration.trim() !== "") {
+                    if (narrationEl) narrationEl.textContent = narration;
+                    if (specialSection) specialSection.style.display = 'block';
+                } else {
+                    if (specialSection) specialSection.style.display = 'none';
                 }
             }
 
-            // ✅ FIXED: Load user data
             async function loadUserData(uid) {
                 try {
                     const userDoc = await db.collection('users').doc(uid).get();
-                    
-                    if (!userDoc.exists) {
-                        alert('User data not found.');
-                        return;
+                    if (userDoc.exists) {
+                        const userData = userDoc.data();
+                        currentMemberNumber = userData.memberNumber || 'Unknown';
+                        specialPaid = userData.speakerPaid || false;
+                        specialAmount = userData.speakerAmount || 0;
+                        updateSpecialPaymentUI();
                     }
-
-                    const userData = userDoc.data();
-                    currentMemberNumber = userData.memberNumber || 'Unknown';
-                    
-                    // ✅ Get user's specific data
-                    specialPaid = userData.speakerPaid || false;
-                    specialAmount = userData.speakerAmount || 0;
-                    
-                    console.log('✅ User Data Loaded:', {
-                        member: currentMemberNumber,
-                        specialPaid: specialPaid,
-                        specialAmount: specialAmount,
-                        narration: narration
-                    });
-                    
-                    // ✅ Update special payment UI
-                    updateSpecialPaymentUI();
-
                 } catch (error) {
                     console.error('Error loading user data:', error);
                 }
             }
 
-            // ✅ FIXED: Update special payment UI
             function updateSpecialPaymentUI() {
                 const specialSection = document.getElementById('specialSection');
                 const specialAmountDisplay = document.getElementById('specialAmountDisplay');
                 const statusDisplay = document.getElementById('statusDisplay');
                 const includeSpecial = document.getElementById('includeSpecial');
                 
-                console.log('Updating Special Payment UI:', {
-                    specialAmount: specialAmount,
-                    specialPaid: specialPaid,
-                    narration: narration
-                });
+                if (specialAmountDisplay) specialAmountDisplay.textContent = `₹${specialAmount}`;
                 
-                // ✅ Update amount display
-                specialAmountDisplay.textContent = `₹${specialAmount}`;
-                
-                // ✅ Update status
                 if (specialPaid) {
-                    statusDisplay.textContent = "Paid";
-                    statusDisplay.className = "special-status paid";
-                    includeSpecial.checked = false;
-                    includeSpecial.disabled = true;
-                    
-                    // ✅ Show box but make it read-only when PAID
-                    if (specialSection) {
-                        specialSection.style.opacity = '0.7';
+                    if (statusDisplay) {
+                        statusDisplay.textContent = "Paid";
+                        statusDisplay.className = "special-status paid";
                     }
+                    if (includeSpecial) {
+                        includeSpecial.checked = false;
+                        includeSpecial.disabled = true;
+                    }
+                    if (specialSection) specialSection.style.opacity = '0.7';
                 } else {
-                    statusDisplay.textContent = "Pending";
-                    statusDisplay.className = "special-status pending";
-                    includeSpecial.checked = true;
-                    includeSpecial.disabled = false;
-                    
-                    // ✅ Show box normally when PENDING
-                    if (specialSection) {
-                        specialSection.style.opacity = '1';
+                    if (statusDisplay) {
+                        statusDisplay.textContent = "Pending";
+                        statusDisplay.className = "special-status pending";
                     }
+                    if (includeSpecial) {
+                        includeSpecial.checked = true;
+                        includeSpecial.disabled = false;
+                    }
+                    if (specialSection) specialSection.style.opacity = '1';
                 }
-                
-                // ✅ Update total amount
-                updateTotalAmount();
             }
 
             async function loadContributions(uid) {
@@ -799,11 +718,8 @@
 
             function processContributions(snapshot) {
                 const paidData = {};
-                snapshot.forEach(doc => {
-                    paidData[doc.id] = doc.data();
-                });
+                snapshot.forEach(doc => { paidData[doc.id] = doc.data(); });
 
-                // Month Generation
                 const currentDate = new Date();
                 const currentMonth = currentDate.toISOString().slice(0, 7);
                 const startMonth = '2025-10';
@@ -822,90 +738,54 @@
                 const allMonths = generateMonths(startMonth, currentMonth);
                 pendingMonths = [];
                 const contributionTable = document.getElementById('contributionTable');
-                
-                // Clear Skeleton
                 contributionTable.innerHTML = '';
 
-                // Sort reverse (newest first)
                 const sortedMonths = [...allMonths].sort().reverse();
-
-                const getMonthName = (monthString) => {
+                const getMonthName = (mStr) => {
                     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                    const parts = monthString.split('-');
-                    const monthIndex = parseInt(parts[1]) - 1;
-                    return months[monthIndex] + ' ' + parts[0];
+                    const parts = mStr.split('-');
+                    return months[parseInt(parts[1]) - 1] + ' ' + parts[0];
                 };
 
                 sortedMonths.forEach(month => {
                     const data = paidData[month] || { paid: false, amount: 0, date: '' };
-                    const status = data.paid ? 'Paid' : 'Pending';
-                    const amount = data.paid ? '₹200' : '₹0';
-                    const date = data.date || '-';
-
-                    const row = `
+                    contributionTable.innerHTML += `
                         <tr>
                             <td>${getMonthName(month)}</td>
-                            <td class="${data.paid ? 'status-paid' : 'status-pending'}">${status}</td>
-                            <td>${amount}</td>
-                            <td>${date}</td>
+                            <td class="${data.paid ? 'status-paid' : 'status-pending'}">${data.paid ? 'Paid' : 'Pending'}</td>
+                            <td>${data.paid ? '₹200' : '₹0'}</td>
+                            <td>${data.date || '-'}</td>
                         </tr>
                     `;
-                    contributionTable.innerHTML += row;
-
                     if (!data.paid) pendingMonths.push(month);
                 });
 
-                // Calculate monthly due
                 monthlyDueAmount = pendingMonths.length * 200;
-
-                // Update UI - Remove Skeleton Classes
                 const dueInfo = document.getElementById('dueInfo');
                 const pendingInfo = document.getElementById('pendingMonths');
                 
                 dueInfo.classList.remove('skeleton');
                 pendingInfo.classList.remove('skeleton');
-                
                 dueInfo.textContent = `Due Amount: ₹${monthlyDueAmount}`;
-                
-                if (pendingMonths.length > 0) {
-                     const monthNames = pendingMonths.map(m => getMonthName(m)).join(', ');
-                     pendingInfo.textContent = `Pending: ${monthNames}`;
-                } else {
-                     pendingInfo.textContent = 'All months paid';
-                }
-
-                // Update total amount
-                updateTotalAmount();
-                togglePaymentButtons();
+                pendingInfo.textContent = pendingMonths.length > 0 ? `Pending: ${pendingMonths.map(m => getMonthName(m)).join(', ')}` : 'All months paid';
             }
 
-            // ✅ Update total amount
             function updateTotalAmount() {
                 const includeSpecial = document.getElementById('includeSpecial');
                 let totalAmount = monthlyDueAmount;
-                
-                // ✅ Add special amount only if narration exists, checkbox is checked and not already paid
-                if (narration && narration.trim() !== "" && includeSpecial && includeSpecial.checked && !specialPaid) {
+                if (narration && includeSpecial && includeSpecial.checked && !specialPaid) {
                     totalAmount += specialAmount;
                 }
-                
-                document.getElementById('amount').value = totalAmount;
-                
-                console.log('Total Amount Calculation:', {
-                    monthlyDue: monthlyDueAmount,
-                    specialAmount: specialAmount,
-                    narration: narration,
-                    includeSpecial: includeSpecial ? includeSpecial.checked : false,
-                    specialPaid: specialPaid,
-                    total: totalAmount
-                });
+                const amountInput = document.getElementById('amount');
+                if (amountInput) amountInput.value = totalAmount;
             }
 
             function togglePaymentButtons() {
-                const amount = parseFloat(document.getElementById('amount').value);
+                const amountInput = document.getElementById('amount');
+                if (!amountInput) return;
+                const amount = parseFloat(amountInput.value);
                 const btns = document.getElementById('paymentButtons');
                 const msg = document.getElementById('noPaymentMessage');
-                
                 if (amount > 0) {
                     btns.style.display = 'block';
                     msg.style.display = 'none';
@@ -915,7 +795,6 @@
                 }
             }
 
-            // ✅ Event Listeners
             const includeSpecialCheckbox = document.getElementById('includeSpecial');
             if (includeSpecialCheckbox) {
                 includeSpecialCheckbox.addEventListener('change', () => {
@@ -924,20 +803,15 @@
                 });
             }
 
-            document.getElementById('amount').addEventListener('input', togglePaymentButtons);
+            const amountInput = document.getElementById('amount');
+            if (amountInput) {
+                amountInput.addEventListener('input', togglePaymentButtons);
+            }
 
-            // Button Actions
             const handlePayment = (url) => {
                 const amount = document.getElementById('amount').value;
                 if (amount < 10) return alert('Please enter minimum ₹10!');
-                
-                // Visual feedback
-                const btns = document.querySelectorAll('.pay-btn');
-                btns.forEach(b => b.style.opacity = '0.7');
-                
                 window.location.href = url;
-                
-                setTimeout(() => btns.forEach(b => b.style.opacity = '1'), 2000);
             };
 
             document.getElementById('gpayButton').addEventListener('click', () => {
@@ -948,7 +822,6 @@
             document.getElementById('credButton').addEventListener('click', () => {
                 const amt = document.getElementById('amount').value;
                 const upiId = 'BHARATPE.8P0O1J0O8P31576@fbpe';
-                // ✅ Use narration in payment note if it exists
                 const note = `Member ${currentMemberNumber} - ${narration || 'Monthly Subscription'}`;
                 handlePayment(`upi://pay?pa=${upiId}&pn=Shipyard%20Nagar&am=${amt}&cu=INR&tn=${encodeURIComponent(note)}`);
             });
