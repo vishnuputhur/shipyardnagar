@@ -79,7 +79,7 @@
             font-size: 1.5rem;
             font-weight: 700;
             color: #1e3a8a;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             text-align: center;
         }
 
@@ -87,29 +87,11 @@
             color: #60a5fa;
         }
 
-        /* NEW: Narration Heading */
-        .narration-heading {
-            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
-            color: white;
-            padding: 12px 15px;
-            border-radius: 12px;
-            margin: 10px 0;
-            text-align: center;
-            font-weight: 600;
-            font-size: 1.1rem;
-            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
-            border-left: 4px solid #fbbf24;
-        }
-
-        [data-theme="dark"] .narration-heading {
-            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
-        }
-
         .subs-info {
             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
             padding: 15px;
             border-radius: 12px;
-            margin: 8px 0;
+            margin: 10px 0;
             border-left: 3px solid var(--primary-orange);
             font-weight: 500;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -124,59 +106,6 @@
             font-size: 1.2rem;
             margin-right: 10px;
             color: var(--primary-orange);
-        }
-
-        .special-amount-display {
-            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
-            padding: 15px;
-            border-radius: 12px;
-            margin: 8px 0;
-            border-left: 3px solid #22c55e;
-            font-weight: 600;
-            box-shadow: 0 2px 8px rgba(34, 197, 94, 0.2);
-            text-align: center;
-            font-size: 1.1rem;
-        }
-
-        [data-theme="dark"] .special-amount-display {
-            background: linear-gradient(135deg, #064e3b 0%, #047857 100%);
-            color: #fff;
-        }
-
-        .special-pending {
-            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-            padding: 15px;
-            border-radius: 12px;
-            margin: 8px 0;
-            border-left: 3px solid #ef4444;
-            font-weight: 600;
-            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
-            text-align: center;
-            font-size: 1.1rem;
-            color: #dc2626;
-        }
-
-        [data-theme="dark"] .special-pending {
-            background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 100%);
-            color: #fca5a5;
-        }
-
-        .special-paid {
-            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
-            padding: 15px;
-            border-radius: 12px;
-            margin: 8px 0;
-            border-left: 3px solid #22c55e;
-            font-weight: 600;
-            box-shadow: 0 2px 8px rgba(34, 197, 94, 0.2);
-            text-align: center;
-            font-size: 1.1rem;
-            color: #166534;
-        }
-
-        [data-theme="dark"] .special-paid {
-            background: linear-gradient(135deg, #064e3b 0%, #047857 100%);
-            color: #86efac;
         }
 
         .payment-form {
@@ -384,14 +313,14 @@
             color: white;
             border-color: var(--primary-orange);
         }
-
+        
+        /* UPDATED Special Contribution Box */
         .special-contribution {
             margin-top: 15px;
             padding: 15px;
             border-radius: 12px;
             background: linear-gradient(135deg, #f0f8ff 0%, #e6f7ff 100%);
             border: 1px solid #b3d9ff;
-            display: none;
         }
         
         [data-theme="dark"] .special-contribution {
@@ -400,34 +329,31 @@
         }
         
         .special-header {
-            display: flex;
-            align-items: center;
             margin-bottom: 10px;
         }
         
-        .special-header i {
-            font-size: 1.2rem;
-            margin-right: 10px;
-            color: #1e40af;
-        }
-        
-        .special-title {
+        .narration-title {
+            font-size: 1.1rem;
             font-weight: 600;
             color: #1e40af;
+            margin-bottom: 5px;
+            text-align: center;
         }
         
-        [data-theme="dark"] .special-title {
+        [data-theme="dark"] .narration-title {
             color: #60a5fa;
         }
         
-        .special-description {
-            font-size: 0.85rem;
-            color: #4b5563;
+        .amount-display {
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #1e40af;
             margin-bottom: 10px;
         }
         
-        [data-theme="dark"] .special-description {
-            color: #cbd5e0;
+        [data-theme="dark"] .amount-display {
+            color: #60a5fa;
         }
         
         .special-option {
@@ -459,14 +385,33 @@
             margin-top: 10px;
             font-size: 0.85rem;
             font-weight: 500;
+            text-align: center;
+            padding: 8px;
+            border-radius: 8px;
         }
         
         .special-status.pending {
-            color: #dc3545;
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            color: #dc2626;
+            border: 1px solid #fca5a5;
         }
         
         .special-status.paid {
-            color: #28a745;
+            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+            color: #166534;
+            border: 1px solid #86efac;
+        }
+        
+        [data-theme="dark"] .special-status.pending {
+            background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 100%);
+            color: #fca5a5;
+            border-color: #b91c1c;
+        }
+        
+        [data-theme="dark"] .special-status.paid {
+            background: linear-gradient(135deg, #064e3b 0%, #047857 100%);
+            color: #86efac;
+            border-color: #10b981;
         }
 
         .payment-buttons {
@@ -508,11 +453,6 @@
                 padding: 3px 10px;
                 height: 28px;
             }
-            
-            .narration-heading {
-                font-size: 0.95rem;
-                padding: 10px 12px;
-            }
         }
 
         @media (max-width: 400px) {
@@ -552,35 +492,7 @@
             <div class="col-12 col-md-8 col-lg-6">
                 <div class="main-card">
                     <div class="page-title">
-                        <i class="fas fa-money-bill-wave me-2"></i>
                         My Subscription
-                    </div>
-                    
-                    <!-- Narration Heading -->
-                    <div class="narration-heading" id="narrationHeading">
-                        <span id="narrationText" class="skeleton">Loading...</span>
-                    </div>
-                    
-                    <!-- Special Payment Status -->
-                    <div class="special-amount-display" id="specialAmountDisplay" style="display: none;">
-                        <i class="fas fa-rupee-sign me-2"></i>
-                        Special Payment Amount: <span id="specialAmountValue" class="skeleton">₹...</span>
-                    </div>
-                    
-                    <div class="special-pending" id="specialPendingDisplay" style="display: none;">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        Special Payment: <span id="pendingText">PENDING</span>
-                    </div>
-                    
-                    <div class="special-paid" id="specialPaidDisplay" style="display: none;">
-                        <i class="fas fa-check-circle me-2"></i>
-                        Special Payment: <span id="paidText">ALREADY PAID</span>
-                    </div>
-                    
-                    <!-- Monthly Dues Info -->
-                    <div class="subs-info">
-                        <i class="fas fa-calendar-times"></i>
-                        <span id="pendingMonths" class="skeleton">Loading months...</span>
                     </div>
                     
                     <div class="subs-info">
@@ -588,25 +500,36 @@
                         <span id="dueInfo" class="skeleton">Loading amount...</span>
                     </div>
                     
-                    <!-- Payment Form -->
+                    <div class="subs-info">
+                        <i class="fas fa-calendar-times"></i>
+                        <span id="pendingMonths" class="skeleton">Loading months...</span>
+                    </div>
+                    
                     <div class="payment-form">
-                        <h5 class="mb-3" style="color: #1e3a8a; font-weight: 600;">Make Payment</h5>
+                        <h5 class="mb-3" style="color: #1e3a8a; font-weight: 600;">Pay Monthly Subscription</h5>
                         
                         <form id="paymentForm">
                             <div class="form-group">
-                                <label for="amount" class="form-label">Total Amount (₹)</label>
-                                <input type="number" class="form-control" id="amount" value="0" min="10" step="10" readonly>
-                                <small class="form-text text-muted">Amount includes monthly dues + special payment (if pending)</small>
+                                <label for="amount" class="form-label">Amount (₹)</label>
+                                <input type="number" class="form-control" id="amount" value="0" min="10" step="10">
+                                <small class="form-text text-muted">You can edit the amount if needed</small>
                             </div>
                             
+                            <!-- UPDATED Special Contribution Box -->
                             <div class="special-contribution" id="specialSection">
                                 <div class="special-header">
-                                    <i class="fas fa-money-bill-wave"></i>
-                                    <span class="special-title">Special Contribution</span>
+                                    <div class="narration-title" id="narrationText">Special Contribution</div>
+                                    <div class="amount-display" id="specialAmountDisplay">₹500</div>
                                 </div>
+                                
                                 <div class="special-option">
                                     <input type="checkbox" id="includeSpecial" name="includeSpecial" checked>
-                                    <label for="includeSpecial">Include special contribution of <span class="special-amount" id="specialAmountDisplay2">₹...</span></label>
+                                    <label for="includeSpecial">Include special contribution</label>
+                                </div>
+                                
+                                <div id="specialStatus" class="special-status pending">
+                                    <i class="fas fa-exclamation-triangle me-1"></i>
+                                    Pending
                                 </div>
                             </div>
                             
@@ -628,7 +551,7 @@
                                 </div>
                             </div>
 
-                            <div id="noPaymentMessage" class="no-payment-message" style="display: none;">
+                            <div id="noPaymentMessage" class="no-payment-message">
                                 <i class="fas fa-check-circle" style="color: #28a745; font-size: 2rem; margin-bottom: 10px;"></i>
                                 <h6 style="color: #155724; margin-bottom: 5px;">No Payment Due</h6>
                                 <p style="color: #155724; margin: 0; font-size: 0.85rem;">All your subscriptions are up to date!</p>
@@ -636,7 +559,6 @@
                         </form>
                     </div>
                     
-                    <!-- Payment History -->
                     <div class="payment-history">
                         <h5 class="mb-3" style="color: #1e3a8a; font-weight: 600;">Payment History</h5>
                         
@@ -726,17 +648,17 @@
                     window.location.href = 'login.html';
                 } else {
                     currentUserId = user.uid;
-                    // Load all data
+                    // ✅ ഇപ്പോൾ ശരിയായി load ചെയ്യാം
                     await loadAllData(user.uid);
                 }
             });
 
             async function loadAllData(uid) {
                 try {
-                    // Load settings (narration and amount) first
+                    // ✅ ആദ്യം settings ലോഡ് ചെയ്യുക
                     await loadSettings();
                     
-                    // Load user data and contributions
+                    // ✅ പിന്നെ user data ലോഡ് ചെയ്യുക
                     await loadUserData(uid);
                     
                 } catch (error) {
@@ -747,9 +669,12 @@
 
             async function loadSettings() {
                 try {
-                    // Try localStorage first
+                    // ✅ 1. localStorage-ൽ നിന്ന് ശ്രമിക്കുക
                     const cachedNarration = localStorage.getItem('specialNarration');
                     const cachedAmount = localStorage.getItem('specialDefaultAmount');
+                    
+                    console.log('Cached Narration:', cachedNarration);
+                    console.log('Cached Amount:', cachedAmount);
                     
                     if (cachedNarration) {
                         narration = cachedNarration;
@@ -761,26 +686,33 @@
                         updateSpecialAmountUI();
                     }
                     
-                    // Try Firebase
+                    // ✅ 2. Firebase-ൽ നിന്ന് ശ്രമിക്കുക
                     try {
+                        console.log('Trying to load from Firebase...');
                         const settingsDoc = await db.collection('settings').doc('specialPayment').get();
+                        
                         if (settingsDoc.exists()) {
                             const data = settingsDoc.data();
+                            console.log('Firebase Data:', data);
                             
                             if (data.narration) {
                                 narration = data.narration;
                                 localStorage.setItem('specialNarration', narration);
                                 updateNarrationUI();
+                                console.log('Narration loaded from Firebase:', narration);
                             }
                             
                             if (data.defaultAmount) {
                                 specialAmount = data.defaultAmount;
                                 localStorage.setItem('specialDefaultAmount', specialAmount);
                                 updateSpecialAmountUI();
+                                console.log('Amount loaded from Firebase:', specialAmount);
                             }
+                        } else {
+                            console.log('No settings document found in Firebase');
                         }
                     } catch (firebaseError) {
-                        console.log('Using cached settings');
+                        console.log('Firebase read error:', firebaseError);
                     }
                     
                 } catch (error) {
@@ -795,78 +727,82 @@
             }
 
             function updateSpecialAmountUI() {
-                const amountEl = document.getElementById('specialAmountValue');
-                const amountEl2 = document.getElementById('specialAmountDisplay2');
-                
+                const amountEl = document.getElementById('specialAmountDisplay');
                 if (amountEl) {
                     amountEl.classList.remove('skeleton');
                     amountEl.textContent = `₹${specialAmount}`;
                 }
                 
-                if (amountEl2) {
-                    amountEl2.textContent = `₹${specialAmount}`;
-                }
-                
+                // Update checkbox value
                 document.getElementById('includeSpecial').value = specialAmount;
+                
+                console.log('UI Updated with amount:', specialAmount);
             }
 
             async function loadUserData(uid) {
                 try {
-                    // Fetch user data and contributions in parallel
-                    const userPromise = db.collection('users').doc(uid).get();
-                    const contributionsPromise = db.collection('contributions').doc(uid).collection('months').get();
-
-                    const [userDoc, contributionsSnap] = await Promise.all([userPromise, contributionsPromise]);
-
+                    const userDoc = await db.collection('users').doc(uid).get();
+                    
                     if (!userDoc.exists) {
                         alert('User data not found.');
                         return;
                     }
 
-                    // Process User Data
                     const userData = userDoc.data();
                     currentMemberNumber = userData.memberNumber || 'Unknown';
                     specialPaid = userData.speakerPaid || false;
 
-                    // Update Special Payment UI
-                    updateSpecialPaymentUI();
+                    // ✅ Special payment status update
+                    updateSpecialPaymentStatus();
 
-                    // Process Contributions
-                    processContributions(contributionsSnap);
+                    // ✅ ഇപ്പോൾ contributions ലോഡ് ചെയ്യുക
+                    await loadContributions(uid);
 
                 } catch (error) {
-                    console.error('Error:', error);
+                    console.error('Error loading user data:', error);
                 }
             }
 
-            function updateSpecialPaymentUI() {
-                const amountDisplay = document.getElementById('specialAmountDisplay');
-                const pendingDisplay = document.getElementById('specialPendingDisplay');
-                const paidDisplay = document.getElementById('specialPaidDisplay');
+            function updateSpecialPaymentStatus() {
+                const statusEl = document.getElementById('specialStatus');
                 const specialSection = document.getElementById('specialSection');
                 
                 if (specialPaid) {
                     // Already paid
-                    amountDisplay.style.display = 'none';
-                    pendingDisplay.style.display = 'none';
-                    paidDisplay.style.display = 'block';
-                    specialSection.style.display = 'none';
+                    statusEl.innerHTML = '<i class="fas fa-check-circle me-1"></i> Already Paid';
+                    statusEl.className = 'special-status paid';
                     
-                    // Update amount input
+                    // Hide checkbox since already paid
+                    document.getElementById('includeSpecial').checked = false;
+                    document.getElementById('includeSpecial').disabled = true;
+                    document.querySelector('.special-option').style.display = 'none';
+                    
+                    // Update amount field
                     document.getElementById('amount').value = monthlyDueAmount;
                 } else {
                     // Not paid yet
-                    amountDisplay.style.display = 'block';
-                    pendingDisplay.style.display = 'block';
-                    paidDisplay.style.display = 'none';
-                    specialSection.style.display = 'block';
+                    statusEl.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i> Pending';
+                    statusEl.className = 'special-status pending';
                     
-                    // Update special amount display
-                    updateSpecialAmountUI();
+                    // Show checkbox
+                    document.getElementById('includeSpecial').checked = true;
+                    document.getElementById('includeSpecial').disabled = false;
+                    document.querySelector('.special-option').style.display = 'flex';
+                    
+                    // Update amount field
+                    updateTotalAmount();
                 }
                 
-                // Update total amount
-                updateTotalAmount();
+                console.log('Special Payment Status:', specialPaid ? 'PAID' : 'PENDING');
+            }
+
+            async function loadContributions(uid) {
+                try {
+                    const contributionsSnap = await db.collection('contributions').doc(uid).collection('months').get();
+                    processContributions(contributionsSnap);
+                } catch (error) {
+                    console.error('Error loading contributions:', error);
+                }
             }
 
             function processContributions(snapshot) {
@@ -937,17 +873,18 @@
                 dueInfo.classList.remove('skeleton');
                 pendingInfo.classList.remove('skeleton');
                 
-                dueInfo.textContent = `Monthly Due: ₹${monthlyDueAmount} (${pendingMonths.length} months)`;
+                dueInfo.textContent = `Due Amount: ₹${monthlyDueAmount}`;
                 
                 if (pendingMonths.length > 0) {
                      const monthNames = pendingMonths.map(m => getMonthName(m)).join(', ');
-                     pendingInfo.textContent = `Pending Months: ${monthNames}`;
+                     pendingInfo.textContent = `Pending: ${monthNames}`;
                 } else {
                      pendingInfo.textContent = 'All months paid';
                 }
 
-                // Update total amount
+                // ✅ Update total amount
                 updateTotalAmount();
+                togglePaymentButtons();
             }
 
             // Update total amount
@@ -960,7 +897,10 @@
                 }
                 
                 document.getElementById('amount').value = totalAmount;
-                togglePaymentButtons();
+                
+                console.log('Total Amount Calculated:', totalAmount, 
+                          '(Monthly:', monthlyDueAmount, 
+                          'Special:', includeSpecial && !specialPaid ? specialAmount : 0, ')');
             }
 
             function togglePaymentButtons() {
@@ -980,7 +920,10 @@
             // Event Listeners
             document.getElementById('includeSpecial').addEventListener('change', () => {
                 updateTotalAmount();
+                togglePaymentButtons();
             });
+
+            document.getElementById('amount').addEventListener('input', togglePaymentButtons);
 
             // Button Actions
             const handlePayment = (url) => {
