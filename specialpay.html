@@ -587,10 +587,6 @@
                             <i class="fas fa-file-pdf me-2"></i>
                             Generate PDF Receipt
                         </button>
-                        <button class="btn btn-secondary" id="refreshBtn">
-                            <i class="fas fa-sync-alt me-2"></i>
-                            Refresh
-                        </button>
                     </div>
                 </div>
             </div>
@@ -633,7 +629,7 @@
 
         let allMembers = [];
         let defaultAmount = 500;
-        let narration = "Special Contribution";
+        let narration = "Additional Collection"; // ✅ DEFAULT VALUE
 
         // Show loading spinner
         function showLoading() {
@@ -693,10 +689,49 @@
             }
         });
 
-        // Load settings
+        // ✅ FIXED: Load settings
         async function loadSettings() {
             try {
-                // Try to get from localStorage first
+                console.log('Loading settings from Firebase...');
+                
+                // Always try Firebase first
+                const settingsDoc = await db.collection('settings').doc('specialPayment').get();
+                
+                if (settingsDoc.exists()) {
+                    const data = settingsDoc.data();
+                    console.log('Firebase settings:', data);
+                    
+                    if (data.defaultAmount) {
+                        defaultAmount = data.defaultAmount;
+                        document.getElementById('defaultAmount').value = defaultAmount;
+                        localStorage.setItem('specialDefaultAmount', defaultAmount);
+                        console.log('Default amount loaded:', defaultAmount);
+                    }
+                    
+                    if (data.narration && data.narration.trim() !== "") {
+                        narration = data.narration;
+                        document.getElementById('narration').value = narration;
+                        document.getElementById('currentNarration').textContent = narration;
+                        localStorage.setItem('specialNarration', narration);
+                        console.log('Narration loaded:', narration);
+                    } else {
+                        // If narration is empty, use default
+                        narration = "Additional Collection";
+                        document.getElementById('narration').value = narration;
+                        document.getElementById('currentNarration').textContent = narration;
+                        console.log('Using default narration');
+                    }
+                } else {
+                    console.log('No settings document, using defaults');
+                    // Set defaults in UI
+                    document.getElementById('defaultAmount').value = defaultAmount;
+                    document.getElementById('narration').value = narration;
+                    document.getElementById('currentNarration').textContent = narration;
+                }
+                
+            } catch (error) {
+                console.log('Error loading settings:', error);
+                // Fallback to localStorage or defaults
                 const cachedAmount = localStorage.getItem('specialDefaultAmount');
                 const cachedNarration = localStorage.getItem('specialNarration');
                 
@@ -709,37 +744,15 @@
                     narration = cachedNarration;
                     document.getElementById('narration').value = narration;
                     document.getElementById('currentNarration').textContent = narration;
+                } else {
+                    narration = "Additional Collection";
+                    document.getElementById('narration').value = narration;
+                    document.getElementById('currentNarration').textContent = narration;
                 }
-                
-                // Try to get from Firebase
-                try {
-                    const settingsDoc = await db.collection('settings').doc('specialPayment').get();
-                    if (settingsDoc.exists()) {
-                        const data = settingsDoc.data();
-                        
-                        if (data.defaultAmount) {
-                            defaultAmount = data.defaultAmount;
-                            document.getElementById('defaultAmount').value = defaultAmount;
-                            localStorage.setItem('specialDefaultAmount', defaultAmount);
-                        }
-                        
-                        if (data.narration) {
-                            narration = data.narration;
-                            document.getElementById('narration').value = narration;
-                            document.getElementById('currentNarration').textContent = narration;
-                            localStorage.setItem('specialNarration', narration);
-                        }
-                    }
-                } catch (firebaseError) {
-                    console.log('Using cached settings');
-                }
-                
-            } catch (error) {
-                console.log('Error loading settings:', error);
             }
         }
 
-        // Set default amount
+        // ✅ FIXED: Set default amount
         async function setDefaultAmount() {
             const newAmount = parseInt(document.getElementById('defaultAmount').value);
             
@@ -748,31 +761,39 @@
                 return;
             }
             
-            defaultAmount = newAmount;
+            showLoading();
             
-            // Save to localStorage
-            localStorage.setItem('specialDefaultAmount', defaultAmount);
-            
-            // Try to save to Firebase
             try {
+                defaultAmount = newAmount;
+                
+                // Save to Firebase
                 await db.collection('settings')
                     .doc('specialPayment')
                     .set({
                         defaultAmount: defaultAmount,
+                        narration: narration,
                         updatedAt: new Date(),
-                        updatedBy: auth.currentUser.uid
+                        updatedBy: auth.currentUser.uid,
+                        updatedByName: auth.currentUser.email
                     }, { merge: true });
+                
+                // Save to localStorage
+                localStorage.setItem('specialDefaultAmount', defaultAmount);
+                
+                hideLoading();
+                alert(`✅ Default amount set to ₹${defaultAmount}`);
+                
+                // Update all members with new default amount
+                updateAllMemberAmounts();
+                
             } catch (error) {
-                console.log('Saved to localStorage only');
+                hideLoading();
+                console.error('Error setting amount:', error);
+                showError('Error setting amount: ' + error.message);
             }
-            
-            alert(`✅ Default amount set to ₹${defaultAmount}`);
-            
-            // Update all members with new default amount
-            updateAllMemberAmounts();
         }
 
-        // Set narration
+        // ✅ FIXED: Set narration
         async function setNarration() {
             const newNarration = document.getElementById('narration').value.trim();
             
@@ -781,26 +802,37 @@
                 return;
             }
             
-            narration = newNarration;
-            document.getElementById('currentNarration').textContent = narration;
+            showLoading();
             
-            // Save to localStorage
-            localStorage.setItem('specialNarration', narration);
-            
-            // Try to save to Firebase
             try {
+                narration = newNarration;
+                document.getElementById('currentNarration').textContent = narration;
+                
+                // Save to Firebase
                 await db.collection('settings')
                     .doc('specialPayment')
                     .set({
+                        defaultAmount: defaultAmount,
                         narration: narration,
                         updatedAt: new Date(),
-                        updatedBy: auth.currentUser.uid
+                        updatedBy: auth.currentUser.uid,
+                        updatedByName: auth.currentUser.email
                     }, { merge: true });
+                
+                // Save to localStorage
+                localStorage.setItem('specialNarration', narration);
+                
+                hideLoading();
+                alert(`✅ Narration set to: "${narration}"`);
+                
+                // Update UI
+                renderMemberTable();
+                
             } catch (error) {
-                console.log('Saved to localStorage only');
+                hideLoading();
+                console.error('Error setting narration:', error);
+                showError('Error setting narration: ' + error.message);
             }
-            
-            alert(`✅ Narration set to: "${narration}"`);
         }
 
         // Load all members
@@ -992,7 +1024,7 @@
             }
         };
 
-        // Generate PDF Receipt
+        // ✅ FIXED: Generate PDF Receipt with all corrections
         const generatePdfReceipt = () => {
             if (allMembers.length === 0) {
                 alert('No member data available');
@@ -1001,17 +1033,30 @@
             
             const doc = new jsPDF();
             
-            // Title
-            doc.setFontSize(20);
-            doc.setTextColor(0, 102, 204); // Blue color
-            doc.setFont('helvetica', 'bold');
-            doc.text('SHIPYARD NAGAR RESIDENCE ASSOCIATION', 105, 20, { align: 'center' });
+            // Page dimensions
+            const pageWidth = doc.internal.pageSize.width;
+            const pageHeight = doc.internal.pageSize.height;
+            const margin = 8; // 8mm margin
             
-            // Narration
+            // Convert mm to points (1mm = 2.83465 points)
+            const marginPoints = margin * 2.83465;
+            
+            // Draw border around page
+            doc.setDrawColor(0, 102, 204); // Blue border
+            doc.setLineWidth(0.5);
+            doc.rect(marginPoints, marginPoints, pageWidth - (marginPoints * 2), pageHeight - (marginPoints * 2));
+            
+            // Title
+            doc.setFontSize(18);
+            doc.setTextColor(0, 0, 0); // Black color
+            doc.setFont('helvetica', 'bold');
+            doc.text('SHIPYARD NAGAR RESIDENCE ASSOCIATION', pageWidth / 2, marginPoints + 10, { align: 'center' });
+            
+            // ✅ FIXED: Narration
             doc.setFontSize(12);
-            doc.setTextColor(102, 102, 102); // Gray color
+            doc.setTextColor(0, 0, 0); // Black
             doc.setFont('helvetica', 'normal');
-            doc.text(narration.toUpperCase(), 105, 30, { align: 'center' });
+            doc.text(narration.toUpperCase(), pageWidth / 2, marginPoints + 20, { align: 'center' });
             
             // Date
             const today = new Date();
@@ -1021,15 +1066,15 @@
                 year: 'numeric' 
             });
             doc.setFontSize(10);
-            doc.setTextColor(102, 102, 102);
-            doc.text(`Generated on: ${dateStr}`, 105, 38, { align: 'center' });
+            doc.setTextColor(100, 100, 100);
+            doc.text(`Date: ${dateStr}`, pageWidth / 2, marginPoints + 28, { align: 'center' });
             
             // Line
             doc.setDrawColor(0, 102, 204);
             doc.setLineWidth(0.5);
-            doc.line(20, 42, 190, 42);
+            doc.line(marginPoints + 10, marginPoints + 33, pageWidth - marginPoints - 10, marginPoints + 33);
             
-            // Prepare table data
+            // Prepare table data - ✅ NO RUPEE SYMBOL
             const tableData = allMembers.map(member => {
                 const amount = member.speakerAmount || defaultAmount;
                 const date = member.date ? 
@@ -1040,60 +1085,86 @@
                     member.memberNumber,
                     member.name,
                     member.speakerPaid ? 'PAID' : 'PENDING',
-                    `₹${amount}`,
+                    amount.toString(), // ✅ No rupee symbol
                     date
                 ];
             });
             
-            // Generate table
+            // Generate table - ✅ ALL TEXT BLACK, ONLY STATUS COLORED
             doc.autoTable({
-                startY: 45,
+                startY: marginPoints + 38,
+                margin: { left: marginPoints + 5, right: marginPoints + 5 },
                 head: [['SL No', 'Member No', 'Name', 'Status', 'Amount', 'Date']],
                 body: tableData,
-                theme: 'striped',
+                theme: 'grid',
                 headStyles: {
                     fillColor: [0, 102, 204],
                     textColor: [255, 255, 255],
-                    fontStyle: 'bold'
+                    fontStyle: 'bold',
+                    fontSize: 9
                 },
                 bodyStyles: {
-                    textColor: [0, 0, 0]
+                    textColor: [0, 0, 0], // ✅ All text black
+                    fontSize: 8
                 },
                 alternateRowStyles: {
                     fillColor: [245, 245, 245]
                 },
                 didParseCell: function(data) {
-                    if (data.section === 'body' && data.row.index >= 0) {
+                    if (data.section === 'body' && data.column.index === 3) { // Status column
                         const member = allMembers[data.row.index];
-                        
-                        // Paid members in dark green
                         if (member.speakerPaid) {
-                            data.cell.styles.textColor = [0, 128, 0]; // Dark green
-                            data.cell.styles.fontStyle = 'bold';
+                            data.cell.styles.textColor = [0, 128, 0]; // ✅ Dark green for PAID
                         } else {
-                            // Pending members in red
-                            data.cell.styles.textColor = [255, 0, 0]; // Red
+                            data.cell.styles.textColor = [255, 0, 0]; // ✅ Red for PENDING
                         }
                     }
                 },
-                margin: { left: 10, right: 10 }
+                styles: {
+                    overflow: 'linebreak',
+                    cellPadding: 3,
+                    fontSize: 8
+                }
             });
             
-            // Total amount
-            const finalY = doc.lastAutoTable.finalY + 10;
-            doc.setFontSize(12);
-            doc.setTextColor(0, 102, 204);
+            // Total amount - ✅ POSITIONED CORRECTLY
+            const finalY = doc.lastAutoTable.finalY + 8;
+            
+            // Calculate total
+            const totalCollected = allMembers
+                .filter(m => m.speakerPaid)
+                .reduce((sum, member) => sum + (member.speakerAmount || defaultAmount), 0);
+            
+            // Line above total
+            doc.setDrawColor(0, 0, 0);
+            doc.setLineWidth(0.2);
+            doc.line(marginPoints + 10, finalY - 3, pageWidth - marginPoints - 10, finalY - 3);
+            
+            // Total amount text
+            doc.setFontSize(10);
+            doc.setTextColor(0, 0, 0);
             doc.setFont('helvetica', 'bold');
-            doc.text('Total Collected:', 140, finalY);
-            doc.text(`₹${document.getElementById('totalAmount').textContent}`, 180, finalY, { align: 'right' });
+            doc.text('Total Collected:', marginPoints + 10, finalY);
+            doc.text(totalCollected.toString(), pageWidth - marginPoints - 10, finalY, { align: 'right' });
             
             // Treasurer signature
-            doc.setFontSize(10);
-            doc.setTextColor(102, 102, 102);
-            doc.setFont('helvetica', 'normal');
-            doc.text('Treasurer', 180, finalY + 20, { align: 'right' });
-            doc.setLineWidth(0.2);
-            doc.line(160, finalY + 22, 190, finalY + 22);
+            const treasurerY = finalY + 15;
+            doc.setFontSize(9);
+            doc.setTextColor(0, 0, 0);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Treasurer', pageWidth - marginPoints - 10, treasurerY, { align: 'right' });
+            
+            // Line for signature
+            doc.setDrawColor(0, 0, 0);
+            doc.setLineWidth(0.3);
+            doc.line(pageWidth - marginPoints - 50, treasurerY + 2, pageWidth - marginPoints - 10, treasurerY + 2);
+            
+            // ✅ Footer note - SMALL AND AT BOTTOM
+            const footerY = pageHeight - marginPoints - 5;
+            doc.setFontSize(6);
+            doc.setTextColor(100, 100, 100);
+            doc.setFont('helvetica', 'italic');
+            doc.text('This is computer generated. No signature required.', pageWidth / 2, footerY, { align: 'center' });
             
             // Save PDF
             const fileName = `Special_Payment_${today.getFullYear()}_${today.getMonth()+1}_${today.getDate()}.pdf`;
@@ -1104,10 +1175,6 @@
         document.getElementById('searchInput').addEventListener('input', filterMembers);
         document.getElementById('paymentFilter').addEventListener('change', filterMembers);
         document.getElementById('saveChangesBtn').addEventListener('click', saveChanges);
-        document.getElementById('refreshBtn').addEventListener('click', () => {
-            showLoading();
-            loadMembers();
-        });
         document.getElementById('setDefaultAmountBtn').addEventListener('click', setDefaultAmount);
         document.getElementById('setNarrationBtn').addEventListener('click', setNarration);
         document.getElementById('generatePdfBtn').addEventListener('click', generatePdfReceipt);
