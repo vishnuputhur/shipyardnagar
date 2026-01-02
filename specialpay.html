@@ -1082,7 +1082,7 @@
             // Generate table - ✅ ALL TEXT BLACK, ONLY STATUS COLORED
             // Row height 10% കുറച്ചത് (default 6.5mm → 5.85mm)
             doc.autoTable({
-                startY: marginPoints + 24, // 38 → 24 (gap reduced)
+                startY: marginPoints + 30, // 38 → 24 (gap reduced)
                 margin: { left: marginPoints + 5, right: marginPoints + 5 },
                 head: [['SL No', 'Member No', 'Name', 'Status', 'Amount', 'Date']],
                 body: tableData,
@@ -1097,7 +1097,7 @@
                 bodyStyles: {
                     textColor: [0, 0, 0], // ✅ All text black
                     fontSize: 8,
-                    cellPadding: 1.5 // കുറച്ചത്
+                    cellPadding: 1.9 // കുറച്ചത്
                 },
                 alternateRowStyles: {
                     fillColor: [245, 245, 245]
@@ -1105,7 +1105,7 @@
                 didParseCell: function(data) {
                     // Row height 10% കുറച്ചത് (default പ്രായോഗികമായി 6.5mm ആണ്)
                     if (data.section === 'body') {
-                        data.row.height = 5.85; // 6.5 → 5.85 (10% reduction)
+                        data.row.height = 6; // 6.5 → 5.85 (10% reduction)
                     }
                     
                     if (data.section === 'body' && data.column.index === 3) { // Status column
