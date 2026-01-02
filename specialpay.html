@@ -512,7 +512,7 @@
                                         Default Amount (₹)
                                     </label>
                                     <div class="d-flex align-items-center gap-2">
-                                        <input type="number" class="form-control amount-input" id="defaultAmount" value="500" min="1" step="1">
+                                        <input type="number" class="form-control amount-input" id="defaultAmount" value="500" min="0" step="1">
                                         <button class="btn btn-sm btn-primary" id="setDefaultAmountBtn">
                                             <i class="fas fa-check"></i> Set
                                         </button>
@@ -629,7 +629,7 @@
 
         let allMembers = [];
         let defaultAmount = 500;
-        let narration = "Additional Collection"; // ✅ DEFAULT VALUE
+        let narration = "Additional Collection";
 
         // Show loading spinner
         function showLoading() {
@@ -701,7 +701,7 @@
                     const data = settingsDoc.data();
                     console.log('Firebase settings:', data);
                     
-                    if (data.defaultAmount) {
+                    if (data.defaultAmount !== undefined) {
                         defaultAmount = data.defaultAmount;
                         document.getElementById('defaultAmount').value = defaultAmount;
                         localStorage.setItem('specialDefaultAmount', defaultAmount);
@@ -715,7 +715,6 @@
                         localStorage.setItem('specialNarration', narration);
                         console.log('Narration loaded:', narration);
                     } else {
-                        // If narration is empty, use default
                         narration = "Additional Collection";
                         document.getElementById('narration').value = narration;
                         document.getElementById('currentNarration').textContent = narration;
@@ -723,7 +722,6 @@
                     }
                 } else {
                     console.log('No settings document, using defaults');
-                    // Set defaults in UI
                     document.getElementById('defaultAmount').value = defaultAmount;
                     document.getElementById('narration').value = narration;
                     document.getElementById('currentNarration').textContent = narration;
@@ -731,7 +729,6 @@
                 
             } catch (error) {
                 console.log('Error loading settings:', error);
-                // Fallback to localStorage or defaults
                 const cachedAmount = localStorage.getItem('specialDefaultAmount');
                 const cachedNarration = localStorage.getItem('specialNarration');
                 
@@ -752,12 +749,12 @@
             }
         }
 
-        // ✅ FIXED: Set default amount
+        // ✅ FIXED: Set default amount (പോപ്പപ്പ് ഒഴിവാക്കി, notification കാണിക്കാതെ)
         async function setDefaultAmount() {
             const newAmount = parseInt(document.getElementById('defaultAmount').value);
             
-            if (isNaN(newAmount) || newAmount < 1) {
-                showError('Please enter a valid amount (minimum ₹1)');
+            if (isNaN(newAmount) || newAmount < 0) {
+                showError('Please enter a valid amount (minimum ₹0)');
                 return;
             }
             
@@ -777,11 +774,9 @@
                         updatedByName: auth.currentUser.email
                     }, { merge: true });
                 
-                // Save to localStorage
                 localStorage.setItem('specialDefaultAmount', defaultAmount);
                 
                 hideLoading();
-                alert(`✅ Default amount set to ₹${defaultAmount}`);
                 
                 // Update all members with new default amount
                 updateAllMemberAmounts();
@@ -793,7 +788,7 @@
             }
         }
 
-        // ✅ FIXED: Set narration
+        // ✅ FIXED: Set narration (പോപ്പപ്പ് ഒഴിവാക്കി)
         async function setNarration() {
             const newNarration = document.getElementById('narration').value.trim();
             
@@ -808,7 +803,6 @@
                 narration = newNarration;
                 document.getElementById('currentNarration').textContent = narration;
                 
-                // Save to Firebase
                 await db.collection('settings')
                     .doc('specialPayment')
                     .set({
@@ -819,13 +813,10 @@
                         updatedByName: auth.currentUser.email
                     }, { merge: true });
                 
-                // Save to localStorage
                 localStorage.setItem('specialNarration', narration);
                 
                 hideLoading();
-                alert(`✅ Narration set to: "${narration}"`);
                 
-                // Update UI
                 renderMemberTable();
                 
             } catch (error) {
@@ -835,25 +826,23 @@
             }
         }
 
-        // Load all members
+        // ✅ FIXED: Load all members in ALPHABETICAL ORDER (A to Z)
         async function loadMembers() {
             try {
                 const usersSnap = await db.collection('users').get();
                 allMembers = [];
                 
-                let slNo = 1;
+                // First collect all members
                 for (let i = 0; i < usersSnap.docs.length; i++) {
                     const userDoc = usersSnap.docs[i];
                     const userData = userDoc.data();
                     
-                    // Skip if no member number (might be admin)
                     if (!userData.memberNumber) continue;
                     
                     const speakerPaid = userData.speakerPaid || false;
                     const speakerAmount = userData.speakerAmount || defaultAmount;
                     
                     allMembers.push({
-                        slNo: slNo++,
                         id: userDoc.id,
                         memberNumber: userData.memberNumber || 'N/A',
                         name: userData.memberName || userData.name || 'Unknown',
@@ -862,6 +851,20 @@
                         date: userData.specialPaidDate || null
                     });
                 }
+                
+                // ✅ SORT MEMBERS ALPHABETICALLY BY NAME (A to Z)
+                allMembers.sort((a, b) => {
+                    const nameA = a.name.toUpperCase();
+                    const nameB = b.name.toUpperCase();
+                    if (nameA < nameB) return -1;
+                    if (nameA > nameB) return 1;
+                    return 0;
+                });
+                
+                // ✅ Assign SL No after sorting
+                allMembers.forEach((member, index) => {
+                    member.slNo = index + 1;
+                });
                 
                 updateStats();
                 calculateTotalAmount();
@@ -901,7 +904,7 @@
             renderMemberTable();
         }
 
-        // Render member table
+        // ✅ FIXED: Render member table with 00 amount input support
         const renderMemberTable = (filteredMembers = allMembers) => {
             const tableBody = document.getElementById('memberTableBody');
             tableBody.innerHTML = '';
@@ -934,8 +937,10 @@
                             <input type="number" class="member-amount-input" 
                                    data-userid="${member.id}" 
                                    value="${memberAmount}" 
-                                   min="1" 
-                                   ${member.speakerPaid ? 'readonly' : ''}>
+                                   min="0" 
+                                   step="1"
+                                   ${member.speakerPaid ? 'readonly' : ''}
+                                   placeholder="0">
                         </td>
                         <td>
                             <div class="form-check form-switch">
@@ -957,7 +962,6 @@
             
             let filtered = allMembers;
             
-            // Apply search filter
             if (searchTerm) {
                 filtered = filtered.filter(member => 
                     member.name.toLowerCase().includes(searchTerm) || 
@@ -965,7 +969,6 @@
                 );
             }
             
-            // Apply payment status filter
             if (paymentFilter === 'paid') {
                 filtered = filtered.filter(member => member.speakerPaid);
             } else if (paymentFilter === 'pending') {
@@ -975,7 +978,7 @@
             renderMemberTable(filtered);
         };
 
-        // Save all changes
+        // ✅ FIXED: Save all changes (പോപ്പപ്പ് ഒഴിവാക്കി)
         const saveChanges = async () => {
             const specialCheckboxes = document.querySelectorAll('.special-checkbox');
             const amountInputs = document.querySelectorAll('.member-amount-input');
@@ -990,16 +993,13 @@
                     const speakerPaid = specialCheckboxes[i].checked;
                     const amount = parseInt(amountInputs[i].value) || defaultAmount;
                     
-                    // Find member to check current status
                     const member = allMembers.find(m => m.id === userId);
                     
-                    // Prepare update data
                     const updateData = {
                         speakerPaid: speakerPaid,
                         speakerAmount: amount
                     };
                     
-                    // Add date only if just marked as paid
                     if (speakerPaid && (!member || !member.speakerPaid)) {
                         updateData.specialPaidDate = new Date();
                     }
@@ -1012,7 +1012,6 @@
                 }
                 
                 hideLoading();
-                alert(`✅ Special payment status updated for ${updatedCount} members!`);
                 
                 // Reload data
                 await loadMembers();
@@ -1024,10 +1023,10 @@
             }
         };
 
-        // ✅ FIXED: Generate PDF Receipt - പഴയ പേജ് 10% മാത്രം കുറച്ചത്
+        // ✅ FIXED: Generate PDF Receipt with all requested changes
         const generatePdfReceipt = () => {
             if (allMembers.length === 0) {
-                alert('No member data available');
+                showError('No member data available');
                 return;
             }
             
@@ -1036,53 +1035,65 @@
             // Page dimensions
             const pageWidth = doc.internal.pageSize.width;
             const pageHeight = doc.internal.pageSize.height;
-            const margin = 8; // 8mm margin
+            const margin = 8;
             
-            // Convert mm to points (1mm = 2.83465 points)
+            // Convert mm to points
             const marginPoints = margin * 2.83465;
             
             // Draw border around page
-            doc.setDrawColor(0, 102, 204); // Blue border
+            doc.setDrawColor(0, 102, 204);
             doc.setLineWidth(0.5);
             doc.rect(marginPoints, marginPoints, pageWidth - (marginPoints * 2), pageHeight - (marginPoints * 2));
             
-            // Title - ശീർഷകവും നാറേഷനും തമ്മിലുള്ള ഗ്യാപ്പ് 60% കുറച്ചത്
+            // ✅ FIXED: Title in BLUE color
             doc.setFontSize(18);
-            doc.setTextColor(0, 0, 0); // Black color
+            doc.setTextColor(0, 102, 204); // BLUE COLOR
             doc.setFont('helvetica', 'bold');
             doc.text('SHIPYARD NAGAR RESIDENCE ASSOCIATION', pageWidth / 2, marginPoints + 10, { align: 'center' });
             
-            // ✅ FIXED: Narration - ഗ്യാപ്പ് 60% കുറച്ചത്
+            // Narration
             doc.setFontSize(12);
-            doc.setTextColor(0, 0, 0); // Black
+            doc.setTextColor(0, 0, 0);
             doc.setFont('helvetica', 'normal');
-            doc.text(narration.toUpperCase(), pageWidth / 2, marginPoints + 16, { align: 'center' }); // 20 → 16 (60% reduction)
+            doc.text(narration.toUpperCase(), pageWidth / 2, marginPoints + 16, { align: 'center' });
             
             // Line
             doc.setDrawColor(0, 102, 204);
             doc.setLineWidth(0.5);
-            doc.line(marginPoints + 10, marginPoints + 20, pageWidth - marginPoints - 10, marginPoints + 20); // 33 → 20 (gap reduced)
+            doc.line(marginPoints + 10, marginPoints + 20, pageWidth - marginPoints - 10, marginPoints + 20);
             
-            // Prepare table data - ✅ NO RUPEE SYMBOL
-            const tableData = allMembers.map(member => {
+            // ✅ FIXED: Prepare table data - Sort members alphabetically for PDF too
+            const sortedMembers = [...allMembers].sort((a, b) => {
+                const nameA = a.name.toUpperCase();
+                const nameB = b.name.toUpperCase();
+                if (nameA < nameB) return -1;
+                if (nameA > nameB) return 1;
+                return 0;
+            });
+            
+            // Assign new SL Nos for PDF
+            sortedMembers.forEach((member, index) => {
+                member.pdfSlNo = index + 1;
+            });
+            
+            const tableData = sortedMembers.map(member => {
                 const amount = member.speakerAmount || defaultAmount;
                 const date = member.date ? 
                     new Date(member.date.toDate ? member.date.toDate() : member.date).toLocaleDateString() : 'Not Paid';
                 
                 return [
-                    member.slNo,
+                    member.pdfSlNo,
                     member.memberNumber,
                     member.name,
                     member.speakerPaid ? 'PAID' : 'PENDING',
-                    amount.toString(), // ✅ No rupee symbol
+                    amount.toString(),
                     date
                 ];
             });
             
-            // Generate table - ✅ ALL TEXT BLACK, ONLY STATUS COLORED
-            // Row height 10% കുറച്ചത് (default 6.5mm → 5.85mm)
+            // Generate table
             doc.autoTable({
-                startY: marginPoints + 30, // 38 → 24 (gap reduced)
+                startY: marginPoints + 24,
                 margin: { left: marginPoints + 5, right: marginPoints + 5 },
                 head: [['SL No', 'Member No', 'Name', 'Status', 'Amount', 'Date']],
                 body: tableData,
@@ -1092,28 +1103,27 @@
                     textColor: [255, 255, 255],
                     fontStyle: 'bold',
                     fontSize: 9,
-                    cellPadding: 2 // കുറച്ചത്
+                    cellPadding: 2
                 },
                 bodyStyles: {
-                    textColor: [0, 0, 0], // ✅ All text black
+                    textColor: [0, 0, 0],
                     fontSize: 8,
-                    cellPadding: 1.9 // കുറച്ചത്
+                    cellPadding: 1.9
                 },
                 alternateRowStyles: {
                     fillColor: [245, 245, 245]
                 },
                 didParseCell: function(data) {
-                    // Row height 10% കുറച്ചത് (default പ്രായോഗികമായി 6.5mm ആണ്)
                     if (data.section === 'body') {
-                        data.row.height = 6; // 6.5 → 5.85 (10% reduction)
+                        data.row.height = 6;
                     }
                     
-                    if (data.section === 'body' && data.column.index === 3) { // Status column
-                        const member = allMembers[data.row.index];
+                    if (data.section === 'body' && data.column.index === 3) {
+                        const member = sortedMembers[data.row.index];
                         if (member.speakerPaid) {
-                            data.cell.styles.textColor = [0, 128, 0]; // ✅ Dark green for PAID
+                            data.cell.styles.textColor = [0, 128, 0];
                         } else {
-                            data.cell.styles.textColor = [255, 0, 0]; // ✅ Red for PENDING
+                            data.cell.styles.textColor = [255, 0, 0];
                         }
                     }
                 },
@@ -1121,17 +1131,17 @@
                     overflow: 'linebreak',
                     cellPadding: 2,
                     fontSize: 8,
-                    lineHeight: 1.1 // ലൈൻ height കുറച്ചത്
+                    lineHeight: 1.1
                 }
             });
             
-            // Total amount - ✅ POSITIONED CORRECTLY
-            const finalY = doc.lastAutoTable.finalY + 6; // 8 → 6
-            
-            // Calculate total
-            const totalCollected = allMembers
+            // Total amount calculation
+            const totalCollected = sortedMembers
                 .filter(m => m.speakerPaid)
                 .reduce((sum, member) => sum + (member.speakerAmount || defaultAmount), 0);
+            
+            // ✅ FIXED: Total amount positioned correctly (10mm below the table)
+            const finalY = doc.lastAutoTable.finalY + 10; // 10mm below
             
             // Line above total
             doc.setDrawColor(0, 0, 0);
@@ -1145,7 +1155,7 @@
             doc.text('Total Collected:', marginPoints + 10, finalY);
             doc.text(totalCollected.toString(), pageWidth - marginPoints - 10, finalY, { align: 'right' });
             
-            // ✅ Date - മുകളിൽ നിന്നും ഒഴിവാക്കി താഴെ ട്രഷർ ന്റെ left side ൽ
+            // Date on left side
             const today = new Date();
             const dateStr = today.toLocaleDateString('en-IN', { 
                 day: '2-digit', 
@@ -1157,26 +1167,21 @@
             doc.setFont('helvetica', 'normal');
             doc.text(`Date: ${dateStr}`, marginPoints + 10, finalY + 8);
             
-            // Treasurer signature at right side
+            // ✅ FIXED: Treasurer at right side WITHOUT LINE
             const treasurerY = finalY + 8;
             doc.setFontSize(9);
             doc.setTextColor(0, 0, 0);
             doc.setFont('helvetica', 'bold');
             doc.text('Treasurer', pageWidth - marginPoints - 10, treasurerY, { align: 'right' });
             
-            // Line for signature
-            doc.setDrawColor(0, 0, 0);
-            doc.setLineWidth(0.3);
-            doc.line(pageWidth - marginPoints - 50, treasurerY + 2, pageWidth - marginPoints - 10, treasurerY + 2);
-            
-            // ✅ Footer note - SMALL AND AT BOTTOM
+            // ✅ FIXED: Footer note - SYSTEM GENERATED
             const footerY = pageHeight - marginPoints - 5;
             doc.setFontSize(6);
             doc.setTextColor(100, 100, 100);
             doc.setFont('helvetica', 'italic');
-            doc.text('This is computer generated. No signature required.', pageWidth / 2, footerY, { align: 'center' });
+            doc.text('This is system generated. No signature required.', pageWidth / 2, footerY, { align: 'center' });
             
-            // ✅ File name: narration + date
+            // File name
             const cleanNarration = narration.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 30);
             const fileName = `${cleanNarration}_${today.getFullYear()}_${today.getMonth()+1}_${today.getDate()}.pdf`;
             
