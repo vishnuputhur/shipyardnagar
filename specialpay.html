@@ -309,6 +309,17 @@
             box-shadow: var(--shadow-hover);
         }
 
+        .btn-secondary {
+            background: #6c757d;
+            border: none;
+            border-radius: 12px;
+            padding: 8px 16px;
+            color: white;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
         .btn-success {
             background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
             border: none;
@@ -618,7 +629,7 @@
 
         let allMembers = [];
         let defaultAmount = 500;
-        let narration = "Additional Collection";
+        let narration = "Additional Collection"; // ✅ DEFAULT VALUE
 
         // Show loading spinner
         function showLoading() {
@@ -678,11 +689,12 @@
             }
         });
 
-        // Load settings
+        // ✅ FIXED: Load settings
         async function loadSettings() {
             try {
                 console.log('Loading settings from Firebase...');
                 
+                // Always try Firebase first
                 const settingsDoc = await db.collection('settings').doc('specialPayment').get();
                 
                 if (settingsDoc.exists()) {
@@ -693,6 +705,7 @@
                         defaultAmount = data.defaultAmount;
                         document.getElementById('defaultAmount').value = defaultAmount;
                         localStorage.setItem('specialDefaultAmount', defaultAmount);
+                        console.log('Default amount loaded:', defaultAmount);
                     }
                     
                     if (data.narration && data.narration.trim() !== "") {
@@ -700,12 +713,17 @@
                         document.getElementById('narration').value = narration;
                         document.getElementById('currentNarration').textContent = narration;
                         localStorage.setItem('specialNarration', narration);
+                        console.log('Narration loaded:', narration);
                     } else {
+                        // If narration is empty, use default
                         narration = "Additional Collection";
                         document.getElementById('narration').value = narration;
                         document.getElementById('currentNarration').textContent = narration;
+                        console.log('Using default narration');
                     }
                 } else {
+                    console.log('No settings document, using defaults');
+                    // Set defaults in UI
                     document.getElementById('defaultAmount').value = defaultAmount;
                     document.getElementById('narration').value = narration;
                     document.getElementById('currentNarration').textContent = narration;
@@ -713,6 +731,7 @@
                 
             } catch (error) {
                 console.log('Error loading settings:', error);
+                // Fallback to localStorage or defaults
                 const cachedAmount = localStorage.getItem('specialDefaultAmount');
                 const cachedNarration = localStorage.getItem('specialNarration');
                 
@@ -733,7 +752,7 @@
             }
         }
 
-        // Set default amount
+        // ✅ FIXED: Set default amount
         async function setDefaultAmount() {
             const newAmount = parseInt(document.getElementById('defaultAmount').value);
             
@@ -747,6 +766,7 @@
             try {
                 defaultAmount = newAmount;
                 
+                // Save to Firebase
                 await db.collection('settings')
                     .doc('specialPayment')
                     .set({
@@ -757,11 +777,13 @@
                         updatedByName: auth.currentUser.email
                     }, { merge: true });
                 
+                // Save to localStorage
                 localStorage.setItem('specialDefaultAmount', defaultAmount);
                 
                 hideLoading();
                 alert(`✅ Default amount set to ₹${defaultAmount}`);
                 
+                // Update all members with new default amount
                 updateAllMemberAmounts();
                 
             } catch (error) {
@@ -771,7 +793,7 @@
             }
         }
 
-        // Set narration
+        // ✅ FIXED: Set narration
         async function setNarration() {
             const newNarration = document.getElementById('narration').value.trim();
             
@@ -786,6 +808,7 @@
                 narration = newNarration;
                 document.getElementById('currentNarration').textContent = narration;
                 
+                // Save to Firebase
                 await db.collection('settings')
                     .doc('specialPayment')
                     .set({
@@ -796,11 +819,13 @@
                         updatedByName: auth.currentUser.email
                     }, { merge: true });
                 
+                // Save to localStorage
                 localStorage.setItem('specialNarration', narration);
                 
                 hideLoading();
                 alert(`✅ Narration set to: "${narration}"`);
                 
+                // Update UI
                 renderMemberTable();
                 
             } catch (error) {
@@ -821,6 +846,7 @@
                     const userDoc = usersSnap.docs[i];
                     const userData = userDoc.data();
                     
+                    // Skip if no member number (might be admin)
                     if (!userData.memberNumber) continue;
                     
                     const speakerPaid = userData.speakerPaid || false;
@@ -931,6 +957,7 @@
             
             let filtered = allMembers;
             
+            // Apply search filter
             if (searchTerm) {
                 filtered = filtered.filter(member => 
                     member.name.toLowerCase().includes(searchTerm) || 
@@ -938,6 +965,7 @@
                 );
             }
             
+            // Apply payment status filter
             if (paymentFilter === 'paid') {
                 filtered = filtered.filter(member => member.speakerPaid);
             } else if (paymentFilter === 'pending') {
@@ -962,13 +990,16 @@
                     const speakerPaid = specialCheckboxes[i].checked;
                     const amount = parseInt(amountInputs[i].value) || defaultAmount;
                     
+                    // Find member to check current status
                     const member = allMembers.find(m => m.id === userId);
                     
+                    // Prepare update data
                     const updateData = {
                         speakerPaid: speakerPaid,
                         speakerAmount: amount
                     };
                     
+                    // Add date only if just marked as paid
                     if (speakerPaid && (!member || !member.speakerPaid)) {
                         updateData.specialPaidDate = new Date();
                     }
@@ -983,6 +1014,7 @@
                 hideLoading();
                 alert(`✅ Special payment status updated for ${updatedCount} members!`);
                 
+                // Reload data
                 await loadMembers();
                 
             } catch (error) {
@@ -992,7 +1024,7 @@
             }
         };
 
-        // ✅ OPTIMIZED: Generate PDF Receipt - COMPACT DESIGN
+        // ✅ FIXED: Generate PDF Receipt with COMPACT layout
         const generatePdfReceipt = () => {
             if (allMembers.length === 0) {
                 alert('No member data available');
@@ -1001,41 +1033,41 @@
             
             const doc = new jsPDF('p', 'mm', 'a4');
             
-            // Page dimensions in mm
-            const pageWidth = 210;
-            const pageHeight = 297;
+            // Page dimensions
+            const pageWidth = doc.internal.pageSize.width;
+            const pageHeight = doc.internal.pageSize.height;
             const margin = 8; // 8mm margin
             
             // Draw border around page
-            doc.setDrawColor(0, 102, 204);
+            doc.setDrawColor(0, 102, 204); // Blue border
             doc.setLineWidth(0.5);
             doc.rect(margin, margin, pageWidth - (margin * 2), pageHeight - (margin * 2));
             
-            // Title - REDUCED GAP
-            doc.setFontSize(16);
+            // Title - COMPACT spacing (reduced by 60%)
+            doc.setFontSize(18);
             doc.setTextColor(0, 0, 0);
             doc.setFont('helvetica', 'bold');
-            doc.text('SHIPYARD NAGAR RESIDENCE ASSOCIATION', pageWidth / 2, margin + 8, { align: 'center' });
+            doc.text('SHIPYARD NAGAR RESIDENCE ASSOCIATION', pageWidth / 2, margin + 10, { align: 'center' });
             
-            // Narration - REDUCED GAP (60% less)
-            doc.setFontSize(11);
+            // ✅ Narration - COMPACT spacing (reduced by 60%)
+            doc.setFontSize(12);
             doc.setTextColor(0, 0, 0);
             doc.setFont('helvetica', 'normal');
-            doc.text(narration.toUpperCase(), pageWidth / 2, margin + 14, { align: 'center' });
+            doc.text(narration.toUpperCase(), pageWidth / 2, margin + 17, { align: 'center' }); // Reduced gap
             
             // Line
             doc.setDrawColor(0, 102, 204);
             doc.setLineWidth(0.5);
-            doc.line(margin + 10, margin + 18, pageWidth - margin - 10, margin + 18);
+            doc.line(margin + 10, margin + 20, pageWidth - margin - 10, margin + 20); // Moved up
             
-            // Prepare table data
+            // Prepare table data - NO RUPEE SYMBOL
             const tableData = allMembers.map(member => {
                 const amount = member.speakerAmount || defaultAmount;
                 const date = member.date ? 
                     new Date(member.date.toDate ? member.date.toDate() : member.date).toLocaleDateString() : 'Not Paid';
                 
                 return [
-                    member.slNo.toString(),
+                    member.slNo,
                     member.memberNumber,
                     member.name,
                     member.speakerPaid ? 'PAID' : 'PENDING',
@@ -1044,9 +1076,9 @@
                 ];
             });
             
-            // ✅ COMPACT TABLE with minimal row height
+            // Generate table with COMPACT row height (2mm)
             doc.autoTable({
-                startY: margin + 22,
+                startY: margin + 22, // Start table closer to heading
                 margin: { left: margin + 5, right: margin + 5 },
                 head: [['SL No', 'Member No', 'Name', 'Status', 'Amount', 'Date']],
                 body: tableData,
@@ -1056,37 +1088,53 @@
                     textColor: [255, 255, 255],
                     fontStyle: 'bold',
                     fontSize: 8,
-                    cellPadding: 2
+                    cellPadding: 2 // Reduced padding
                 },
                 bodyStyles: {
                     textColor: [0, 0, 0],
-                    fontSize: 7,
-                    cellPadding: 1.5,
-                    minCellHeight: 4, // ✅ VERY COMPACT ROW HEIGHT (2mm equivalent)
-                    valign: 'middle'
+                    fontSize: 7, // Smaller font
+                    cellPadding: 1, // Minimal padding
+                    lineWidth: 0.1,
+                    lineColor: [200, 200, 200]
                 },
                 alternateRowStyles: {
                     fillColor: [245, 245, 245]
                 },
                 didParseCell: function(data) {
+                    // Set row height to 2mm
+                    if (data.section === 'body') {
+                        data.row.height = 2;
+                    }
+                    
                     if (data.section === 'body' && data.column.index === 3) { // Status column
                         const member = allMembers[data.row.index];
                         if (member.speakerPaid) {
-                            data.cell.styles.textColor = [0, 128, 0]; // ✅ Dark green for PAID
+                            data.cell.styles.textColor = [0, 128, 0];
                         } else {
-                            data.cell.styles.textColor = [255, 0, 0]; // ✅ Red for PENDING
+                            data.cell.styles.textColor = [255, 0, 0];
                         }
                     }
                 },
                 styles: {
                     overflow: 'linebreak',
-                    cellPadding: 3,
-                    fontSize: 8
+                    cellPadding: 1,
+                    fontSize: 7,
+                    lineColor: [200, 200, 200],
+                    lineWidth: 0.1
+                },
+                tableWidth: 'wrap',
+                columnStyles: {
+                    0: { cellWidth: 10 }, // SL No
+                    1: { cellWidth: 25 }, // Member No
+                    2: { cellWidth: 40 }, // Name
+                    3: { cellWidth: 20 }, // Status
+                    4: { cellWidth: 20 }, // Amount
+                    5: { cellWidth: 25 }  // Date
                 }
             });
             
-            // Total amount - ✅ POSITIONED CORRECTLY
-            const finalY = doc.lastAutoTable.finalY + 8;
+            // Get final Y position after table
+            const finalY = doc.lastAutoTable.finalY + 4;
             
             // Calculate total
             const totalCollected = allMembers
@@ -1096,36 +1144,50 @@
             // Line above total
             doc.setDrawColor(0, 0, 0);
             doc.setLineWidth(0.2);
-            doc.line(marginPoints + 10, finalY - 3, pageWidth - marginPoints - 10, finalY - 3);
+            doc.line(margin + 10, finalY - 2, pageWidth - margin - 10, finalY - 2);
             
             // Total amount text
-            doc.setFontSize(10);
-            doc.setTextColor(0, 0, 0);
-            doc.setFont('helvetica', 'bold');
-            doc.text('Total Collected:', marginPoints + 10, finalY);
-            doc.text(totalCollected.toString(), pageWidth - marginPoints - 10, finalY, { align: 'right' });
-            
-            // Treasurer signature
-            const treasurerY = finalY + 15;
             doc.setFontSize(9);
             doc.setTextColor(0, 0, 0);
             doc.setFont('helvetica', 'bold');
-            doc.text('Treasurer', pageWidth - marginPoints - 10, treasurerY, { align: 'right' });
+            doc.text('Total Collected:', margin + 10, finalY);
+            doc.text(totalCollected.toString(), pageWidth - margin - 10, finalY, { align: 'right' });
+            
+            // ✅ Date at left side (below total)
+            const today = new Date();
+            const dateStr = today.toLocaleDateString('en-IN', { 
+                day: '2-digit', 
+                month: 'short', 
+                year: 'numeric' 
+            });
+            doc.setFontSize(8);
+            doc.setTextColor(100, 100, 100);
+            doc.setFont('helvetica', 'normal');
+            doc.text(`Date: ${dateStr}`, margin + 10, finalY + 8);
+            
+            // Treasurer signature at right side
+            doc.setFontSize(9);
+            doc.setTextColor(0, 0, 0);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Treasurer', pageWidth - margin - 10, finalY + 8, { align: 'right' });
             
             // Line for signature
             doc.setDrawColor(0, 0, 0);
             doc.setLineWidth(0.3);
-            doc.line(pageWidth - marginPoints - 50, treasurerY + 2, pageWidth - marginPoints - 10, treasurerY + 2);
+            doc.line(pageWidth - margin - 40, finalY + 10, pageWidth - margin - 10, finalY + 10);
             
             // ✅ Footer note - SMALL AND AT BOTTOM
-            const footerY = pageHeight - marginPoints - 5;
-            doc.setFontSize(6);
+            const footerY = pageHeight - margin - 3;
+            doc.setFontSize(5);
             doc.setTextColor(100, 100, 100);
             doc.setFont('helvetica', 'italic');
             doc.text('This is computer generated. No signature required.', pageWidth / 2, footerY, { align: 'center' });
             
+            // ✅ File name: narration + date
+            const cleanNarration = narration.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 20);
+            const fileName = `${cleanNarration}_${today.getFullYear()}_${today.getMonth()+1}_${today.getDate()}.pdf`;
+            
             // Save PDF
-            const fileName = `Special_Payment_${today.getFullYear()}_${today.getMonth()+1}_${today.getDate()}.pdf`;
             doc.save(fileName);
         };
 
