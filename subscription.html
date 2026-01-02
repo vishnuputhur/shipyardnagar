@@ -314,7 +314,7 @@
             border-color: var(--primary-orange);
         }
         
-        /* ✅ RESTORED: Original Special Contribution Box */
+        /* ✅ SPECIAL CONTRIBUTION BOX */
         .special-contribution {
             margin-top: 15px;
             padding: 15px;
@@ -343,7 +343,7 @@
         .special-title {
             font-weight: 600;
             color: #1e40af;
-            font-size: 1rem; /* Normal font size */
+            font-size: 1rem;
         }
         
         [data-theme="dark"] .special-title {
@@ -392,7 +392,7 @@
         }
         
         .special-status.pending {
-            color: #dc3545; /* Simple red color */
+            color: #dc3545;
         }
         
         .special-status.paid {
@@ -500,18 +500,19 @@
                                 <small class="form-text text-muted">You can edit the amount if needed</small>
                             </div>
                             
-                            <!-- ✅ RESTORED: Original Special Contribution Box -->
+                            <!-- ✅ SPECIAL CONTRIBUTION BOX -->
                             <div class="special-contribution" id="specialSection">
                                 <div class="special-header">
                                     <i class="fas fa-money-bill-wave"></i>
                                     <span class="special-title" id="narrationText">Additional Collection</span>
                                 </div>
-                                <div class="special-description" id="specialDescription">
-                                    <span id="amountDisplay">₹0</span> - <span id="statusDisplay" class="special-status pending">Pending</span>
+                                <div class="special-description">
+                                    Amount: <span class="special-amount" id="specialAmountDisplay">₹0</span> - 
+                                    Status: <span id="statusDisplay" class="special-status pending">Pending</span>
                                 </div>
                                 <div class="special-option">
                                     <input type="checkbox" id="includeSpecial" name="includeSpecial" checked>
-                                    <label for="includeSpecial">Include additional collection of <span class="special-amount" id="specialAmountDisplay">₹0</span></label>
+                                    <label for="includeSpecial">Include additional collection</label>
                                 </div>
                             </div>
                             
@@ -579,7 +580,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js" defer></script>
 
     <script>
-        // ✅ FIXED: Wait for window load
         window.addEventListener('load', () => {
             const firebaseConfig = {
                 apiKey: "AIzaSyBWswawf9tpxNwVU0BaJ6FCwCvgcjUQXlA",
@@ -630,23 +630,64 @@
                     window.location.href = 'login.html';
                 } else {
                     currentUserId = user.uid;
-                    // ✅ Load all data
                     await loadAllData(user.uid);
                 }
             });
 
-            // ✅ FIXED: Load all data properly
             async function loadAllData(uid) {
                 try {
-                    // Load user data first
+                    // ✅ ആദ്യം നാരേഷൻ ലോഡ് ചെയ്യുക
+                    await loadNarration();
+                    
+                    // ✅ പിന്നെ user data
                     await loadUserData(uid);
                     
-                    // Then load contributions
+                    // ✅ പിന്നെ contributions
                     await loadContributions(uid);
                     
                 } catch (error) {
                     console.error('Error loading data:', error);
-                    alert('Network Error. Please refresh.');
+                }
+            }
+
+            // ✅ FIXED: Load narration from settings
+            async function loadNarration() {
+                try {
+                    console.log('Loading narration...');
+                    
+                    const settingsDoc = await db.collection('settings').doc('specialPayment').get();
+                    
+                    if (settingsDoc.exists()) {
+                        const data = settingsDoc.data();
+                        console.log('Settings data:', data);
+                        
+                        if (data.narration && data.narration.trim() !== "") {
+                            narration = data.narration;
+                            console.log('Narration found:', narration);
+                        } else {
+                            narration = "Additional Collection";
+                            console.log('No narration, using default');
+                        }
+                    } else {
+                        narration = "Additional Collection";
+                        console.log('No settings document');
+                    }
+                    
+                    // ✅ Update UI immediately
+                    updateNarrationUI();
+                    
+                } catch (error) {
+                    console.error('Error loading narration:', error);
+                    narration = "Additional Collection";
+                    updateNarrationUI();
+                }
+            }
+
+            function updateNarrationUI() {
+                const narrationEl = document.getElementById('narrationText');
+                if (narrationEl) {
+                    narrationEl.textContent = narration;
+                    console.log('UI updated with narration:', narration);
                 }
             }
 
@@ -663,18 +704,16 @@
                     const userData = userDoc.data();
                     currentMemberNumber = userData.memberNumber || 'Unknown';
                     
-                    // ✅ Get user's specific data from admin
+                    // ✅ Get user's specific data
                     specialPaid = userData.speakerPaid || false;
                     specialAmount = userData.speakerAmount || 0;
                     
-                    console.log('User Data:', {
+                    console.log('User Data Loaded:', {
                         member: currentMemberNumber,
                         specialPaid: specialPaid,
-                        specialAmount: specialAmount
+                        specialAmount: specialAmount,
+                        narration: narration
                     });
-                    
-                    // ✅ Now load narration from settings
-                    await loadNarration();
                     
                     // ✅ Update special payment UI
                     updateSpecialPaymentUI();
@@ -684,85 +723,42 @@
                 }
             }
 
-            // ✅ FIXED: Load narration only
-            async function loadNarration() {
-                try {
-                    // Try Firebase
-                    const settingsDoc = await db.collection('settings').doc('specialPayment').get();
-                    
-                    if (settingsDoc.exists()) {
-                        const data = settingsDoc.data();
-                        
-                        if (data.narration && data.narration.trim() !== "") {
-                            narration = data.narration;
-                        } else {
-                            narration = "Additional Collection";
-                        }
-                    } else {
-                        narration = "Additional Collection";
-                    }
-                    
-                    // Update UI
-                    updateNarrationUI();
-                    
-                } catch (error) {
-                    console.log('Error loading narration:', error);
-                    narration = "Additional Collection";
-                    updateNarrationUI();
-                }
-            }
-
-            function updateNarrationUI() {
-                const narrationEl = document.getElementById('narrationText');
-                if (narrationEl) {
-                    narrationEl.textContent = narration;
-                }
-            }
-
             // ✅ FIXED: Update special payment UI
             function updateSpecialPaymentUI() {
                 const specialSection = document.getElementById('specialSection');
-                const amountDisplay = document.getElementById('amountDisplay');
                 const specialAmountDisplay = document.getElementById('specialAmountDisplay');
                 const statusDisplay = document.getElementById('statusDisplay');
                 const includeSpecial = document.getElementById('includeSpecial');
-                const description = document.getElementById('specialDescription');
                 
-                console.log('Updating UI:', {
+                console.log('Updating Special Payment UI:', {
                     specialAmount: specialAmount,
                     specialPaid: specialPaid,
                     narration: narration
                 });
                 
-                if (specialAmount > 0) {
-                    // Show the box
-                    specialSection.style.display = 'block';
+                // ✅ Update amount display
+                specialAmountDisplay.textContent = `₹${specialAmount}`;
+                
+                // ✅ Update status
+                if (specialPaid) {
+                    statusDisplay.textContent = "Paid";
+                    statusDisplay.className = "special-status paid";
+                    includeSpecial.checked = false;
+                    includeSpecial.disabled = true;
                     
-                    // Update amount displays
-                    amountDisplay.textContent = `₹${specialAmount}`;
-                    specialAmountDisplay.textContent = `₹${specialAmount}`;
-                    
-                    // Update status
-                    if (specialPaid) {
-                        statusDisplay.textContent = "Paid";
-                        statusDisplay.className = "special-status paid";
-                        includeSpecial.checked = false;
-                        includeSpecial.disabled = true;
-                        description.innerHTML = `<span id="amountDisplay">₹${specialAmount}</span> - <span id="statusDisplay" class="special-status paid">Paid</span>`;
-                    } else {
-                        statusDisplay.textContent = "Pending";
-                        statusDisplay.className = "special-status pending";
-                        includeSpecial.checked = true;
-                        includeSpecial.disabled = false;
-                        description.innerHTML = `<span id="amountDisplay">₹${specialAmount}</span> - <span id="statusDisplay" class="special-status pending">Pending</span>`;
-                    }
-                    
-                } else {
-                    // Hide the box if amount is 0
+                    // ✅ FIXED: Hide box only when PAID
                     specialSection.style.display = 'none';
+                } else {
+                    statusDisplay.textContent = "Pending";
+                    statusDisplay.className = "special-status pending";
+                    includeSpecial.checked = true;
+                    includeSpecial.disabled = false;
+                    
+                    // ✅ Show box when PENDING (even if amount is 0)
+                    specialSection.style.display = 'block';
                 }
                 
-                // Update total amount
+                // ✅ Update total amount
                 updateTotalAmount();
             }
 
@@ -857,23 +853,22 @@
                 togglePaymentButtons();
             }
 
-            // ✅ FIXED: Update total amount
+            // ✅ Update total amount
             function updateTotalAmount() {
                 const includeSpecial = document.getElementById('includeSpecial').checked;
                 let totalAmount = monthlyDueAmount;
                 
                 // Add special amount if checkbox is checked and not already paid
-                if (includeSpecial && specialAmount > 0 && !specialPaid) {
+                if (includeSpecial && !specialPaid) {
                     totalAmount += specialAmount;
                 }
                 
                 document.getElementById('amount').value = totalAmount;
                 
-                console.log('Total Amount Updated:', {
+                console.log('Total Amount:', {
                     monthlyDue: monthlyDueAmount,
                     specialAmount: specialAmount,
                     includeSpecial: includeSpecial,
-                    specialPaid: specialPaid,
                     total: totalAmount
                 });
             }
