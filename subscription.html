@@ -504,7 +504,7 @@
                             <div class="special-contribution" id="specialSection">
                                 <div class="special-header">
                                     <i class="fas fa-money-bill-wave"></i>
-                                    <span class="special-title" id="narrationText">Additional Collection</span>
+                                    <span class="special-title" id="narrationText"></span>
                                 </div>
                                 <div class="special-description">
                                     Amount: <span class="special-amount" id="specialAmountDisplay">₹0</span> - 
@@ -653,34 +653,34 @@
             // ✅ FIXED: Load narration from settings
             async function loadNarration() {
                 try {
-                    console.log('Loading narration...');
+                    console.log('Loading narration from Firebase...');
                     
                     const settingsDoc = await db.collection('settings').doc('specialPayment').get();
                     
                     if (settingsDoc.exists()) {
                         const data = settingsDoc.data();
-                        console.log('Settings data:', data);
+                        console.log('Settings data from Firebase:', data);
                         
-                        // ✅ IMPORTANT FIX: Check if narration exists and is not empty
-                        if (data.narration && data.narration.trim() !== "" && data.narration !== "Additional Collection") {
-                            narration = data.narration;
-                            console.log('Narration found:', narration);
+                        // ✅ FIXED: Check for narration field
+                        if (data.narration !== undefined && data.narration !== null && data.narration.trim() !== "") {
+                            narration = data.narration.trim();
+                            console.log('✅ Narration found and loaded:', narration);
                         } else {
-                            // ✅ If narration is empty or default, set it to empty string
+                            // ✅ FIXED: If narration is empty or not set
                             narration = "";
-                            console.log('No narration or default narration found');
+                            console.log('❌ No narration found in Firebase or empty');
                         }
                     } else {
-                        // ✅ No settings document means no narration
+                        // ✅ FIXED: No settings document found
                         narration = "";
-                        console.log('No settings document found');
+                        console.log('❌ No settings document found in Firebase');
                     }
                     
                     // ✅ Update UI immediately
                     updateNarrationUI();
                     
                 } catch (error) {
-                    console.error('Error loading narration:', error);
+                    console.error('❌ Error loading narration from Firebase:', error);
                     narration = "";
                     updateNarrationUI();
                 }
@@ -690,22 +690,25 @@
                 const narrationEl = document.getElementById('narrationText');
                 const specialSection = document.getElementById('specialSection');
                 
+                console.log('Updating UI with narration:', narration);
+                
                 if (narrationEl) {
-                    // ✅ IMPORTANT: Show narration only if it exists and is not empty
+                    // ✅ FIXED: Show narration only if it exists and is not empty
                     if (narration && narration.trim() !== "") {
                         narrationEl.textContent = narration;
-                        console.log('UI updated with narration:', narration);
+                        console.log('✅ UI updated with narration:', narration);
                         // ✅ Show the section if narration exists
                         if (specialSection) {
                             specialSection.style.display = 'block';
                         }
                     } else {
-                        // ✅ If no narration, hide the entire special section
+                        // ✅ FIXED: If no narration, hide only the title (narrationText)
                         narrationEl.textContent = "";
                         if (specialSection) {
-                            specialSection.style.display = 'none';
+                            // ✅ Only hide narration title, keep the rest of the box visible
+                            specialSection.style.display = 'block'; // Keep box visible
                         }
-                        console.log('No narration to display, hiding section');
+                        console.log('❌ No narration to display, hiding narration text only');
                     }
                 }
             }
@@ -727,7 +730,7 @@
                     specialPaid = userData.speakerPaid || false;
                     specialAmount = userData.speakerAmount || 0;
                     
-                    console.log('User Data Loaded:', {
+                    console.log('✅ User Data Loaded:', {
                         member: currentMemberNumber,
                         specialPaid: specialPaid,
                         specialAmount: specialAmount,
@@ -755,15 +758,6 @@
                     narration: narration
                 });
                 
-                // ✅ IMPORTANT: If narration is empty, don't show anything
-                if (!narration || narration.trim() === "") {
-                    if (specialSection) {
-                        specialSection.style.display = 'none';
-                    }
-                    console.log('No narration, hiding special section');
-                    return;
-                }
-                
                 // ✅ Update amount display
                 specialAmountDisplay.textContent = `₹${specialAmount}`;
                 
@@ -774,9 +768,8 @@
                     includeSpecial.checked = false;
                     includeSpecial.disabled = true;
                     
-                    // ✅ Still show the box but disable it when PAID (if narration exists)
+                    // ✅ Show box but make it read-only when PAID
                     if (specialSection) {
-                        specialSection.style.display = 'block';
                         specialSection.style.opacity = '0.7';
                     }
                 } else {
@@ -785,9 +778,8 @@
                     includeSpecial.checked = true;
                     includeSpecial.disabled = false;
                     
-                    // ✅ Show box when PENDING and narration exists
+                    // ✅ Show box normally when PENDING
                     if (specialSection) {
-                        specialSection.style.display = 'block';
                         specialSection.style.opacity = '1';
                     }
                 }
@@ -889,21 +881,22 @@
 
             // ✅ Update total amount
             function updateTotalAmount() {
-                const includeSpecial = document.getElementById('includeSpecial').checked;
+                const includeSpecial = document.getElementById('includeSpecial');
                 let totalAmount = monthlyDueAmount;
                 
                 // ✅ Add special amount only if narration exists, checkbox is checked and not already paid
-                if (narration && narration.trim() !== "" && includeSpecial && !specialPaid) {
+                if (narration && narration.trim() !== "" && includeSpecial && includeSpecial.checked && !specialPaid) {
                     totalAmount += specialAmount;
                 }
                 
                 document.getElementById('amount').value = totalAmount;
                 
-                console.log('Total Amount:', {
+                console.log('Total Amount Calculation:', {
                     monthlyDue: monthlyDueAmount,
                     specialAmount: specialAmount,
-                    includeSpecial: includeSpecial,
                     narration: narration,
+                    includeSpecial: includeSpecial ? includeSpecial.checked : false,
+                    specialPaid: specialPaid,
                     total: totalAmount
                 });
             }
@@ -923,10 +916,13 @@
             }
 
             // ✅ Event Listeners
-            document.getElementById('includeSpecial').addEventListener('change', () => {
-                updateTotalAmount();
-                togglePaymentButtons();
-            });
+            const includeSpecialCheckbox = document.getElementById('includeSpecial');
+            if (includeSpecialCheckbox) {
+                includeSpecialCheckbox.addEventListener('change', () => {
+                    updateTotalAmount();
+                    togglePaymentButtons();
+                });
+            }
 
             document.getElementById('amount').addEventListener('input', togglePaymentButtons);
 
