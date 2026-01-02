@@ -309,17 +309,6 @@
             box-shadow: var(--shadow-hover);
         }
 
-        .btn-secondary {
-            background: #6c757d;
-            border: none;
-            border-radius: 12px;
-            padding: 8px 16px;
-            color: white;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            font-size: 0.9rem;
-        }
-
         .btn-success {
             background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
             border: none;
@@ -629,7 +618,7 @@
 
         let allMembers = [];
         let defaultAmount = 500;
-        let narration = "Additional Collection"; // ✅ DEFAULT VALUE
+        let narration = "Additional Collection";
 
         // Show loading spinner
         function showLoading() {
@@ -689,12 +678,11 @@
             }
         });
 
-        // ✅ FIXED: Load settings
+        // Load settings
         async function loadSettings() {
             try {
                 console.log('Loading settings from Firebase...');
                 
-                // Always try Firebase first
                 const settingsDoc = await db.collection('settings').doc('specialPayment').get();
                 
                 if (settingsDoc.exists()) {
@@ -705,7 +693,6 @@
                         defaultAmount = data.defaultAmount;
                         document.getElementById('defaultAmount').value = defaultAmount;
                         localStorage.setItem('specialDefaultAmount', defaultAmount);
-                        console.log('Default amount loaded:', defaultAmount);
                     }
                     
                     if (data.narration && data.narration.trim() !== "") {
@@ -713,17 +700,12 @@
                         document.getElementById('narration').value = narration;
                         document.getElementById('currentNarration').textContent = narration;
                         localStorage.setItem('specialNarration', narration);
-                        console.log('Narration loaded:', narration);
                     } else {
-                        // If narration is empty, use default
                         narration = "Additional Collection";
                         document.getElementById('narration').value = narration;
                         document.getElementById('currentNarration').textContent = narration;
-                        console.log('Using default narration');
                     }
                 } else {
-                    console.log('No settings document, using defaults');
-                    // Set defaults in UI
                     document.getElementById('defaultAmount').value = defaultAmount;
                     document.getElementById('narration').value = narration;
                     document.getElementById('currentNarration').textContent = narration;
@@ -731,7 +713,6 @@
                 
             } catch (error) {
                 console.log('Error loading settings:', error);
-                // Fallback to localStorage or defaults
                 const cachedAmount = localStorage.getItem('specialDefaultAmount');
                 const cachedNarration = localStorage.getItem('specialNarration');
                 
@@ -752,7 +733,7 @@
             }
         }
 
-        // ✅ FIXED: Set default amount
+        // Set default amount
         async function setDefaultAmount() {
             const newAmount = parseInt(document.getElementById('defaultAmount').value);
             
@@ -766,7 +747,6 @@
             try {
                 defaultAmount = newAmount;
                 
-                // Save to Firebase
                 await db.collection('settings')
                     .doc('specialPayment')
                     .set({
@@ -777,13 +757,11 @@
                         updatedByName: auth.currentUser.email
                     }, { merge: true });
                 
-                // Save to localStorage
                 localStorage.setItem('specialDefaultAmount', defaultAmount);
                 
                 hideLoading();
                 alert(`✅ Default amount set to ₹${defaultAmount}`);
                 
-                // Update all members with new default amount
                 updateAllMemberAmounts();
                 
             } catch (error) {
@@ -793,7 +771,7 @@
             }
         }
 
-        // ✅ FIXED: Set narration
+        // Set narration
         async function setNarration() {
             const newNarration = document.getElementById('narration').value.trim();
             
@@ -808,7 +786,6 @@
                 narration = newNarration;
                 document.getElementById('currentNarration').textContent = narration;
                 
-                // Save to Firebase
                 await db.collection('settings')
                     .doc('specialPayment')
                     .set({
@@ -819,13 +796,11 @@
                         updatedByName: auth.currentUser.email
                     }, { merge: true });
                 
-                // Save to localStorage
                 localStorage.setItem('specialNarration', narration);
                 
                 hideLoading();
                 alert(`✅ Narration set to: "${narration}"`);
                 
-                // Update UI
                 renderMemberTable();
                 
             } catch (error) {
@@ -846,7 +821,6 @@
                     const userDoc = usersSnap.docs[i];
                     const userData = userDoc.data();
                     
-                    // Skip if no member number (might be admin)
                     if (!userData.memberNumber) continue;
                     
                     const speakerPaid = userData.speakerPaid || false;
@@ -957,7 +931,6 @@
             
             let filtered = allMembers;
             
-            // Apply search filter
             if (searchTerm) {
                 filtered = filtered.filter(member => 
                     member.name.toLowerCase().includes(searchTerm) || 
@@ -965,7 +938,6 @@
                 );
             }
             
-            // Apply payment status filter
             if (paymentFilter === 'paid') {
                 filtered = filtered.filter(member => member.speakerPaid);
             } else if (paymentFilter === 'pending') {
@@ -990,16 +962,13 @@
                     const speakerPaid = specialCheckboxes[i].checked;
                     const amount = parseInt(amountInputs[i].value) || defaultAmount;
                     
-                    // Find member to check current status
                     const member = allMembers.find(m => m.id === userId);
                     
-                    // Prepare update data
                     const updateData = {
                         speakerPaid: speakerPaid,
                         speakerAmount: amount
                     };
                     
-                    // Add date only if just marked as paid
                     if (speakerPaid && (!member || !member.speakerPaid)) {
                         updateData.specialPaidDate = new Date();
                     }
@@ -1014,7 +983,6 @@
                 hideLoading();
                 alert(`✅ Special payment status updated for ${updatedCount} members!`);
                 
-                // Reload data
                 await loadMembers();
                 
             } catch (error) {
@@ -1024,76 +992,62 @@
             }
         };
 
-        // ✅ FIXED: Generate PDF Receipt with all corrections
+        // ✅ OPTIMIZED: Generate PDF Receipt - COMPACT DESIGN
         const generatePdfReceipt = () => {
             if (allMembers.length === 0) {
                 alert('No member data available');
                 return;
             }
             
-            const doc = new jsPDF();
+            const doc = new jsPDF('p', 'mm', 'a4');
             
-            // Page dimensions
-            const pageWidth = doc.internal.pageSize.width;
-            const pageHeight = doc.internal.pageSize.height;
+            // Page dimensions in mm
+            const pageWidth = 210;
+            const pageHeight = 297;
             const margin = 8; // 8mm margin
             
-            // Convert mm to points (1mm = 2.83465 points)
-            const marginPoints = margin * 2.83465;
-            
             // Draw border around page
-            doc.setDrawColor(0, 102, 204); // Blue border
+            doc.setDrawColor(0, 102, 204);
             doc.setLineWidth(0.5);
-            doc.rect(marginPoints, marginPoints, pageWidth - (marginPoints * 2), pageHeight - (marginPoints * 2));
+            doc.rect(margin, margin, pageWidth - (margin * 2), pageHeight - (margin * 2));
             
-            // Title
-            doc.setFontSize(18);
-            doc.setTextColor(0, 0, 0); // Black color
+            // Title - REDUCED GAP
+            doc.setFontSize(16);
+            doc.setTextColor(0, 0, 0);
             doc.setFont('helvetica', 'bold');
-            doc.text('SHIPYARD NAGAR RESIDENCE ASSOCIATION', pageWidth / 2, marginPoints + 10, { align: 'center' });
+            doc.text('SHIPYARD NAGAR RESIDENCE ASSOCIATION', pageWidth / 2, margin + 8, { align: 'center' });
             
-            // ✅ FIXED: Narration
-            doc.setFontSize(12);
-            doc.setTextColor(0, 0, 0); // Black
+            // Narration - REDUCED GAP (60% less)
+            doc.setFontSize(11);
+            doc.setTextColor(0, 0, 0);
             doc.setFont('helvetica', 'normal');
-            doc.text(narration.toUpperCase(), pageWidth / 2, marginPoints + 20, { align: 'center' });
-            
-            // Date
-            const today = new Date();
-            const dateStr = today.toLocaleDateString('en-IN', { 
-                day: '2-digit', 
-                month: 'short', 
-                year: 'numeric' 
-            });
-            doc.setFontSize(10);
-            doc.setTextColor(100, 100, 100);
-            doc.text(`Date: ${dateStr}`, pageWidth / 2, marginPoints + 28, { align: 'center' });
+            doc.text(narration.toUpperCase(), pageWidth / 2, margin + 14, { align: 'center' });
             
             // Line
             doc.setDrawColor(0, 102, 204);
             doc.setLineWidth(0.5);
-            doc.line(marginPoints + 10, marginPoints + 33, pageWidth - marginPoints - 10, marginPoints + 33);
+            doc.line(margin + 10, margin + 18, pageWidth - margin - 10, margin + 18);
             
-            // Prepare table data - ✅ NO RUPEE SYMBOL
+            // Prepare table data
             const tableData = allMembers.map(member => {
                 const amount = member.speakerAmount || defaultAmount;
                 const date = member.date ? 
                     new Date(member.date.toDate ? member.date.toDate() : member.date).toLocaleDateString() : 'Not Paid';
                 
                 return [
-                    member.slNo,
+                    member.slNo.toString(),
                     member.memberNumber,
                     member.name,
                     member.speakerPaid ? 'PAID' : 'PENDING',
-                    amount.toString(), // ✅ No rupee symbol
+                    amount.toString(),
                     date
                 ];
             });
             
-            // Generate table - ✅ ALL TEXT BLACK, ONLY STATUS COLORED
+            // ✅ COMPACT TABLE with minimal row height
             doc.autoTable({
-                startY: marginPoints + 38,
-                margin: { left: marginPoints + 5, right: marginPoints + 5 },
+                startY: margin + 22,
+                margin: { left: margin + 5, right: margin + 5 },
                 head: [['SL No', 'Member No', 'Name', 'Status', 'Amount', 'Date']],
                 body: tableData,
                 theme: 'grid',
@@ -1101,11 +1055,15 @@
                     fillColor: [0, 102, 204],
                     textColor: [255, 255, 255],
                     fontStyle: 'bold',
-                    fontSize: 9
+                    fontSize: 8,
+                    cellPadding: 2
                 },
                 bodyStyles: {
-                    textColor: [0, 0, 0], // ✅ All text black
-                    fontSize: 8
+                    textColor: [0, 0, 0],
+                    fontSize: 7,
+                    cellPadding: 1.5,
+                    minCellHeight: 4, // ✅ VERY COMPACT ROW HEIGHT (2mm equivalent)
+                    valign: 'middle'
                 },
                 alternateRowStyles: {
                     fillColor: [245, 245, 245]
