@@ -661,16 +661,19 @@
                         const data = settingsDoc.data();
                         console.log('Settings data:', data);
                         
-                        if (data.narration && data.narration.trim() !== "") {
+                        // ✅ IMPORTANT FIX: Check if narration exists and is not empty
+                        if (data.narration && data.narration.trim() !== "" && data.narration !== "Additional Collection") {
                             narration = data.narration;
                             console.log('Narration found:', narration);
                         } else {
-                            narration = "Additional Collection";
-                            console.log('No narration, using default');
+                            // ✅ If narration is empty or default, set it to empty string
+                            narration = "";
+                            console.log('No narration or default narration found');
                         }
                     } else {
-                        narration = "Additional Collection";
-                        console.log('No settings document');
+                        // ✅ No settings document means no narration
+                        narration = "";
+                        console.log('No settings document found');
                     }
                     
                     // ✅ Update UI immediately
@@ -678,16 +681,32 @@
                     
                 } catch (error) {
                     console.error('Error loading narration:', error);
-                    narration = "Additional Collection";
+                    narration = "";
                     updateNarrationUI();
                 }
             }
 
             function updateNarrationUI() {
                 const narrationEl = document.getElementById('narrationText');
+                const specialSection = document.getElementById('specialSection');
+                
                 if (narrationEl) {
-                    narrationEl.textContent = narration;
-                    console.log('UI updated with narration:', narration);
+                    // ✅ IMPORTANT: Show narration only if it exists and is not empty
+                    if (narration && narration.trim() !== "") {
+                        narrationEl.textContent = narration;
+                        console.log('UI updated with narration:', narration);
+                        // ✅ Show the section if narration exists
+                        if (specialSection) {
+                            specialSection.style.display = 'block';
+                        }
+                    } else {
+                        // ✅ If no narration, hide the entire special section
+                        narrationEl.textContent = "";
+                        if (specialSection) {
+                            specialSection.style.display = 'none';
+                        }
+                        console.log('No narration to display, hiding section');
+                    }
                 }
             }
 
@@ -736,6 +755,15 @@
                     narration: narration
                 });
                 
+                // ✅ IMPORTANT: If narration is empty, don't show anything
+                if (!narration || narration.trim() === "") {
+                    if (specialSection) {
+                        specialSection.style.display = 'none';
+                    }
+                    console.log('No narration, hiding special section');
+                    return;
+                }
+                
                 // ✅ Update amount display
                 specialAmountDisplay.textContent = `₹${specialAmount}`;
                 
@@ -746,16 +774,22 @@
                     includeSpecial.checked = false;
                     includeSpecial.disabled = true;
                     
-                    // ✅ FIXED: Hide box only when PAID
-                    specialSection.style.display = 'none';
+                    // ✅ Still show the box but disable it when PAID (if narration exists)
+                    if (specialSection) {
+                        specialSection.style.display = 'block';
+                        specialSection.style.opacity = '0.7';
+                    }
                 } else {
                     statusDisplay.textContent = "Pending";
                     statusDisplay.className = "special-status pending";
                     includeSpecial.checked = true;
                     includeSpecial.disabled = false;
                     
-                    // ✅ Show box when PENDING (even if amount is 0)
-                    specialSection.style.display = 'block';
+                    // ✅ Show box when PENDING and narration exists
+                    if (specialSection) {
+                        specialSection.style.display = 'block';
+                        specialSection.style.opacity = '1';
+                    }
                 }
                 
                 // ✅ Update total amount
@@ -858,8 +892,8 @@
                 const includeSpecial = document.getElementById('includeSpecial').checked;
                 let totalAmount = monthlyDueAmount;
                 
-                // Add special amount if checkbox is checked and not already paid
-                if (includeSpecial && !specialPaid) {
+                // ✅ Add special amount only if narration exists, checkbox is checked and not already paid
+                if (narration && narration.trim() !== "" && includeSpecial && !specialPaid) {
                     totalAmount += specialAmount;
                 }
                 
@@ -869,6 +903,7 @@
                     monthlyDue: monthlyDueAmount,
                     specialAmount: specialAmount,
                     includeSpecial: includeSpecial,
+                    narration: narration,
                     total: totalAmount
                 });
             }
@@ -917,7 +952,8 @@
             document.getElementById('credButton').addEventListener('click', () => {
                 const amt = document.getElementById('amount').value;
                 const upiId = 'BHARATPE.8P0O1J0O8P31576@fbpe';
-                const note = `Member ${currentMemberNumber} - ${narration}`;
+                // ✅ Use narration in payment note if it exists
+                const note = `Member ${currentMemberNumber} - ${narration || 'Monthly Subscription'}`;
                 handlePayment(`upi://pay?pa=${upiId}&pn=Shipyard%20Nagar&am=${amt}&cu=INR&tn=${encodeURIComponent(note)}`);
             });
 
