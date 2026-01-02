@@ -7,6 +7,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- jsPDF Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <style>
         :root {
             --primary-orange: #FF6B35;
@@ -142,6 +145,7 @@
             gap: 10px;
             margin-bottom: 20px;
             flex-wrap: wrap;
+            justify-content: center;
         }
 
         /* Form Styling */
@@ -158,15 +162,29 @@
         }
 
         /* Loading Spinner */
-        #loadingSpinner {
+        .loading-spinner {
             display: none;
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 2rem;
-            color: #0288d1;
             z-index: 9999;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+        }
+
+        /* Error Message */
+        .error-message {
+            display: none;
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 0.85rem;
         }
 
         /* Admin buttons */
@@ -183,11 +201,12 @@
             position: relative;
             overflow: hidden;
             flex: 1;
-            min-width: 120px;
+            min-width: 150px;
             text-decoration: none;
             display: flex;
             align-items: center;
             justify-content: center;
+            cursor: pointer;
         }
 
         .admin-btn::before {
@@ -361,6 +380,90 @@
             transform: translateY(-1px);
         }
 
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .delete-btn:hover {
+            background: #c82333;
+            transform: translateY(-1px);
+        }
+
+        /* Confirmation Modal */
+        .confirmation-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .confirmation-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            box-shadow: var(--shadow-hover);
+        }
+
+        [data-theme="dark"] .confirmation-content {
+            background: #333;
+            color: white;
+        }
+
+        .confirmation-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .confirm-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            min-width: 80px;
+        }
+
+        .confirm-yes {
+            background: #dc3545;
+            color: white;
+        }
+
+        .confirm-no {
+            background: #6c757d;
+            color: white;
+        }
+
+        /* Year Selector */
+        .year-selector {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .year-select {
+            width: 120px;
+        }
+
         /* Responsive */
         @media (max-width: 576px) {
             .header-image {
@@ -395,6 +498,19 @@
     <!-- Header Image - Fixed at top -->
     <img src="assets/head.png" alt="Header" class="header-image">
     
+    <!-- Confirmation Modal -->
+    <div class="confirmation-modal" id="confirmationModal">
+        <div class="confirmation-content">
+            <h5>Delete Transaction</h5>
+            <p>Are you sure you want to delete this transaction?</p>
+            <p id="transactionToDelete"></p>
+            <div class="confirmation-buttons">
+                <button class="confirm-btn confirm-yes" id="confirmYes">Yes</button>
+                <button class="confirm-btn confirm-no" id="confirmNo">No</button>
+            </div>
+        </div>
+    </div>
+
     <main class="container">
         <div class="row justify-content-center">
             <div class="col-12 col-md-10 col-lg-8">
@@ -403,22 +519,37 @@
                         Wealth Management
                     </div>
                     
-                    <!-- Navigation Buttons -->
+                    <!-- Error Message -->
+                    <div class="error-message" id="errorMessage"></div>
+
+                    <!-- Loading Spinner -->
+                    <div class="loading-spinner" id="loadingSpinner">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2">Loading...</p>
+                    </div>
+
+                    <!-- Year Selector -->
+                    <div class="year-selector">
+                        <label for="yearSelect">Select Year:</label>
+                        <select class="form-select year-select" id="yearSelect">
+                            <!-- Years will be populated dynamically -->
+                        </select>
+                    </div>
+
+                    <!-- Action Buttons -->
                     <div class="button-grid">
-                        <a href="dashboard.html" class="admin-btn">
-                            <i class="fas fa-arrow-left me-2"></i>
-                            Back to Dashboard
-                        </a>
-                        <button class="admin-btn" id="logout" style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);">
-                            <i class="fas fa-sign-out-alt me-2"></i>
-                            Logout
+                        <button class="admin-btn" id="generatePdfBtn">
+                            <i class="fas fa-file-pdf me-2"></i>
+                            Generate Annual Report
                         </button>
                     </div>
 
                     <!-- Wealth Display -->
                     <div class="wealth-display">
                         <div class="wealth-label">OUR WEALTH</div>
-                        <div class="wealth-amount" id="totalWealth">₹0</div>
+                        <div class="wealth-amount" id="totalWealth">0.00</div>
                     </div>
 
                     <!-- Add Income Form -->
@@ -473,7 +604,7 @@
 
                     <!-- Recent Transactions -->
                     <div class="card">
-                        <h5>Recent Transactions (Last 15)</h5>
+                        <h5>Recent Transactions</h5>
                         <div class="transactions-list" id="transactionsList">
                             <!-- Transactions will be loaded here -->
                         </div>
@@ -486,13 +617,10 @@
     <!-- Footer -->
     <footer>
         <div class="footer-text">
-            <p>Powered by VTSoft 2025</p>
+            <p>Powered by VTSoft 2026</p>
         </div>
         <button id="themeToggle" class="theme-toggle-btn">🌞</button>
     </footer>
-
-    <!-- Loading Spinner -->
-    <div id="loadingSpinner">⏳ Loading...</div>
 
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
@@ -518,54 +646,454 @@
 
         const auth = firebase.auth();
         const db = firebase.firestore();
+        const { jsPDF } = window.jspdf;
 
-        // DOM Content Loaded
-        document.addEventListener('DOMContentLoaded', () => {
-            const loadingSpinner = document.getElementById('loadingSpinner');
-            const logoutBtn = document.getElementById('logout');
-            const incomeForm = document.getElementById('incomeForm');
-            const expenseForm = document.getElementById('expenseForm');
-            const transactionsList = document.getElementById('transactionsList');
-            const totalWealth = document.getElementById('totalWealth');
+        let allTransactions = [];
+        let selectedYear = new Date().getFullYear();
+        let transactionToDelete = null;
 
-            // Set default date to today
+        // Show loading spinner
+        function showLoading() {
+            document.getElementById('loadingSpinner').style.display = 'block';
+        }
+
+        // Hide loading spinner
+        function hideLoading() {
+            document.getElementById('loadingSpinner').style.display = 'none';
+        }
+
+        // Show error message
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        // Hide error message
+        function hideError() {
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+
+        // Round to 2 decimal places
+        function roundToTwo(num) {
+            return Math.round((num + Number.EPSILON) * 100) / 100;
+        }
+
+        // Format number with 2 decimal places
+        function formatNumber(num) {
+            return roundToTwo(num).toFixed(2);
+        }
+
+        // Set default date to today
+        function setDefaultDates() {
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('incomeDate').value = today;
             document.getElementById('expenseDate').value = today;
+        }
 
+        // Populate year dropdown
+        function populateYears() {
+            const yearSelect = document.getElementById('yearSelect');
+            const currentYear = new Date().getFullYear();
+            
+            // Add last 5 years and next 5 years
+            for (let year = currentYear - 5; year <= currentYear + 5; year++) {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                if (year === selectedYear) {
+                    option.selected = true;
+                }
+                yearSelect.appendChild(option);
+            }
+        }
+
+        // Filter transactions by selected year
+        function filterTransactionsByYear() {
+            const filtered = allTransactions.filter(transaction => {
+                const transactionYear = new Date(transaction.date).getFullYear();
+                return transactionYear === selectedYear;
+            });
+            return filtered;
+        }
+
+        // Calculate wealth for selected year
+        function calculateWealthForYear() {
+            const filteredTransactions = filterTransactionsByYear();
+            
+            let totalIncome = 0;
+            let totalExpense = 0;
+            
+            filteredTransactions.forEach(transaction => {
+                if (transaction.type === 'income') {
+                    totalIncome += transaction.amount;
+                } else {
+                    totalExpense += transaction.amount;
+                }
+            });
+            
+            const wealth = totalIncome - totalExpense;
+            document.getElementById('totalWealth').textContent = formatNumber(wealth);
+            
+            return { totalIncome, totalExpense, wealth };
+        }
+
+        // Load all transactions
+        async function loadTransactions() {
+            showLoading();
+            try {
+                const transactionsSnapshot = await db.collection('transactions')
+                    .orderBy('date', 'desc')
+                    .get();
+                
+                allTransactions = [];
+                transactionsSnapshot.forEach(doc => {
+                    const transaction = doc.data();
+                    transaction.id = doc.id;
+                    transaction.amount = roundToTwo(transaction.amount);
+                    allTransactions.push(transaction);
+                });
+                
+                // Update year dropdown
+                populateYears();
+                
+                // Calculate and display wealth
+                calculateWealthForYear();
+                
+                // Display transactions for selected year
+                displayTransactions();
+                
+            } catch (error) {
+                console.error('Error loading transactions:', error);
+                showError('Error loading transactions: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Display transactions for selected year
+        function displayTransactions() {
+            const transactionsList = document.getElementById('transactionsList');
+            const filteredTransactions = filterTransactionsByYear();
+            
+            if (filteredTransactions.length === 0) {
+                transactionsList.innerHTML = '<div class="text-center p-3">No transactions found for ' + selectedYear + '</div>';
+                return;
+            }
+            
+            transactionsList.innerHTML = '';
+            
+            filteredTransactions.forEach(transaction => {
+                const transactionItem = document.createElement('div');
+                transactionItem.className = 'transaction-item';
+                
+                const typeClass = transaction.type === 'income' ? 'transaction-income' : 'transaction-expense';
+                const typeText = transaction.type === 'income' ? 'Income' : 'Expense';
+                
+                transactionItem.innerHTML = `
+                    <div class="transaction-details">
+                        <div class="transaction-type ${typeClass}">${typeText}</div>
+                        <div class="transaction-narration">${transaction.narration}</div>
+                        <div class="transaction-date">${transaction.date}</div>
+                    </div>
+                    <div class="transaction-amount ${typeClass}">${formatNumber(transaction.amount)}</div>
+                    <div class="transaction-actions">
+                        <button class="delete-btn" onclick="showDeleteConfirmation('${transaction.id}', '${transaction.date} - ${transaction.narration} - ${formatNumber(transaction.amount)}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                
+                transactionsList.appendChild(transactionItem);
+            });
+        }
+
+        // Show delete confirmation modal
+        window.showDeleteConfirmation = function(transactionId, transactionInfo) {
+            transactionToDelete = transactionId;
+            document.getElementById('transactionToDelete').textContent = transactionInfo;
+            document.getElementById('confirmationModal').style.display = 'flex';
+        };
+
+        // Hide delete confirmation modal
+        function hideConfirmationModal() {
+            document.getElementById('confirmationModal').style.display = 'none';
+            transactionToDelete = null;
+        }
+
+        // Delete transaction
+        async function deleteTransaction() {
+            if (!transactionToDelete) return;
+            
+            showLoading();
+            try {
+                await db.collection('transactions').doc(transactionToDelete).delete();
+                
+                // Reload transactions
+                await loadTransactions();
+                
+            } catch (error) {
+                console.error('Error deleting transaction:', error);
+                showError('Error deleting transaction: ' + error.message);
+            } finally {
+                hideLoading();
+                hideConfirmationModal();
+            }
+        }
+
+        // Generate Annual Report PDF
+        function generateAnnualReport() {
+            const filteredTransactions = filterTransactionsByYear();
+            
+            // Group transactions by month
+            const monthlyData = {};
+            let totalIncome = 0;
+            let totalExpense = 0;
+            
+            filteredTransactions.forEach(transaction => {
+                const date = new Date(transaction.date);
+                const month = date.getMonth(); // 0-11
+                const monthName = date.toLocaleString('default', { month: 'long' });
+                
+                if (!monthlyData[month]) {
+                    monthlyData[month] = {
+                        monthName: monthName,
+                        incomes: [],
+                        expenses: [],
+                        monthIncome: 0,
+                        monthExpense: 0
+                    };
+                }
+                
+                if (transaction.type === 'income') {
+                    monthlyData[month].incomes.push(transaction);
+                    monthlyData[month].monthIncome += transaction.amount;
+                    totalIncome += transaction.amount;
+                } else {
+                    monthlyData[month].expenses.push(transaction);
+                    monthlyData[month].monthExpense += transaction.amount;
+                    totalExpense += transaction.amount;
+                }
+            });
+            
+            const doc = new jsPDF();
+            const pageWidth = doc.internal.pageSize.width;
+            const pageHeight = doc.internal.pageSize.height;
+            const margin = 8; // 8mm margin
+            
+            // Convert mm to points
+            const marginPoints = margin * 2.83465;
+            
+            // Draw border around page
+            doc.setDrawColor(0, 102, 204);
+            doc.setLineWidth(0.5);
+            doc.rect(marginPoints, marginPoints, pageWidth - (marginPoints * 2), pageHeight - (marginPoints * 2));
+            
+            // Title in BLUE
+            doc.setFontSize(18);
+            doc.setTextColor(0, 102, 204);
+            doc.setFont('helvetica', 'bold');
+            doc.text('SHIPYARD NAGAR RESIDENCE ASSOCIATION', pageWidth / 2, marginPoints + 10, { align: 'center' });
+            
+            // Year Report
+            doc.setFontSize(14);
+            doc.setTextColor(0, 0, 0);
+            doc.text(`ANNUAL REPORT - ${selectedYear}`, pageWidth / 2, marginPoints + 18, { align: 'center' });
+            
+            let currentY = marginPoints + 28;
+            
+            // Sort months
+            const sortedMonths = Object.keys(monthlyData).sort((a, b) => a - b);
+            
+            // Process each month
+            sortedMonths.forEach(monthKey => {
+                const monthData = monthlyData[monthKey];
+                
+                // Check if we need new page
+                if (currentY > pageHeight - marginPoints - 50) {
+                    doc.addPage();
+                    currentY = marginPoints + 10;
+                    // Draw border on new page
+                    doc.setDrawColor(0, 102, 204);
+                    doc.setLineWidth(0.5);
+                    doc.rect(marginPoints, marginPoints, pageWidth - (marginPoints * 2), pageHeight - (marginPoints * 2));
+                }
+                
+                // Month header
+                doc.setFontSize(12);
+                doc.setTextColor(0, 0, 0);
+                doc.setFont('helvetica', 'bold');
+                doc.text(`${monthData.monthName.toUpperCase()} ${selectedYear}`, marginPoints + 10, currentY);
+                currentY += 8;
+                
+                // Income sub-header
+                doc.setFontSize(10);
+                doc.setTextColor(0, 128, 0);
+                doc.text('INCOME:', marginPoints + 10, currentY);
+                currentY += 6;
+                
+                // List individual incomes
+                doc.setFontSize(9);
+                doc.setTextColor(0, 0, 0);
+                doc.setFont('helvetica', 'normal');
+                monthData.incomes.forEach(income => {
+                    const line = `${income.date} - ${income.narration} - ${formatNumber(income.amount)}`;
+                    doc.text(line, marginPoints + 15, currentY);
+                    currentY += 5;
+                });
+                
+                // Month income total
+                doc.setFontSize(9);
+                doc.setTextColor(0, 128, 0);
+                doc.setFont('helvetica', 'bold');
+                doc.text(`Month Income Total: ${formatNumber(monthData.monthIncome)}`, marginPoints + 15, currentY);
+                currentY += 8;
+                
+                // Expense sub-header
+                doc.setTextColor(255, 0, 0);
+                doc.text('EXPENSE:', marginPoints + 10, currentY);
+                currentY += 6;
+                
+                // List individual expenses
+                doc.setFontSize(9);
+                doc.setTextColor(0, 0, 0);
+                doc.setFont('helvetica', 'normal');
+                monthData.expenses.forEach(expense => {
+                    const line = `${expense.date} - ${expense.narration} - ${formatNumber(expense.amount)}`;
+                    doc.text(line, marginPoints + 15, currentY);
+                    currentY += 5;
+                });
+                
+                // Month expense total
+                doc.setFontSize(9);
+                doc.setTextColor(255, 0, 0);
+                doc.setFont('helvetica', 'bold');
+                doc.text(`Month Expense Total: ${formatNumber(monthData.monthExpense)}`, marginPoints + 15, currentY);
+                currentY += 12;
+                
+                // Month balance
+                doc.setFontSize(10);
+                doc.setTextColor(0, 0, 0);
+                doc.setFont('helvetica', 'bold');
+                const monthBalance = monthData.monthIncome - monthData.monthExpense;
+                doc.text(`Month Balance: ${formatNumber(monthBalance)}`, marginPoints + 10, currentY);
+                currentY += 15;
+            });
+            
+            // Final summary
+            if (currentY > pageHeight - marginPoints - 80) {
+                doc.addPage();
+                currentY = marginPoints + 10;
+                // Draw border on new page
+                doc.setDrawColor(0, 102, 204);
+                doc.setLineWidth(0.5);
+                doc.rect(marginPoints, marginPoints, pageWidth - (marginPoints * 2), pageHeight - (marginPoints * 2));
+            }
+            
+            // Line before summary
+            doc.setDrawColor(0, 0, 0);
+            doc.setLineWidth(0.3);
+            doc.line(marginPoints + 10, currentY, pageWidth - marginPoints - 10, currentY);
+            currentY += 10;
+            
+            // Year totals
+            doc.setFontSize(12);
+            doc.setTextColor(0, 0, 0);
+            doc.setFont('helvetica', 'bold');
+            doc.text(`YEAR ${selectedYear} SUMMARY`, pageWidth / 2, currentY, { align: 'center' });
+            currentY += 10;
+            
+            // Total Income
+            doc.setFontSize(11);
+            doc.setTextColor(0, 128, 0);
+            doc.text('Total Income:', marginPoints + 10, currentY);
+            doc.text(formatNumber(totalIncome), pageWidth - marginPoints - 10, currentY, { align: 'right' });
+            currentY += 8;
+            
+            // Total Expense
+            doc.setTextColor(255, 0, 0);
+            doc.text('Total Expense:', marginPoints + 10, currentY);
+            doc.text(formatNumber(totalExpense), pageWidth - marginPoints - 10, currentY, { align: 'right' });
+            currentY += 8;
+            
+            // Line
+            doc.setDrawColor(0, 0, 0);
+            doc.setLineWidth(0.2);
+            doc.line(marginPoints + 10, currentY, pageWidth - marginPoints - 10, currentY);
+            currentY += 8;
+            
+            // Closing Balance
+            doc.setFontSize(12);
+            doc.setTextColor(0, 0, 0);
+            doc.setFont('helvetica', 'bold');
+            const closingBalance = totalIncome - totalExpense;
+            doc.text('Closing Balance (Cash in Bank):', marginPoints + 10, currentY);
+            doc.text(formatNumber(closingBalance), pageWidth - marginPoints - 10, currentY, { align: 'right' });
+            currentY += 15;
+            
+            // Previous year closing (placeholder - you need to implement this based on actual data)
+            doc.setFontSize(10);
+            doc.setTextColor(100, 100, 100);
+            doc.setFont('helvetica', 'italic');
+            doc.text(`*Opening Balance (${selectedYear}): To be calculated from ${selectedYear - 1} closing`, marginPoints + 10, currentY);
+            currentY += 6;
+            doc.text(`*Closing Balance (${selectedYear}): ${formatNumber(closingBalance)}`, marginPoints + 10, currentY);
+            currentY += 15;
+            
+            // Treasurer signature
+            const treasurerY = currentY;
+            doc.setFontSize(10);
+            doc.setTextColor(0, 0, 0);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Treasurer', pageWidth - marginPoints - 10, treasurerY, { align: 'right' });
+            doc.text('Vishnu T', pageWidth - marginPoints - 10, treasurerY + 6, { align: 'right' });
+            
+            // System generated note
+            const footerY = pageHeight - marginPoints - 5;
+            doc.setFontSize(8);
+            doc.setTextColor(100, 100, 100);
+            doc.setFont('helvetica', 'italic');
+            doc.text('This is system generated. No signature required.', pageWidth / 2, footerY, { align: 'center' });
+            
+            // Save PDF
+            const fileName = `Wealth_Report_${selectedYear}.pdf`;
+            doc.save(fileName);
+        }
+
+        // DOM Content Loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set default dates
+            setDefaultDates();
+            
             // Auth State Check
             auth.onAuthStateChanged(async (user) => {
                 if (!user) {
-                    alert('No user logged in. Redirecting to login...');
                     window.location.href = 'login.html';
                     return;
                 }
 
                 const userDoc = await db.collection('users').doc(user.uid).get();
                 if (!userDoc.exists || userDoc.data().role !== 'admin') {
-                    alert('Permission denied. Only admins can access this page. Redirecting to login...');
                     window.location.href = 'login.html';
                     return;
                 }
 
-                loadingSpinner.style.display = 'none';
-                
                 // Load initial data
-                loadWealth();
                 loadTransactions();
             });
 
-            // Logout
-            logoutBtn.addEventListener('click', () => {
-                auth.signOut().then(() => {
-                    window.location.href = 'login.html';
-                }).catch((error) => {
-                    alert('Logout Error: ' + error.message);
-                });
+            // Year selection change
+            document.getElementById('yearSelect').addEventListener('change', (e) => {
+                selectedYear = parseInt(e.target.value);
+                calculateWealthForYear();
+                displayTransactions();
             });
 
+            // Generate PDF button
+            document.getElementById('generatePdfBtn').addEventListener('click', generateAnnualReport);
+
             // Add Income
-            incomeForm.addEventListener('submit', async (e) => {
+            document.getElementById('incomeForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 
                 const date = document.getElementById('incomeDate').value;
@@ -573,38 +1101,38 @@
                 const amount = parseFloat(document.getElementById('incomeAmount').value);
                 
                 if (!date || !narration || !amount || amount <= 0) {
-                    alert('Please fill all fields with valid values');
+                    showError('Please fill all fields with valid values');
                     return;
                 }
                 
-                loadingSpinner.style.display = 'block';
+                showLoading();
                 
                 try {
                     await db.collection('transactions').add({
                         type: 'income',
                         date: date,
                         narration: narration,
-                        amount: amount,
+                        amount: roundToTwo(amount),
                         createdAt: new Date()
                     });
                     
-                    alert('Income added successfully!');
-                    incomeForm.reset();
-                    document.getElementById('incomeDate').value = today;
+                    // Reset form
+                    document.getElementById('incomeForm').reset();
+                    setDefaultDates();
                     
-                    // Refresh data
-                    loadWealth();
+                    // Reload data
                     loadTransactions();
+                    
                 } catch (error) {
                     console.error('Error adding income:', error);
-                    alert('Error adding income: ' + error.message);
+                    showError('Error adding income: ' + error.message);
                 } finally {
-                    loadingSpinner.style.display = 'none';
+                    hideLoading();
                 }
             });
 
             // Add Expense
-            expenseForm.addEventListener('submit', async (e) => {
+            document.getElementById('expenseForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 
                 const date = document.getElementById('expenseDate').value;
@@ -612,100 +1140,39 @@
                 const amount = parseFloat(document.getElementById('expenseAmount').value);
                 
                 if (!date || !narration || !amount || amount <= 0) {
-                    alert('Please fill all fields with valid values');
+                    showError('Please fill all fields with valid values');
                     return;
                 }
                 
-                loadingSpinner.style.display = 'block';
+                showLoading();
                 
                 try {
                     await db.collection('transactions').add({
                         type: 'expense',
                         date: date,
                         narration: narration,
-                        amount: amount,
+                        amount: roundToTwo(amount),
                         createdAt: new Date()
                     });
                     
-                    alert('Expense added successfully!');
-                    expenseForm.reset();
-                    document.getElementById('expenseDate').value = today;
+                    // Reset form
+                    document.getElementById('expenseForm').reset();
+                    setDefaultDates();
                     
-                    // Refresh data
-                    loadWealth();
+                    // Reload data
                     loadTransactions();
+                    
                 } catch (error) {
                     console.error('Error adding expense:', error);
-                    alert('Error adding expense: ' + error.message);
+                    showError('Error adding expense: ' + error.message);
                 } finally {
-                    loadingSpinner.style.display = 'none';
+                    hideLoading();
                 }
             });
 
-            // Load Wealth
-            const loadWealth = async () => {
-                try {
-                    let totalIncome = 0, totalExpense = 0;
-                    const transactions = await db.collection('transactions').get();
-                    
-                    transactions.forEach(doc => {
-                        const t = doc.data();
-                        if (t.type === 'income') totalIncome += t.amount || 0;
-                        if (t.type === 'expense') totalExpense += t.amount || 0;
-                    });
-                    
-                    const wealth = totalIncome - totalExpense;
-                    totalWealth.textContent = `₹${wealth.toLocaleString()}`;
-                } catch (error) {
-                    console.error('Error loading wealth:', error);
-                    totalWealth.textContent = '₹0 (Error)';
-                }
-            };
-
-            // Load Transactions
-            const loadTransactions = async () => {
-                try {
-                    const transactionsSnapshot = await db.collection('transactions')
-                        .orderBy('createdAt', 'desc')
-                        .limit(15)
-                        .get();
-                    
-                    transactionsList.innerHTML = '';
-                    
-                    if (transactionsSnapshot.empty) {
-                        transactionsList.innerHTML = '<div class="text-center p-3">No transactions found</div>';
-                        return;
-                    }
-                    
-                    transactionsSnapshot.forEach(doc => {
-                        const transaction = doc.data();
-                        const transactionItem = document.createElement('div');
-                        transactionItem.className = 'transaction-item';
-                        
-                        const typeClass = transaction.type === 'income' ? 'transaction-income' : 'transaction-expense';
-                        const typeText = transaction.type === 'income' ? 'Income' : 'Expense';
-                        
-                        transactionItem.innerHTML = `
-                            <div class="transaction-details">
-                                <div class="transaction-type ${typeClass}">${typeText}</div>
-                                <div class="transaction-narration">${transaction.narration}</div>
-                                <div class="transaction-date">${transaction.date}</div>
-                            </div>
-                            <div class="transaction-amount ${typeClass}">₹${transaction.amount}</div>
-                            <div class="transaction-actions">
-                                <button class="edit-btn" onclick="editTransaction('${doc.id}')">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                            </div>
-                        `;
-                        
-                        transactionsList.appendChild(transactionItem);
-                    });
-                } catch (error) {
-                    console.error('Error loading transactions:', error);
-                    transactionsList.innerHTML = '<div class="text-center p-3">Error loading transactions</div>';
-                }
-            };
+            // Confirmation modal buttons
+            document.getElementById('confirmYes').addEventListener('click', deleteTransaction);
+            document.getElementById('confirmNo').addEventListener('click', hideConfirmationModal);
 
             // Theme Toggle
             const themeToggle = document.getElementById('themeToggle');
@@ -717,22 +1184,15 @@
                     html.setAttribute('data-theme', newTheme);
                     localStorage.setItem('theme', newTheme);
                     
-                    // Update button emoji
                     themeToggle.textContent = newTheme === 'light' ? '🌞' : '🌙';
                 });
 
-                // Set initial theme and button
+                // Set initial theme
                 const savedTheme = localStorage.getItem('theme') || 'light';
                 document.documentElement.setAttribute('data-theme', savedTheme);
                 themeToggle.textContent = savedTheme === 'light' ? '🌞' : '🌙';
             }
         });
-
-        // Edit Transaction Function
-        window.editTransaction = function(transactionId) {
-            alert('Edit functionality for transaction ' + transactionId + ' will be implemented here');
-            // You can implement a modal or redirect to an edit page
-        };
     </script>
 </body>
 </html>
