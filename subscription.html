@@ -314,14 +314,14 @@
             border-color: var(--primary-orange);
         }
         
-        /* ✅ SPECIAL CONTRIBUTION BOX - Changed display */
+        /* ✅ SPECIAL CONTRIBUTION BOX */
         .special-contribution {
             margin-top: 15px;
             padding: 15px;
             border-radius: 12px;
             background: linear-gradient(135deg, #f0f8ff 0%, #e6f7ff 100%);
             border: 1px solid #b3d9ff;
-            display: none; /* Initially hidden, JS will show if not paid */
+            display: none; /* Hidden by default until narration loads */
         }
         
         [data-theme="dark"] .special-contribution {
@@ -419,6 +419,28 @@
             border-color: #4a5568;
         }
 
+        @media (max-width: 576px) {
+            .header-image {
+                max-height: 120px;
+            }
+            
+            .main-card {
+                padding: 15px;
+                margin: 100px 10px 50px 10px;
+            }
+            
+            .payment-table th, 
+            .payment-table td {
+                padding: 10px 8px;
+                font-size: 0.75rem;
+            }
+            
+            footer {
+                padding: 3px 10px;
+                height: 28px;
+            }
+        }
+
         .skeleton {
             background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
             background-size: 200% 100%;
@@ -426,6 +448,9 @@
             border-radius: 8px;
             color: transparent !important;
             user-select: none;
+        }
+        [data-theme="dark"] .skeleton {
+            background: linear-gradient(90deg, #333 25%, #444 50%, #333 75%);
         }
         @keyframes loading {
             0% { background-position: 200% 0; }
@@ -461,12 +486,13 @@
                             <div class="form-group">
                                 <label for="amount" class="form-label">Amount (₹)</label>
                                 <input type="number" class="form-control" id="amount" value="0" min="10" step="10">
+                                <small class="form-text text-muted">You can edit the amount if needed</small>
                             </div>
                             
                             <div class="special-contribution" id="specialSection">
                                 <div class="special-header">
                                     <i class="fas fa-money-bill-wave"></i>
-                                    <span class="special-title" id="narrationText">Special Collection</span>
+                                    <span class="special-title" id="narrationText"></span>
                                 </div>
                                 <div class="special-description">
                                     Amount: <span class="special-amount" id="specialAmountDisplay">₹0</span> - 
@@ -492,19 +518,21 @@
                                 </button>
                                 
                                 <div class="payment-note">
-                                    Payment will be updated in the system within 4 hours
+                                    Payment will be updated in the system within 4 hours of successful transaction
                                 </div>
                             </div>
 
                             <div id="noPaymentMessage" class="no-payment-message">
                                 <i class="fas fa-check-circle" style="color: #28a745; font-size: 2rem; margin-bottom: 10px;"></i>
-                                <h6 style="color: #155724;">No Payment Due</h6>
+                                <h6 style="color: #155724; margin-bottom: 5px;">No Payment Due</h6>
+                                <p style="color: #155724; margin: 0; font-size: 0.85rem;">All your subscriptions are up to date!</p>
                             </div>
                         </form>
                     </div>
                     
                     <div class="payment-history">
                         <h5 class="mb-3" style="color: #1e3a8a; font-weight: 600;">Payment History</h5>
+                        
                         <div class="table-container">
                             <table class="payment-table">
                                 <thead>
@@ -517,6 +545,8 @@
                                 </thead>
                                 <tbody id="contributionTable">
                                     <tr><td colspan="4" class="skeleton">Loading history...</td></tr>
+                                    <tr><td colspan="4" class="skeleton">Loading history...</td></tr>
+                                    <tr><td colspan="4" class="skeleton">Loading history...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -527,7 +557,9 @@
     </main>
     
     <footer>
-        <div class="footer-text"><p>Powered by VTSoft 2026</p></div>
+        <div class="footer-text">
+            <p>Powered by VTSoft 2026</p>
+        </div>
         <button id="themeToggle" class="theme-toggle-btn">🌞</button>
     </footer>
 
@@ -548,6 +580,7 @@
             };
 
             if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+            
             const auth = firebase.auth();
             const db = firebase.firestore();
 
@@ -557,51 +590,174 @@
             let specialAmount = 0;
             let narration = "";
             let monthlyDueAmount = 0;
+            let pendingMonths = [];
+
+            // Theme Logic
+            const themeToggle = document.getElementById('themeToggle');
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            if(themeToggle) {
+                themeToggle.textContent = savedTheme === 'light' ? '🌞' : '🌙';
+                themeToggle.addEventListener('click', () => {
+                    const newTheme = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+                    document.documentElement.setAttribute('data-theme', newTheme);
+                    localStorage.setItem('theme', newTheme);
+                    themeToggle.textContent = newTheme === 'light' ? '🌞' : '🌙';
+                });
+            }
 
             auth.onAuthStateChanged(async (user) => {
-                if (!user) { window.location.href = 'login.html'; }
-                else { currentUserId = user.uid; await loadAllData(user.uid); }
+                if (!user) {
+                    window.location.href = 'login.html';
+                } else {
+                    currentUserId = user.uid;
+                    await loadAllData(user.uid);
+                }
             });
 
             async function loadAllData(uid) {
                 try {
-                    // 1. Load Settings (Narration)
-                    const settingsDoc = await db.collection('settings').doc('specialPayment').get();
-                    if (settingsDoc.exists()) {
-                        const sData = settingsDoc.data();
-                        narration = sData.narration || "Special Collection";
-                        document.getElementById('narrationText').textContent = narration;
-                    }
-
-                    // 2. Load User Data (Special Status)
-                    const userDoc = await db.collection('users').doc(uid).get();
-                    if (userDoc.exists) {
-                        const uData = userDoc.data();
-                        currentMemberNumber = uData.memberNumber || 'Unknown';
-                        specialPaid = uData.speakerPaid || false;
-                        specialAmount = uData.speakerAmount || 0;
-                        document.getElementById('specialAmountDisplay').textContent = `₹${specialAmount}`;
-                    }
-
-                    // 3. Load Contributions
-                    const snap = await db.collection('contributions').doc(uid).collection('months').get();
-                    processContributions(snap);
-
-                    // 4. Update Box Visibility Logic
-                    updateSpecialBoxVisibility();
+                    // ✅ നാരേഷൻ ആദ്യം ലോഡ് ചെയ്യുന്നു എന്ന് ഉറപ്പാക്കുന്നു
+                    await loadNarration();
+                    await loadUserData(uid);
+                    await loadContributions(uid);
+                    // ലോഡിംഗിന് ശേഷം ടോട്ടൽ ഒന്നുകൂടി ചെക്ക് ചെയ്യുന്നു
                     updateTotalAmount();
                     togglePaymentButtons();
-
-                } catch (error) { console.error('Error:', error); }
+                } catch (error) {
+                    console.error('Error loading data:', error);
+                }
             }
 
-            function updateSpecialBoxVisibility() {
+            // ✅ FIXED: Load narration with better logic
+            async function loadNarration() {
+                try {
+                    console.log('Loading narration from Firebase...');
+                    const settingsDoc = await db.collection('settings').doc('specialPayment').get();
+                    
+                    if (settingsDoc.exists()) {
+                        const data = settingsDoc.data();
+                        console.log('Firebase settings data:', data);
+                        
+                        if (data.narration !== undefined && data.narration !== null && data.narration.trim() !== "") {
+                            narration = data.narration.trim();
+                            console.log('✅ Narration loaded:', narration);
+                        } else {
+                            narration = "";
+                            console.log('❌ Narration is empty or not set');
+                        }
+                    } else {
+                        narration = "";
+                        console.log('❌ No settings document found');
+                    }
+                    
+                    updateNarrationUI();
+                } catch (error) {
+                    console.error('Error loading narration:', error);
+                    narration = "";
+                    updateNarrationUI();
+                }
+            }
+
+            function updateNarrationUI() {
+                const narrationEl = document.getElementById('narrationText');
                 const specialSection = document.getElementById('specialSection');
-                // ✅ പെയ്ഡ് അല്ല എങ്കിൽ മാത്രം ബോക്സ് കാണിക്കുക
-                if (!specialPaid) {
+                
+                console.log('Updating UI with narration:', narration);
+                
+                if (specialSection) {
+                    // ✅ FIXED: Always show the box, but manage the title
                     specialSection.style.display = 'block';
-                } else {
-                    specialSection.style.display = 'none';
+                    
+                    if (narrationEl) {
+                        if (narration && narration.trim() !== "") {
+                            narrationEl.textContent = narration;
+                            console.log('✅ Narration displayed in UI');
+                        } else {
+                            narrationEl.textContent = ""; // Empty title
+                            console.log('❌ No narration, keeping title empty');
+                        }
+                    }
+                }
+            }
+
+            async function loadUserData(uid) {
+                try {
+                    console.log('Loading user data for:', uid);
+                    const userDoc = await db.collection('users').doc(uid).get();
+                    
+                    if (userDoc.exists) {
+                        const userData = userDoc.data();
+                        currentMemberNumber = userData.memberNumber || 'Unknown';
+                        specialPaid = userData.speakerPaid || false;
+                        specialAmount = userData.speakerAmount || 0;
+                        
+                        console.log('✅ User data loaded:', {
+                            member: currentMemberNumber,
+                            specialPaid: specialPaid,
+                            specialAmount: specialAmount
+                        });
+                        
+                        updateSpecialPaymentUI();
+                    } else {
+                        console.log('❌ User document not found');
+                    }
+                } catch (error) {
+                    console.error('Error loading user data:', error);
+                }
+            }
+
+            function updateSpecialPaymentUI() {
+                const specialSection = document.getElementById('specialSection');
+                const specialAmountDisplay = document.getElementById('specialAmountDisplay');
+                const statusDisplay = document.getElementById('statusDisplay');
+                const includeSpecial = document.getElementById('includeSpecial');
+                
+                console.log('Updating special payment UI:', {
+                    specialAmount: specialAmount,
+                    specialPaid: specialPaid
+                });
+                
+                if (specialAmountDisplay) {
+                    specialAmountDisplay.textContent = `₹${specialAmount}`;
+                }
+                
+                if (statusDisplay) {
+                    if (specialPaid) {
+                        statusDisplay.textContent = "Paid";
+                        statusDisplay.className = "special-status paid";
+                    } else {
+                        statusDisplay.textContent = "Pending";
+                        statusDisplay.className = "special-status pending";
+                    }
+                }
+                
+                if (includeSpecial) {
+                    if (specialPaid) {
+                        includeSpecial.checked = false;
+                        includeSpecial.disabled = true;
+                    } else {
+                        includeSpecial.checked = true;
+                        includeSpecial.disabled = false;
+                    }
+                }
+                
+                if (specialSection) {
+                    if (specialPaid) {
+                        specialSection.style.opacity = '0.7';
+                    } else {
+                        specialSection.style.opacity = '1';
+                    }
+                }
+            }
+
+            async function loadContributions(uid) {
+                try {
+                    console.log('Loading contributions for:', uid);
+                    const contributionsSnap = await db.collection('contributions').doc(uid).collection('months').get();
+                    processContributions(contributionsSnap);
+                } catch (error) {
+                    console.error('Error loading contributions:', error);
                 }
             }
 
@@ -609,83 +765,135 @@
                 const paidData = {};
                 snapshot.forEach(doc => { paidData[doc.id] = doc.data(); });
 
+                const currentDate = new Date();
+                const currentMonth = currentDate.toISOString().slice(0, 7);
                 const startMonth = '2025-10';
-                const currentMonth = new Date().toISOString().slice(0, 7);
                 
-                const table = document.getElementById('contributionTable');
-                table.innerHTML = '';
-                let pendingCount = 0;
+                const generateMonths = (start, end) => {
+                    const months = [];
+                    let current = new Date(start + '-01');
+                    const endDate = new Date(end + '-01');
+                    while (current <= endDate) {
+                        months.push(current.toISOString().slice(0, 7));
+                        current.setMonth(current.getMonth() + 1);
+                    }
+                    return months;
+                };
 
-                const months = [];
-                let curr = new Date(startMonth + '-01');
-                while (curr <= new Date(currentMonth + '-01')) {
-                    months.push(curr.toISOString().slice(0, 7));
-                    curr.setMonth(curr.getMonth() + 1);
-                }
+                const allMonths = generateMonths(startMonth, currentMonth);
+                pendingMonths = [];
+                const contributionTable = document.getElementById('contributionTable');
+                contributionTable.innerHTML = '';
 
-                months.reverse().forEach(m => {
-                    const data = paidData[m] || { paid: false };
-                    if(!data.paid) pendingCount++;
-                    table.innerHTML += `
+                const sortedMonths = [...allMonths].sort().reverse();
+                const getMonthName = (mStr) => {
+                    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                    const parts = mStr.split('-');
+                    return months[parseInt(parts[1]) - 1] + ' ' + parts[0];
+                };
+
+                sortedMonths.forEach(month => {
+                    const data = paidData[month] || { paid: false, amount: 0, date: '' };
+                    contributionTable.innerHTML += `
                         <tr>
-                            <td>${m}</td>
+                            <td>${getMonthName(month)}</td>
                             <td class="${data.paid ? 'status-paid' : 'status-pending'}">${data.paid ? 'Paid' : 'Pending'}</td>
                             <td>${data.paid ? '₹200' : '₹0'}</td>
                             <td>${data.date || '-'}</td>
-                        </tr>`;
+                        </tr>
+                    `;
+                    if (!data.paid) pendingMonths.push(month);
                 });
 
-                monthlyDueAmount = pendingCount * 200;
+                monthlyDueAmount = pendingMonths.length * 200;
                 const dueInfo = document.getElementById('dueInfo');
-                dueInfo.classList.remove('skeleton');
-                dueInfo.textContent = `Due Amount: ₹${monthlyDueAmount}`;
+                const pendingInfo = document.getElementById('pendingMonths');
                 
-                const pInfo = document.getElementById('pendingMonths');
-                pInfo.classList.remove('skeleton');
-                pInfo.textContent = pendingCount > 0 ? `${pendingCount} months pending` : 'All paid';
+                if (dueInfo) {
+                    dueInfo.classList.remove('skeleton');
+                    dueInfo.textContent = `Due Amount: ₹${monthlyDueAmount}`;
+                }
+                
+                if (pendingInfo) {
+                    pendingInfo.classList.remove('skeleton');
+                    pendingInfo.textContent = pendingMonths.length > 0 
+                        ? `Pending: ${pendingMonths.map(m => getMonthName(m)).join(', ')}` 
+                        : 'All months paid';
+                }
             }
 
             function updateTotalAmount() {
                 const includeSpecial = document.getElementById('includeSpecial');
-                let total = monthlyDueAmount;
-                // ✅ പെയ്ഡ് അല്ല എങ്കിൽ മാത്രം എമൗണ്ട് കൂട്ടുക
-                if (!specialPaid && includeSpecial && includeSpecial.checked) {
-                    total += specialAmount;
+                let totalAmount = monthlyDueAmount;
+                
+                // ✅ Add special amount only if includeSpecial exists and is checked
+                if (includeSpecial && includeSpecial.checked) {
+                    totalAmount += specialAmount;
                 }
-                document.getElementById('amount').value = total;
+                
+                const amountInput = document.getElementById('amount');
+                if (amountInput) {
+                    amountInput.value = totalAmount;
+                }
+                
+                console.log('Total amount updated:', {
+                    monthlyDue: monthlyDueAmount,
+                    specialAmount: specialAmount,
+                    includeSpecial: includeSpecial ? includeSpecial.checked : false,
+                    total: totalAmount
+                });
             }
 
             function togglePaymentButtons() {
-                const amt = parseFloat(document.getElementById('amount').value);
-                document.getElementById('paymentButtons').style.display = amt > 0 ? 'block' : 'none';
-                document.getElementById('noPaymentMessage').style.display = amt > 0 ? 'none' : 'block';
+                const amountInput = document.getElementById('amount');
+                if (!amountInput) return;
+                const amount = parseFloat(amountInput.value);
+                const btns = document.getElementById('paymentButtons');
+                const msg = document.getElementById('noPaymentMessage');
+                
+                if (amount > 0) {
+                    if (btns) btns.style.display = 'block';
+                    if (msg) msg.style.display = 'none';
+                } else {
+                    if (btns) btns.style.display = 'none';
+                    if (msg) msg.style.display = 'block';
+                }
             }
 
-            document.getElementById('includeSpecial').addEventListener('change', () => {
-                updateTotalAmount();
-                togglePaymentButtons();
-            });
+            const includeSpecialCheckbox = document.getElementById('includeSpecial');
+            if (includeSpecialCheckbox) {
+                includeSpecialCheckbox.addEventListener('change', () => {
+                    console.log('Include special checkbox changed:', includeSpecialCheckbox.checked);
+                    updateTotalAmount();
+                    togglePaymentButtons();
+                });
+            }
 
-            document.getElementById('amount').addEventListener('input', togglePaymentButtons);
+            const amountInput = document.getElementById('amount');
+            if (amountInput) {
+                amountInput.addEventListener('input', togglePaymentButtons);
+            }
 
-            // Payment Button Listeners... (GPay, CRED etc.)
+            const handlePayment = (url) => {
+                const amount = document.getElementById('amount').value;
+                if (amount < 10) return alert('Please enter minimum ₹10!');
+                window.location.href = url;
+            };
+
             document.getElementById('gpayButton').addEventListener('click', () => {
                 const amt = document.getElementById('amount').value;
-                window.location.href = `openchrome://vishnuputhur.github.io/shipyardnagar/qrpay.html?amount=${amt}`;
+                handlePayment(`openchrome://vishnuputhur.github.io/shipyardnagar/qrpay.html?amount=${amt}`);
             });
 
             document.getElementById('credButton').addEventListener('click', () => {
                 const amt = document.getElementById('amount').value;
-                const note = `Member ${currentMemberNumber} - ${narration}`;
-                window.location.href = `upi://pay?pa=BHARATPE.8P0O1J0O8P31576@fbpe&pn=Shipyard%20Nagar&am=${amt}&cu=INR&tn=${encodeURIComponent(note)}`;
+                const upiId = 'BHARATPE.8P0O1J0O8P31576@fbpe';
+                const note = `Member ${currentMemberNumber} - ${narration || 'Monthly Subscription'}`;
+                handlePayment(`upi://pay?pa=${upiId}&pn=Shipyard%20Nagar&am=${amt}&cu=INR&tn=${encodeURIComponent(note)}`);
             });
-            
-            // Theme toggle...
-            const themeToggle = document.getElementById('themeToggle');
-            themeToggle.addEventListener('click', () => {
-                const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-                document.documentElement.setAttribute('data-theme', next);
-                themeToggle.textContent = next === 'light' ? '🌞' : '🌙';
+
+            document.getElementById('razorpayButton').addEventListener('click', () => {
+                handlePayment(`openchrome://rzp.io/rzp/3dH5fZk`);
             });
         });
     </script>
