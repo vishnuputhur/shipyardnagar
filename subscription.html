@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        /* ✅ ORIGINAL CSS RESTORED */
+        /* ✅ ORIGINAL CSS - NO CHANGES */
         :root {
             --primary-orange: #FF6B35;
             --orange-light: #FF8C42;
@@ -314,13 +314,14 @@
             border-color: var(--primary-orange);
         }
         
-        /* UPDATED Special Contribution Box */
+        /* ✅ UPDATED: Special Contribution Box */
         .special-contribution {
             margin-top: 15px;
             padding: 15px;
             border-radius: 12px;
             background: linear-gradient(135deg, #f0f8ff 0%, #e6f7ff 100%);
             border: 1px solid #b3d9ff;
+            display: none; /* Default hidden */
         }
         
         [data-theme="dark"] .special-contribution {
@@ -342,43 +343,6 @@
         
         [data-theme="dark"] .narration-title {
             color: #60a5fa;
-        }
-        
-        .amount-display {
-            text-align: center;
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: #1e40af;
-            margin-bottom: 10px;
-        }
-        
-        [data-theme="dark"] .amount-display {
-            color: #60a5fa;
-        }
-        
-        .special-option {
-            display: flex;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-        
-        .special-option input {
-            margin-right: 8px;
-        }
-        
-        .special-option label {
-            font-size: 0.9rem;
-            color: #374151;
-            cursor: pointer;
-        }
-        
-        [data-theme="dark"] .special-option label {
-            color: #e2e8f0;
-        }
-        
-        .special-amount {
-            font-weight: 600;
-            color: #1e40af;
         }
         
         .special-status {
@@ -515,16 +479,10 @@
                                 <small class="form-text text-muted">You can edit the amount if needed</small>
                             </div>
                             
-                            <!-- UPDATED Special Contribution Box -->
+                            <!-- ✅ UPDATED: Special Contribution Box -->
                             <div class="special-contribution" id="specialSection">
                                 <div class="special-header">
                                     <div class="narration-title" id="narrationText">Special Contribution</div>
-                                    <div class="amount-display" id="specialAmountDisplay">₹500</div>
-                                </div>
-                                
-                                <div class="special-option">
-                                    <input type="checkbox" id="includeSpecial" name="includeSpecial" checked>
-                                    <label for="includeSpecial">Include special contribution</label>
                                 </div>
                                 
                                 <div id="specialStatus" class="special-status pending">
@@ -597,7 +555,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js" defer></script>
 
     <script>
-        // ✅ Wait for window load
+        // ✅ FIXED: Wait for window load
         window.addEventListener('load', () => {
             const firebaseConfig = {
                 apiKey: "AIzaSyBWswawf9tpxNwVU0BaJ6FCwCvgcjUQXlA",
@@ -617,8 +575,8 @@
             let currentUserId = '';
             let currentMemberNumber = '';
             let specialPaid = false;
-            let specialAmount = 500; // Default
-            let narration = "Special Contribution";
+            let specialAmount = 0; // Start with 0
+            let narration = "";
             let monthlyDueAmount = 0;
             let pendingMonths = [];
 
@@ -648,97 +606,12 @@
                     window.location.href = 'login.html';
                 } else {
                     currentUserId = user.uid;
-                    // ✅ ഇപ്പോൾ ശരിയായി load ചെയ്യാം
-                    await loadAllData(user.uid);
+                    // ✅ Load user data first, then check special payment
+                    await loadUserData(user.uid);
                 }
             });
 
-            async function loadAllData(uid) {
-                try {
-                    // ✅ ആദ്യം settings ലോഡ് ചെയ്യുക
-                    await loadSettings();
-                    
-                    // ✅ പിന്നെ user data ലോഡ് ചെയ്യുക
-                    await loadUserData(uid);
-                    
-                } catch (error) {
-                    console.error('Error:', error);
-                    alert('Network Error. Please refresh.');
-                }
-            }
-
-            async function loadSettings() {
-                try {
-                    // ✅ 1. localStorage-ൽ നിന്ന് ശ്രമിക്കുക
-                    const cachedNarration = localStorage.getItem('specialNarration');
-                    const cachedAmount = localStorage.getItem('specialDefaultAmount');
-                    
-                    console.log('Cached Narration:', cachedNarration);
-                    console.log('Cached Amount:', cachedAmount);
-                    
-                    if (cachedNarration) {
-                        narration = cachedNarration;
-                        updateNarrationUI();
-                    }
-                    
-                    if (cachedAmount) {
-                        specialAmount = parseInt(cachedAmount);
-                        updateSpecialAmountUI();
-                    }
-                    
-                    // ✅ 2. Firebase-ൽ നിന്ന് ശ്രമിക്കുക
-                    try {
-                        console.log('Trying to load from Firebase...');
-                        const settingsDoc = await db.collection('settings').doc('specialPayment').get();
-                        
-                        if (settingsDoc.exists()) {
-                            const data = settingsDoc.data();
-                            console.log('Firebase Data:', data);
-                            
-                            if (data.narration) {
-                                narration = data.narration;
-                                localStorage.setItem('specialNarration', narration);
-                                updateNarrationUI();
-                                console.log('Narration loaded from Firebase:', narration);
-                            }
-                            
-                            if (data.defaultAmount) {
-                                specialAmount = data.defaultAmount;
-                                localStorage.setItem('specialDefaultAmount', specialAmount);
-                                updateSpecialAmountUI();
-                                console.log('Amount loaded from Firebase:', specialAmount);
-                            }
-                        } else {
-                            console.log('No settings document found in Firebase');
-                        }
-                    } catch (firebaseError) {
-                        console.log('Firebase read error:', firebaseError);
-                    }
-                    
-                } catch (error) {
-                    console.log('Error loading settings:', error);
-                }
-            }
-
-            function updateNarrationUI() {
-                const narrationEl = document.getElementById('narrationText');
-                narrationEl.classList.remove('skeleton');
-                narrationEl.textContent = narration;
-            }
-
-            function updateSpecialAmountUI() {
-                const amountEl = document.getElementById('specialAmountDisplay');
-                if (amountEl) {
-                    amountEl.classList.remove('skeleton');
-                    amountEl.textContent = `₹${specialAmount}`;
-                }
-                
-                // Update checkbox value
-                document.getElementById('includeSpecial').value = specialAmount;
-                
-                console.log('UI Updated with amount:', specialAmount);
-            }
-
+            // ✅ FIXED: Load user data first
             async function loadUserData(uid) {
                 try {
                     const userDoc = await db.collection('users').doc(uid).get();
@@ -750,50 +623,79 @@
 
                     const userData = userDoc.data();
                     currentMemberNumber = userData.memberNumber || 'Unknown';
+                    
+                    // ✅ Get user's specific amount from admin
                     specialPaid = userData.speakerPaid || false;
-
-                    // ✅ Special payment status update
-                    updateSpecialPaymentStatus();
-
-                    // ✅ ഇപ്പോൾ contributions ലോഡ് ചെയ്യുക
+                    specialAmount = userData.speakerAmount || 0; // Get user's specific amount
+                    
+                    console.log('User special amount:', specialAmount, 'Paid:', specialPaid);
+                    
+                    // ✅ Now load settings (narration)
+                    await loadSettings();
+                    
+                    // ✅ Update special payment UI based on user data
+                    updateSpecialPaymentUI();
+                    
+                    // ✅ Load contributions
                     await loadContributions(uid);
 
                 } catch (error) {
                     console.error('Error loading user data:', error);
+                    alert('Network Error. Please refresh.');
                 }
             }
 
-            function updateSpecialPaymentStatus() {
-                const statusEl = document.getElementById('specialStatus');
+            // ✅ FIXED: Load settings (only narration)
+            async function loadSettings() {
+                try {
+                    // Try Firebase first
+                    const settingsDoc = await db.collection('settings').doc('specialPayment').get();
+                    
+                    if (settingsDoc.exists()) {
+                        const data = settingsDoc.data();
+                        
+                        if (data.narration) {
+                            narration = data.narration;
+                            updateNarrationUI();
+                            console.log('Narration loaded:', narration);
+                        }
+                    }
+                    
+                } catch (error) {
+                    console.log('Error loading settings:', error);
+                }
+            }
+
+            function updateNarrationUI() {
+                const narrationEl = document.getElementById('narrationText');
+                if (narrationEl) {
+                    narrationEl.classList.remove('skeleton');
+                    narrationEl.textContent = narration;
+                }
+            }
+
+            // ✅ FIXED: Update special payment UI
+            function updateSpecialPaymentUI() {
                 const specialSection = document.getElementById('specialSection');
+                const statusEl = document.getElementById('specialStatus');
                 
-                if (specialPaid) {
-                    // Already paid
-                    statusEl.innerHTML = '<i class="fas fa-check-circle me-1"></i> Already Paid';
-                    statusEl.className = 'special-status paid';
-                    
-                    // Hide checkbox since already paid
-                    document.getElementById('includeSpecial').checked = false;
-                    document.getElementById('includeSpecial').disabled = true;
-                    document.querySelector('.special-option').style.display = 'none';
-                    
-                    // Update amount field
-                    document.getElementById('amount').value = monthlyDueAmount;
-                } else {
-                    // Not paid yet
+                console.log('Updating UI - Amount:', specialAmount, 'Paid:', specialPaid);
+                
+                if (specialAmount > 0 && !specialPaid) {
+                    // Show box with narration and pending status
+                    specialSection.style.display = 'block';
                     statusEl.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i> Pending';
                     statusEl.className = 'special-status pending';
                     
-                    // Show checkbox
-                    document.getElementById('includeSpecial').checked = true;
-                    document.getElementById('includeSpecial').disabled = false;
-                    document.querySelector('.special-option').style.display = 'flex';
-                    
                     // Update amount field
                     updateTotalAmount();
+                } else if (specialPaid) {
+                    // Already paid - hide box
+                    specialSection.style.display = 'none';
+                } else {
+                    // No special payment or amount is 0 - hide box
+                    specialSection.style.display = 'none';
                 }
-                
-                console.log('Special Payment Status:', specialPaid ? 'PAID' : 'PENDING');
             }
 
             async function loadContributions(uid) {
@@ -889,18 +791,18 @@
 
             // Update total amount
             function updateTotalAmount() {
-                const includeSpecial = document.getElementById('includeSpecial').checked;
                 let totalAmount = monthlyDueAmount;
                 
-                if (includeSpecial && !specialPaid) {
+                // Only add special amount if it exists and not paid
+                if (specialAmount > 0 && !specialPaid) {
                     totalAmount += specialAmount;
                 }
                 
                 document.getElementById('amount').value = totalAmount;
                 
-                console.log('Total Amount Calculated:', totalAmount, 
+                console.log('Total Amount:', totalAmount, 
                           '(Monthly:', monthlyDueAmount, 
-                          'Special:', includeSpecial && !specialPaid ? specialAmount : 0, ')');
+                          'Special:', specialAmount > 0 && !specialPaid ? specialAmount : 0, ')');
             }
 
             function togglePaymentButtons() {
@@ -916,14 +818,6 @@
                     msg.style.display = 'block';
                 }
             }
-
-            // Event Listeners
-            document.getElementById('includeSpecial').addEventListener('change', () => {
-                updateTotalAmount();
-                togglePaymentButtons();
-            });
-
-            document.getElementById('amount').addEventListener('input', togglePaymentButtons);
 
             // Button Actions
             const handlePayment = (url) => {
@@ -954,6 +848,9 @@
             document.getElementById('razorpayButton').addEventListener('click', () => {
                 handlePayment(`openchrome://rzp.io/rzp/3dH5fZk`);
             });
+            
+            // Amount input listener
+            document.getElementById('amount').addEventListener('input', togglePaymentButtons);
         });
     </script>
 </body>
