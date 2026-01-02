@@ -7,6 +7,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- jsPDF Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <style>
         :root {
             --primary-orange: #FF6B35;
@@ -123,30 +126,39 @@
             color: #ccc;
         }
 
-        .amount-control {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 15px;
+        .admin-controls {
             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            padding: 10px 15px;
+            padding: 15px;
             border-radius: 12px;
+            margin-bottom: 15px;
             border-left: 3px solid #667eea;
         }
 
-        [data-theme="dark"] .amount-control {
+        [data-theme="dark"] .admin-controls {
             background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
         }
 
-        .amount-label {
+        .control-group {
+            margin-bottom: 10px;
+        }
+
+        .control-label {
             font-weight: 500;
             font-size: 0.9rem;
-            white-space: nowrap;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        [data-theme="dark"] .control-label {
+            color: #fff;
         }
 
         .amount-input {
+            width: 120px;
+        }
+
+        .narration-input {
             flex: 1;
-            max-width: 150px;
         }
 
         .total-amount {
@@ -236,6 +248,7 @@
             padding: 10px 12px;
             border-bottom: 1px solid #eee;
             font-size: 0.8rem;
+            vertical-align: middle;
         }
 
         [data-theme="dark"] .member-table td {
@@ -256,10 +269,19 @@
             font-weight: 500;
         }
 
-        .payment-checkbox {
-            width: 20px;
-            height: 20px;
-            cursor: pointer;
+        .member-amount-input {
+            width: 80px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            text-align: center;
+            font-size: 0.8rem;
+        }
+
+        [data-theme="dark"] .member-amount-input {
+            background: #444;
+            border-color: #555;
+            color: #fff;
         }
 
         .action-buttons {
@@ -267,6 +289,7 @@
             gap: 10px;
             justify-content: center;
             margin-top: 15px;
+            flex-wrap: wrap;
         }
 
         .btn-primary {
@@ -288,6 +311,17 @@
 
         .btn-secondary {
             background: #6c757d;
+            border: none;
+            border-radius: 12px;
+            padding: 8px 16px;
+            color: white;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
             border: none;
             border-radius: 12px;
             padding: 8px 16px;
@@ -377,14 +411,11 @@
                 width: 100%;
             }
 
-            .amount-control {
+            .action-buttons {
                 flex-direction: column;
-                align-items: flex-start;
-                gap: 5px;
             }
 
-            .amount-input {
-                max-width: 100%;
+            .action-buttons button {
                 width: 100%;
             }
         }
@@ -401,8 +432,14 @@
             
             .member-table th, 
             .member-table td {
-                padding: 8px 10px;
-                font-size: 0.75rem;
+                padding: 8px 6px;
+                font-size: 0.7rem;
+            }
+            
+            .member-amount-input {
+                width: 60px;
+                font-size: 0.7rem;
+                padding: 3px 5px;
             }
             
             footer {
@@ -465,22 +502,46 @@
                         </div>
                     </div>
 
-                    <!-- Amount Control for Admin -->
-                    <div class="amount-control" id="amountControl">
-                        <div class="amount-label">
-                            <i class="fas fa-rupee-sign me-1"></i>
-                            Set Payment Amount:
+                    <!-- Admin Controls -->
+                    <div class="admin-controls" id="adminControls">
+                        <div class="row">
+                            <div class="col-md-6 mb-2">
+                                <div class="control-group">
+                                    <label class="control-label">
+                                        <i class="fas fa-rupee-sign me-1"></i>
+                                        Default Amount (₹)
+                                    </label>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <input type="number" class="form-control amount-input" id="defaultAmount" value="500" min="1" step="1">
+                                        <button class="btn btn-sm btn-primary" id="setDefaultAmountBtn">
+                                            <i class="fas fa-check"></i> Set
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <div class="control-group">
+                                    <label class="control-label">
+                                        <i class="fas fa-comment-alt me-1"></i>
+                                        Narration
+                                    </label>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <input type="text" class="form-control narration-input" id="narration" 
+                                               placeholder="e.g., New Year Celebration 2025" maxlength="100">
+                                        <button class="btn btn-sm btn-primary" id="setNarrationBtn">
+                                            <i class="fas fa-check"></i> Set
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <input type="number" class="form-control amount-input" id="paymentAmount" value="500" min="1" step="1">
-                        <button class="btn btn-sm btn-primary" id="setAmountBtn">
-                            <i class="fas fa-check"></i> Set
-                        </button>
                     </div>
 
                     <!-- Total Amount -->
                     <div class="total-amount" id="totalAmountDisplay">
                         <i class="fas fa-calculator me-2"></i>
-                        Total Amount: ₹<span class="amount" id="totalAmount">0</span>
+                        Total Collected: ₹<span class="amount" id="totalAmount">0</span>
+                        <span class="ms-3">Narration: <span id="currentNarration">Not Set</span></span>
                     </div>
                     
                     <!-- Search and Filter -->
@@ -502,9 +563,11 @@
                         <table class="member-table">
                             <thead>
                                 <tr>
+                                    <th>SL No</th>
                                     <th>Member No</th>
                                     <th>Name</th>
                                     <th>Special Status</th>
+                                    <th>Amount (₹)</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -518,7 +581,11 @@
                     <div class="action-buttons" id="actionButtons">
                         <button class="btn btn-primary" id="saveChangesBtn">
                             <i class="fas fa-save me-2"></i>
-                            Save Special Payments
+                            Save All Changes
+                        </button>
+                        <button class="btn btn-success" id="generatePdfBtn">
+                            <i class="fas fa-file-pdf me-2"></i>
+                            Generate PDF Receipt
                         </button>
                         <button class="btn btn-secondary" id="refreshBtn">
                             <i class="fas fa-sync-alt me-2"></i>
@@ -562,43 +629,17 @@
 
         const auth = firebase.auth();
         const db = firebase.firestore();
+        const { jsPDF } = window.jspdf;
 
         let allMembers = [];
-        let paymentAmount = 500; // Default amount
-
-        // ✅ FIXED: Load amount from cache first
-        async function loadSpecialPaymentAmount() {
-            try {
-                // 1. First check localStorage for cached amount
-                const cachedAmount = localStorage.getItem('specialPaymentAmount');
-                if (cachedAmount) {
-                    paymentAmount = parseInt(cachedAmount);
-                    document.getElementById('paymentAmount').value = paymentAmount;
-                    console.log('Loaded from cache:', paymentAmount);
-                }
-                
-                // 2. Then try to get from Firebase
-                const settingsDoc = await db.collection('settings').doc('specialPayment').get();
-                if (settingsDoc.exists()) {
-                    const dbAmount = settingsDoc.data().amount || 500;
-                    paymentAmount = dbAmount;
-                    document.getElementById('paymentAmount').value = paymentAmount;
-                    
-                    // ✅ Update localStorage with fresh value
-                    localStorage.setItem('specialPaymentAmount', paymentAmount);
-                    console.log('Loaded from Firebase and cached:', paymentAmount);
-                }
-                
-            } catch (error) {
-                console.log('Using default amount:', paymentAmount);
-            }
-        }
+        let defaultAmount = 500;
+        let narration = "Special Contribution";
 
         // Show loading spinner
         function showLoading() {
             document.getElementById('loadingSpinner').style.display = 'block';
             document.getElementById('statsContainer').style.display = 'none';
-            document.getElementById('amountControl').style.display = 'none';
+            document.getElementById('adminControls').style.display = 'none';
             document.getElementById('totalAmountDisplay').style.display = 'none';
             document.getElementById('searchFilter').style.display = 'none';
             document.getElementById('actionButtons').style.display = 'none';
@@ -609,7 +650,7 @@
         function hideLoading() {
             document.getElementById('loadingSpinner').style.display = 'none';
             document.getElementById('statsContainer').style.display = 'flex';
-            document.getElementById('amountControl').style.display = 'flex';
+            document.getElementById('adminControls').style.display = 'block';
             document.getElementById('totalAmountDisplay').style.display = 'block';
             document.getElementById('searchFilter').style.display = 'flex';
             document.getElementById('actionButtons').style.display = 'flex';
@@ -627,7 +668,7 @@
             document.getElementById('errorMessage').style.display = 'none';
         }
 
-        // Auth State Listener - SIMPLIFIED VERSION
+        // Auth State Listener
         auth.onAuthStateChanged(async (user) => {
             if (!user) {
                 window.location.href = 'login.html';
@@ -638,10 +679,10 @@
             hideError();
 
             try {
-                // ✅ FIXED: First load payment amount
-                await loadSpecialPaymentAmount();
+                // Load settings
+                await loadSettings();
                 
-                // Then load members
+                // Load members
                 await loadMembers();
                 hideLoading();
                 
@@ -652,12 +693,123 @@
             }
         });
 
-        // Load all members and their special payment status
-        const loadMembers = async () => {
+        // Load settings
+        async function loadSettings() {
+            try {
+                // Try to get from localStorage first
+                const cachedAmount = localStorage.getItem('specialDefaultAmount');
+                const cachedNarration = localStorage.getItem('specialNarration');
+                
+                if (cachedAmount) {
+                    defaultAmount = parseInt(cachedAmount);
+                    document.getElementById('defaultAmount').value = defaultAmount;
+                }
+                
+                if (cachedNarration) {
+                    narration = cachedNarration;
+                    document.getElementById('narration').value = narration;
+                    document.getElementById('currentNarration').textContent = narration;
+                }
+                
+                // Try to get from Firebase
+                try {
+                    const settingsDoc = await db.collection('settings').doc('specialPayment').get();
+                    if (settingsDoc.exists()) {
+                        const data = settingsDoc.data();
+                        
+                        if (data.defaultAmount) {
+                            defaultAmount = data.defaultAmount;
+                            document.getElementById('defaultAmount').value = defaultAmount;
+                            localStorage.setItem('specialDefaultAmount', defaultAmount);
+                        }
+                        
+                        if (data.narration) {
+                            narration = data.narration;
+                            document.getElementById('narration').value = narration;
+                            document.getElementById('currentNarration').textContent = narration;
+                            localStorage.setItem('specialNarration', narration);
+                        }
+                    }
+                } catch (firebaseError) {
+                    console.log('Using cached settings');
+                }
+                
+            } catch (error) {
+                console.log('Error loading settings:', error);
+            }
+        }
+
+        // Set default amount
+        async function setDefaultAmount() {
+            const newAmount = parseInt(document.getElementById('defaultAmount').value);
+            
+            if (isNaN(newAmount) || newAmount < 1) {
+                showError('Please enter a valid amount (minimum ₹1)');
+                return;
+            }
+            
+            defaultAmount = newAmount;
+            
+            // Save to localStorage
+            localStorage.setItem('specialDefaultAmount', defaultAmount);
+            
+            // Try to save to Firebase
+            try {
+                await db.collection('settings')
+                    .doc('specialPayment')
+                    .set({
+                        defaultAmount: defaultAmount,
+                        updatedAt: new Date(),
+                        updatedBy: auth.currentUser.uid
+                    }, { merge: true });
+            } catch (error) {
+                console.log('Saved to localStorage only');
+            }
+            
+            alert(`✅ Default amount set to ₹${defaultAmount}`);
+            
+            // Update all members with new default amount
+            updateAllMemberAmounts();
+        }
+
+        // Set narration
+        async function setNarration() {
+            const newNarration = document.getElementById('narration').value.trim();
+            
+            if (!newNarration) {
+                showError('Please enter a narration');
+                return;
+            }
+            
+            narration = newNarration;
+            document.getElementById('currentNarration').textContent = narration;
+            
+            // Save to localStorage
+            localStorage.setItem('specialNarration', narration);
+            
+            // Try to save to Firebase
+            try {
+                await db.collection('settings')
+                    .doc('specialPayment')
+                    .set({
+                        narration: narration,
+                        updatedAt: new Date(),
+                        updatedBy: auth.currentUser.uid
+                    }, { merge: true });
+            } catch (error) {
+                console.log('Saved to localStorage only');
+            }
+            
+            alert(`✅ Narration set to: "${narration}"`);
+        }
+
+        // Load all members
+        async function loadMembers() {
             try {
                 const usersSnap = await db.collection('users').get();
                 allMembers = [];
                 
+                let slNo = 1;
                 for (let i = 0; i < usersSnap.docs.length; i++) {
                     const userDoc = usersSnap.docs[i];
                     const userData = userDoc.data();
@@ -666,17 +818,19 @@
                     if (!userData.memberNumber) continue;
                     
                     const speakerPaid = userData.speakerPaid || false;
+                    const speakerAmount = userData.speakerAmount || defaultAmount;
                     
                     allMembers.push({
+                        slNo: slNo++,
                         id: userDoc.id,
                         memberNumber: userData.memberNumber || 'N/A',
                         name: userData.memberName || userData.name || 'Unknown',
-                        speakerPaid: speakerPaid, // Using speakerPaid field
-                        amount: userData.speakerAmount || paymentAmount // Using current paymentAmount
+                        speakerPaid: speakerPaid,
+                        speakerAmount: speakerAmount,
+                        date: userData.specialPaidDate || null
                     });
                 }
                 
-                // ✅ Update stats immediately
                 updateStats();
                 calculateTotalAmount();
                 renderMemberTable();
@@ -685,7 +839,7 @@
                 console.error('Error loading members:', error);
                 showError('Error loading member data: ' + error.message);
             }
-        };
+        }
 
         // Update statistics
         const updateStats = () => {
@@ -698,14 +852,24 @@
             document.getElementById('specialPending').textContent = specialPending;
         };
 
-        // Calculate and display total amount
+        // Calculate total collected amount
         const calculateTotalAmount = () => {
-            const specialPaidCount = allMembers.filter(m => m.speakerPaid).length;
-            const totalAmount = specialPaidCount * paymentAmount;
+            const specialPaidMembers = allMembers.filter(m => m.speakerPaid);
+            const totalAmount = specialPaidMembers.reduce((sum, member) => sum + (member.speakerAmount || defaultAmount), 0);
             document.getElementById('totalAmount').textContent = totalAmount.toFixed(2);
         };
 
-        // Render member table - ✅ FIXED TO SHOW CURRENT AMOUNT
+        // Update all member amounts with default amount
+        function updateAllMemberAmounts() {
+            allMembers.forEach(member => {
+                if (!member.speakerPaid) {
+                    member.speakerAmount = defaultAmount;
+                }
+            });
+            renderMemberTable();
+        }
+
+        // Render member table
         const renderMemberTable = (filteredMembers = allMembers) => {
             const tableBody = document.getElementById('memberTableBody');
             tableBody.innerHTML = '';
@@ -713,30 +877,40 @@
             if (filteredMembers.length === 0) {
                 tableBody.innerHTML = `
                     <tr>
-                        <td colspan="4" class="text-center py-4">No members found</td>
+                        <td colspan="6" class="text-center py-4">No members found</td>
                     </tr>
                 `;
                 return;
             }
             
-            // ✅ FIXED: Show CURRENT paymentAmount for both paid and pending
             filteredMembers.forEach(member => {
-                const memberAmount = member.amount || paymentAmount;
+                const memberAmount = member.speakerAmount || defaultAmount;
                 const specialStatus = member.speakerPaid ? 
-                    `<span class="status-paid"><i class="fas fa-check-circle me-1"></i>Paid (₹${memberAmount})</span>` : 
-                    `<span class="status-pending"><i class="fas fa-clock me-1"></i>Pending (₹${paymentAmount})</span>`;
+                    `<span class="status-paid"><i class="fas fa-check-circle me-1"></i>Paid</span>` : 
+                    `<span class="status-pending"><i class="fas fa-clock me-1"></i>Pending</span>`;
+                
+                const dateDisplay = member.date ? 
+                    new Date(member.date.toDate ? member.date.toDate() : member.date).toLocaleDateString() : '-';
                 
                 tableBody.innerHTML += `
                     <tr>
+                        <td>${member.slNo}</td>
                         <td>${member.memberNumber}</td>
                         <td>${member.name}</td>
-                        <td>${specialStatus}</td>
+                        <td>${specialStatus}<br><small class="text-muted">${dateDisplay}</small></td>
+                        <td>
+                            <input type="number" class="member-amount-input" 
+                                   data-userid="${member.id}" 
+                                   value="${memberAmount}" 
+                                   min="1" 
+                                   ${member.speakerPaid ? 'readonly' : ''}>
+                        </td>
                         <td>
                             <div class="form-check form-switch">
                                 <input class="form-check-input special-checkbox" type="checkbox" 
                                     data-userid="${member.id}" ${member.speakerPaid ? 'checked' : ''}
                                     style="width: 3em; height: 1.5em; cursor: pointer;">
-                                <label class="form-check-label">Mark as Paid</label>
+                                <label class="form-check-label">${member.speakerPaid ? 'Paid' : 'Mark Paid'}</label>
                             </div>
                         </td>
                     </tr>
@@ -744,7 +918,7 @@
             });
         };
 
-        // Filter members based on search and filter criteria
+        // Filter members
         const filterMembers = () => {
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             const paymentFilter = document.getElementById('paymentFilter').value;
@@ -769,48 +943,10 @@
             renderMemberTable(filtered);
         };
 
-        // ✅ FIXED: Set payment amount with proper caching
-        const setPaymentAmount = async () => {
-            const newAmount = parseInt(document.getElementById('paymentAmount').value);
-            
-            if (isNaN(newAmount) || newAmount < 1) {
-                showError('Please enter a valid amount (minimum ₹1)');
-                return;
-            }
-            
-            showLoading();
-            
-            try {
-                paymentAmount = newAmount;
-                
-                // ✅ FIXED: Save to Firebase settings
-                await db.collection('settings')
-                    .doc('specialPayment')
-                    .set({
-                        amount: paymentAmount,
-                        updatedAt: new Date()
-                    });
-                
-                // ✅ FIXED: Save to localStorage for instant access
-                localStorage.setItem('specialPaymentAmount', paymentAmount);
-                
-                hideLoading();
-                alert(`✅ Special payment amount set to ₹${paymentAmount}`);
-                
-                // ✅ FIXED: Update UI without reloading entire page
-                calculateTotalAmount();
-                renderMemberTable();
-                
-            } catch (error) {
-                hideLoading();
-                console.error('Error setting amount:', error);
-                showError('Error setting amount: ' + error.message);
-            }
-        };
-
-        // Save special payment changes to Firebase
+        // Save all changes
         const saveChanges = async () => {
             const specialCheckboxes = document.querySelectorAll('.special-checkbox');
+            const amountInputs = document.querySelectorAll('.member-amount-input');
             
             showLoading();
             
@@ -820,13 +956,25 @@
                 for (let i = 0; i < specialCheckboxes.length; i++) {
                     const userId = specialCheckboxes[i].dataset.userid;
                     const speakerPaid = specialCheckboxes[i].checked;
+                    const amount = parseInt(amountInputs[i].value) || defaultAmount;
+                    
+                    // Find member to check current status
+                    const member = allMembers.find(m => m.id === userId);
+                    
+                    // Prepare update data
+                    const updateData = {
+                        speakerPaid: speakerPaid,
+                        speakerAmount: amount
+                    };
+                    
+                    // Add date only if just marked as paid
+                    if (speakerPaid && (!member || !member.speakerPaid)) {
+                        updateData.specialPaidDate = new Date();
+                    }
                     
                     await db.collection('users')
                         .doc(userId)
-                        .update({
-                            speakerPaid: speakerPaid,
-                            speakerAmount: paymentAmount
-                        });
+                        .update(updateData);
                     
                     updatedCount++;
                 }
@@ -834,7 +982,7 @@
                 hideLoading();
                 alert(`✅ Special payment status updated for ${updatedCount} members!`);
                 
-                // Reload only the necessary data
+                // Reload data
                 await loadMembers();
                 
             } catch (error) {
@@ -842,6 +990,114 @@
                 console.error('Error saving changes:', error);
                 showError('Error saving changes: ' + error.message);
             }
+        };
+
+        // Generate PDF Receipt
+        const generatePdfReceipt = () => {
+            if (allMembers.length === 0) {
+                alert('No member data available');
+                return;
+            }
+            
+            const doc = new jsPDF();
+            
+            // Title
+            doc.setFontSize(20);
+            doc.setTextColor(0, 102, 204); // Blue color
+            doc.setFont('helvetica', 'bold');
+            doc.text('SHIPYARD NAGAR RESIDENCE ASSOCIATION', 105, 20, { align: 'center' });
+            
+            // Narration
+            doc.setFontSize(12);
+            doc.setTextColor(102, 102, 102); // Gray color
+            doc.setFont('helvetica', 'normal');
+            doc.text(narration.toUpperCase(), 105, 30, { align: 'center' });
+            
+            // Date
+            const today = new Date();
+            const dateStr = today.toLocaleDateString('en-IN', { 
+                day: '2-digit', 
+                month: 'short', 
+                year: 'numeric' 
+            });
+            doc.setFontSize(10);
+            doc.setTextColor(102, 102, 102);
+            doc.text(`Generated on: ${dateStr}`, 105, 38, { align: 'center' });
+            
+            // Line
+            doc.setDrawColor(0, 102, 204);
+            doc.setLineWidth(0.5);
+            doc.line(20, 42, 190, 42);
+            
+            // Prepare table data
+            const tableData = allMembers.map(member => {
+                const amount = member.speakerAmount || defaultAmount;
+                const date = member.date ? 
+                    new Date(member.date.toDate ? member.date.toDate() : member.date).toLocaleDateString() : 'Not Paid';
+                
+                return [
+                    member.slNo,
+                    member.memberNumber,
+                    member.name,
+                    member.speakerPaid ? 'PAID' : 'PENDING',
+                    `₹${amount}`,
+                    date
+                ];
+            });
+            
+            // Generate table
+            doc.autoTable({
+                startY: 45,
+                head: [['SL No', 'Member No', 'Name', 'Status', 'Amount', 'Date']],
+                body: tableData,
+                theme: 'striped',
+                headStyles: {
+                    fillColor: [0, 102, 204],
+                    textColor: [255, 255, 255],
+                    fontStyle: 'bold'
+                },
+                bodyStyles: {
+                    textColor: [0, 0, 0]
+                },
+                alternateRowStyles: {
+                    fillColor: [245, 245, 245]
+                },
+                didParseCell: function(data) {
+                    if (data.section === 'body' && data.row.index >= 0) {
+                        const member = allMembers[data.row.index];
+                        
+                        // Paid members in dark green
+                        if (member.speakerPaid) {
+                            data.cell.styles.textColor = [0, 128, 0]; // Dark green
+                            data.cell.styles.fontStyle = 'bold';
+                        } else {
+                            // Pending members in red
+                            data.cell.styles.textColor = [255, 0, 0]; // Red
+                        }
+                    }
+                },
+                margin: { left: 10, right: 10 }
+            });
+            
+            // Total amount
+            const finalY = doc.lastAutoTable.finalY + 10;
+            doc.setFontSize(12);
+            doc.setTextColor(0, 102, 204);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Total Collected:', 140, finalY);
+            doc.text(`₹${document.getElementById('totalAmount').textContent}`, 180, finalY, { align: 'right' });
+            
+            // Treasurer signature
+            doc.setFontSize(10);
+            doc.setTextColor(102, 102, 102);
+            doc.setFont('helvetica', 'normal');
+            doc.text('Treasurer', 180, finalY + 20, { align: 'right' });
+            doc.setLineWidth(0.2);
+            doc.line(160, finalY + 22, 190, finalY + 22);
+            
+            // Save PDF
+            const fileName = `Special_Payment_${today.getFullYear()}_${today.getMonth()+1}_${today.getDate()}.pdf`;
+            doc.save(fileName);
         };
 
         // Event Listeners
@@ -852,8 +1108,9 @@
             showLoading();
             loadMembers();
         });
-        document.getElementById('setAmountBtn').addEventListener('click', setPaymentAmount);
-        document.getElementById('paymentAmount').addEventListener('change', setPaymentAmount);
+        document.getElementById('setDefaultAmountBtn').addEventListener('click', setDefaultAmount);
+        document.getElementById('setNarrationBtn').addEventListener('click', setNarration);
+        document.getElementById('generatePdfBtn').addEventListener('click', generatePdfReceipt);
 
         // Theme Toggle
         const themeToggle = document.getElementById('themeToggle');
@@ -865,11 +1122,10 @@
                 html.setAttribute('data-theme', newTheme);
                 localStorage.setItem('theme', newTheme);
                 
-                // Update button emoji
                 themeToggle.textContent = newTheme === 'light' ? '🌞' : '🌙';
             });
 
-            // Set initial theme and button
+            // Set initial theme
             const savedTheme = localStorage.getItem('theme') || 'light';
             document.documentElement.setAttribute('data-theme', savedTheme);
             themeToggle.textContent = savedTheme === 'light' ? '🌞' : '🌙';
