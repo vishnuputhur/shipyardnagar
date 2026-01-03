@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- jsPDF Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <style>
         :root {
             --primary-orange: #FF6B35;
@@ -162,29 +161,15 @@
         }
 
         /* Loading Spinner */
-        .loading-spinner {
+        #loadingSpinner {
             display: none;
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
+            font-size: 2rem;
+            color: #0288d1;
             z-index: 9999;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: var(--shadow);
-        }
-
-        /* Error Message */
-        .error-message {
-            display: none;
-            background: #f8d7da;
-            color: #721c24;
-            padding: 12px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            text-align: center;
-            font-size: 0.85rem;
         }
 
         /* Admin buttons */
@@ -206,7 +191,6 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            cursor: pointer;
         }
 
         .admin-btn::before {
@@ -230,7 +214,7 @@
             left: 100%;
         }
 
-        /* Wealth Display */
+        /* Wealth Display - ORIGINAL STYLE */
         .wealth-display {
             background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%);
             color: white;
@@ -290,7 +274,7 @@
             box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.2);
         }
 
-        /* Transactions List */
+        /* Transactions List - ORIGINAL STYLE */
         .transactions-list {
             max-height: 400px;
             overflow-y: auto;
@@ -377,22 +361,6 @@
 
         .edit-btn:hover {
             background: #e0a800;
-            transform: translateY(-1px);
-        }
-
-        .delete-btn {
-            background: #dc3545;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 6px 12px;
-            font-size: 0.8rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .delete-btn:hover {
-            background: #c82333;
             transform: translateY(-1px);
         }
 
@@ -519,17 +487,6 @@
                         Wealth Management
                     </div>
                     
-                    <!-- Error Message -->
-                    <div class="error-message" id="errorMessage"></div>
-
-                    <!-- Loading Spinner -->
-                    <div class="loading-spinner" id="loadingSpinner">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                        <p class="mt-2">Loading...</p>
-                    </div>
-
                     <!-- Year Selector -->
                     <div class="year-selector">
                         <label for="yearSelect">Select Year:</label>
@@ -546,10 +503,10 @@
                         </button>
                     </div>
 
-                    <!-- Wealth Display -->
+                    <!-- Wealth Display - ORIGINAL -->
                     <div class="wealth-display">
                         <div class="wealth-label">OUR WEALTH</div>
-                        <div class="wealth-amount" id="totalWealth">0.00</div>
+                        <div class="wealth-amount" id="totalWealth">₹0</div>
                     </div>
 
                     <!-- Add Income Form -->
@@ -602,9 +559,9 @@
                         </form>
                     </div>
 
-                    <!-- Recent Transactions -->
+                    <!-- Recent Transactions - ORIGINAL (Last 15) -->
                     <div class="card">
-                        <h5>Recent Transactions</h5>
+                        <h5>Recent Transactions (Last 15)</h5>
                         <div class="transactions-list" id="transactionsList">
                             <!-- Transactions will be loaded here -->
                         </div>
@@ -621,6 +578,9 @@
         </div>
         <button id="themeToggle" class="theme-toggle-btn">🌞</button>
     </footer>
+
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner">⏳ Loading...</div>
 
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
@@ -651,38 +611,8 @@
         let allTransactions = [];
         let selectedYear = new Date().getFullYear();
         let transactionToDelete = null;
-
-        // Show loading spinner
-        function showLoading() {
-            document.getElementById('loadingSpinner').style.display = 'block';
-        }
-
-        // Hide loading spinner
-        function hideLoading() {
-            document.getElementById('loadingSpinner').style.display = 'none';
-        }
-
-        // Show error message
-        function showError(message) {
-            const errorDiv = document.getElementById('errorMessage');
-            errorDiv.textContent = message;
-            errorDiv.style.display = 'block';
-        }
-
-        // Hide error message
-        function hideError() {
-            document.getElementById('errorMessage').style.display = 'none';
-        }
-
-        // Round to 2 decimal places
-        function roundToTwo(num) {
-            return Math.round((num + Number.EPSILON) * 100) / 100;
-        }
-
-        // Format number with 2 decimal places
-        function formatNumber(num) {
-            return roundToTwo(num).toFixed(2);
-        }
+        let transactionToEdit = null;
+        let isEditing = false;
 
         // Set default date to today
         function setDefaultDates() {
@@ -696,8 +626,17 @@
             const yearSelect = document.getElementById('yearSelect');
             const currentYear = new Date().getFullYear();
             
-            // Add last 5 years and next 5 years
-            for (let year = currentYear - 5; year <= currentYear + 5; year++) {
+            yearSelect.innerHTML = '<option value="all">All Years</option>';
+            
+            // Add available years from transactions
+            const years = new Set();
+            allTransactions.forEach(transaction => {
+                const year = new Date(transaction.date).getFullYear();
+                years.add(year);
+            });
+            
+            // Add years in descending order
+            Array.from(years).sort((a, b) => b - a).forEach(year => {
                 const option = document.createElement('option');
                 option.value = year;
                 option.textContent = year;
@@ -705,42 +644,33 @@
                     option.selected = true;
                 }
                 yearSelect.appendChild(option);
-            }
-        }
-
-        // Filter transactions by selected year
-        function filterTransactionsByYear() {
-            const filtered = allTransactions.filter(transaction => {
-                const transactionYear = new Date(transaction.date).getFullYear();
-                return transactionYear === selectedYear;
             });
-            return filtered;
         }
 
-        // Calculate wealth for selected year
-        function calculateWealthForYear() {
-            const filteredTransactions = filterTransactionsByYear();
-            
+        // Calculate total wealth
+        function calculateTotalWealth() {
             let totalIncome = 0;
             let totalExpense = 0;
             
-            filteredTransactions.forEach(transaction => {
+            allTransactions.forEach(transaction => {
                 if (transaction.type === 'income') {
                     totalIncome += transaction.amount;
-                } else {
+                } else if (transaction.type === 'expense') {
                     totalExpense += transaction.amount;
                 }
             });
             
-            const wealth = totalIncome - totalExpense;
-            document.getElementById('totalWealth').textContent = formatNumber(wealth);
+            const totalWealth = totalIncome - totalExpense;
+            document.getElementById('totalWealth').textContent = '₹' + totalWealth.toLocaleString();
             
-            return { totalIncome, totalExpense, wealth };
+            return { totalIncome, totalExpense, totalWealth };
         }
 
         // Load all transactions
         async function loadTransactions() {
-            showLoading();
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            loadingSpinner.style.display = 'block';
+            
             try {
                 const transactionsSnapshot = await db.collection('transactions')
                     .orderBy('date', 'desc')
@@ -750,7 +680,7 @@
                 transactionsSnapshot.forEach(doc => {
                     const transaction = doc.data();
                     transaction.id = doc.id;
-                    transaction.amount = roundToTwo(transaction.amount);
+                    transaction.amount = parseFloat(transaction.amount) || 0;
                     allTransactions.push(transaction);
                 });
                 
@@ -758,32 +688,33 @@
                 populateYears();
                 
                 // Calculate and display wealth
-                calculateWealthForYear();
+                calculateTotalWealth();
                 
-                // Display transactions for selected year
-                displayTransactions();
+                // Display recent transactions (last 15)
+                displayRecentTransactions();
                 
             } catch (error) {
                 console.error('Error loading transactions:', error);
-                showError('Error loading transactions: ' + error.message);
             } finally {
-                hideLoading();
+                loadingSpinner.style.display = 'none';
             }
         }
 
-        // Display transactions for selected year
-        function displayTransactions() {
+        // Display recent transactions (last 15)
+        function displayRecentTransactions() {
             const transactionsList = document.getElementById('transactionsList');
-            const filteredTransactions = filterTransactionsByYear();
             
-            if (filteredTransactions.length === 0) {
-                transactionsList.innerHTML = '<div class="text-center p-3">No transactions found for ' + selectedYear + '</div>';
+            // Get last 15 transactions
+            const recentTransactions = allTransactions.slice(0, 15);
+            
+            if (recentTransactions.length === 0) {
+                transactionsList.innerHTML = '<div class="text-center p-3">No transactions found</div>';
                 return;
             }
             
             transactionsList.innerHTML = '';
             
-            filteredTransactions.forEach(transaction => {
+            recentTransactions.forEach(transaction => {
                 const transactionItem = document.createElement('div');
                 transactionItem.className = 'transaction-item';
                 
@@ -796,9 +727,12 @@
                         <div class="transaction-narration">${transaction.narration}</div>
                         <div class="transaction-date">${transaction.date}</div>
                     </div>
-                    <div class="transaction-amount ${typeClass}">${formatNumber(transaction.amount)}</div>
+                    <div class="transaction-amount ${typeClass}">₹${transaction.amount.toLocaleString()}</div>
                     <div class="transaction-actions">
-                        <button class="delete-btn" onclick="showDeleteConfirmation('${transaction.id}', '${transaction.date} - ${transaction.narration} - ${formatNumber(transaction.amount)}')">
+                        <button class="edit-btn" onclick="editTransaction('${transaction.id}')">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="edit-btn" style="background: #dc3545; color: white;" onclick="showDeleteConfirmation('${transaction.id}', '${transaction.date} - ${transaction.narration} - ₹${transaction.amount}')">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
@@ -807,6 +741,41 @@
                 transactionsList.appendChild(transactionItem);
             });
         }
+
+        // Edit transaction - FIXED
+        window.editTransaction = async function(transactionId) {
+            try {
+                const transactionDoc = await db.collection('transactions').doc(transactionId).get();
+                if (!transactionDoc.exists) {
+                    alert('Transaction not found');
+                    return;
+                }
+                
+                const transaction = transactionDoc.data();
+                transactionToEdit = transactionId;
+                isEditing = true;
+                
+                // Fill form with transaction data
+                if (transaction.type === 'income') {
+                    document.getElementById('incomeDate').value = transaction.date;
+                    document.getElementById('incomeNarration').value = transaction.narration;
+                    document.getElementById('incomeAmount').value = transaction.amount;
+                    
+                    // Change form button to "Update Income"
+                    document.querySelector('#incomeForm button').innerHTML = '<i class="fas fa-save me-2"></i> Update Income';
+                } else {
+                    document.getElementById('expenseDate').value = transaction.date;
+                    document.getElementById('expenseNarration').value = transaction.narration;
+                    document.getElementById('expenseAmount').value = transaction.amount;
+                    
+                    // Change form button to "Update Expense"
+                    document.querySelector('#expenseForm button').innerHTML = '<i class="fas fa-save me-2"></i> Update Expense';
+                }
+                
+            } catch (error) {
+                console.error('Error loading transaction:', error);
+            }
+        };
 
         // Show delete confirmation modal
         window.showDeleteConfirmation = function(transactionId, transactionInfo) {
@@ -825,7 +794,9 @@
         async function deleteTransaction() {
             if (!transactionToDelete) return;
             
-            showLoading();
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            loadingSpinner.style.display = 'block';
+            
             try {
                 await db.collection('transactions').doc(transactionToDelete).delete();
                 
@@ -834,83 +805,112 @@
                 
             } catch (error) {
                 console.error('Error deleting transaction:', error);
-                showError('Error deleting transaction: ' + error.message);
             } finally {
-                hideLoading();
+                loadingSpinner.style.display = 'none';
                 hideConfirmationModal();
             }
         }
 
-        // Generate Annual Report PDF
+        // Generate Annual Report PDF - FIXED (Two columns, month wise totals)
         function generateAnnualReport() {
-            const filteredTransactions = filterTransactionsByYear();
+            if (selectedYear === 'all') {
+                alert('Please select a specific year for the report');
+                return;
+            }
             
-            // Group transactions by month
+            // Filter transactions for selected year
+            const yearTransactions = allTransactions.filter(transaction => {
+                const transactionYear = new Date(transaction.date).getFullYear();
+                return transactionYear === parseInt(selectedYear);
+            });
+            
+            // Group by month
             const monthlyData = {};
-            let totalIncome = 0;
-            let totalExpense = 0;
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+                               'July', 'August', 'September', 'October', 'November', 'December'];
             
-            filteredTransactions.forEach(transaction => {
-                const date = new Date(transaction.date);
-                const month = date.getMonth(); // 0-11
-                const monthName = date.toLocaleString('default', { month: 'long' });
-                
-                if (!monthlyData[month]) {
-                    monthlyData[month] = {
-                        monthName: monthName,
-                        incomes: [],
-                        expenses: [],
-                        monthIncome: 0,
-                        monthExpense: 0
-                    };
-                }
-                
+            // Initialize months
+            for (let i = 0; i < 12; i++) {
+                monthlyData[i] = {
+                    monthName: monthNames[i],
+                    incomeTotal: 0,
+                    expenseTotal: 0
+                };
+            }
+            
+            // Calculate month wise totals
+            yearTransactions.forEach(transaction => {
+                const month = new Date(transaction.date).getMonth();
                 if (transaction.type === 'income') {
-                    monthlyData[month].incomes.push(transaction);
-                    monthlyData[month].monthIncome += transaction.amount;
-                    totalIncome += transaction.amount;
-                } else {
-                    monthlyData[month].expenses.push(transaction);
-                    monthlyData[month].monthExpense += transaction.amount;
-                    totalExpense += transaction.amount;
+                    monthlyData[month].incomeTotal += transaction.amount;
+                } else if (transaction.type === 'expense') {
+                    monthlyData[month].expenseTotal += transaction.amount;
                 }
             });
             
+            // Calculate year totals
+            let yearIncomeTotal = 0;
+            let yearExpenseTotal = 0;
+            
+            Object.values(monthlyData).forEach(monthData => {
+                yearIncomeTotal += monthData.incomeTotal;
+                yearExpenseTotal += monthData.expenseTotal;
+            });
+            
+            const yearBalance = yearIncomeTotal - yearExpenseTotal;
+            
+            // Create PDF
             const doc = new jsPDF();
             const pageWidth = doc.internal.pageSize.width;
             const pageHeight = doc.internal.pageSize.height;
             const margin = 8; // 8mm margin
             
-            // Convert mm to points
+            // Convert mm to points (1mm = 2.83465 points)
             const marginPoints = margin * 2.83465;
             
             // Draw border around page
-            doc.setDrawColor(0, 102, 204);
+            doc.setDrawColor(0, 102, 204); // Blue border
             doc.setLineWidth(0.5);
             doc.rect(marginPoints, marginPoints, pageWidth - (marginPoints * 2), pageHeight - (marginPoints * 2));
             
-            // Title in BLUE
+            // Title - BLUE COLOR
             doc.setFontSize(18);
-            doc.setTextColor(0, 102, 204);
+            doc.setTextColor(0, 102, 204); // Blue color
             doc.setFont('helvetica', 'bold');
             doc.text('SHIPYARD NAGAR RESIDENCE ASSOCIATION', pageWidth / 2, marginPoints + 10, { align: 'center' });
             
             // Year Report
             doc.setFontSize(14);
-            doc.setTextColor(0, 0, 0);
+            doc.setTextColor(0, 0, 0); // Black
+            doc.setFont('helvetica', 'bold');
             doc.text(`ANNUAL REPORT - ${selectedYear}`, pageWidth / 2, marginPoints + 18, { align: 'center' });
             
-            let currentY = marginPoints + 28;
+            // Line
+            doc.setDrawColor(0, 102, 204);
+            doc.setLineWidth(0.5);
+            doc.line(marginPoints + 10, marginPoints + 24, pageWidth - marginPoints - 10, marginPoints + 24);
             
-            // Sort months
-            const sortedMonths = Object.keys(monthlyData).sort((a, b) => a - b);
+            // Start position for content
+            let currentY = marginPoints + 32;
             
-            // Process each month
-            sortedMonths.forEach(monthKey => {
-                const monthData = monthlyData[monthKey];
+            // Month-wise totals in two columns
+            doc.setFontSize(10);
+            doc.setTextColor(0, 0, 0);
+            
+            // Column headers
+            doc.setFont('helvetica', 'bold');
+            doc.text('INCOME', marginPoints + 20, currentY);
+            doc.text('EXPENSE', pageWidth / 2 + 20, currentY);
+            currentY += 8;
+            
+            // Month data
+            doc.setFont('helvetica', 'normal');
+            for (let month = 0; month < 12; month++) {
+                const monthData = monthlyData[month];
+                const monthAbbr = monthData.monthName.substring(0, 3);
                 
-                // Check if we need new page
-                if (currentY > pageHeight - marginPoints - 50) {
+                // Check if we need a new page
+                if (currentY > pageHeight - marginPoints - 20) {
                     doc.addPage();
                     currentY = marginPoints + 10;
                     // Draw border on new page
@@ -919,125 +919,77 @@
                     doc.rect(marginPoints, marginPoints, pageWidth - (marginPoints * 2), pageHeight - (marginPoints * 2));
                 }
                 
-                // Month header
-                doc.setFontSize(12);
-                doc.setTextColor(0, 0, 0);
-                doc.setFont('helvetica', 'bold');
-                doc.text(`${monthData.monthName.toUpperCase()} ${selectedYear}`, marginPoints + 10, currentY);
-                currentY += 8;
+                // Left column - Income
+                doc.setTextColor(0, 128, 0); // Green for income
+                doc.text(`${monthAbbr}: ${monthData.incomeTotal.toFixed(2)}`, marginPoints + 25, currentY);
                 
-                // Income sub-header
-                doc.setFontSize(10);
-                doc.setTextColor(0, 128, 0);
-                doc.text('INCOME:', marginPoints + 10, currentY);
+                // Right column - Expense
+                doc.setTextColor(255, 0, 0); // Red for expense
+                doc.text(`${monthAbbr}: ${monthData.expenseTotal.toFixed(2)}`, pageWidth / 2 + 25, currentY);
+                
                 currentY += 6;
-                
-                // List individual incomes
-                doc.setFontSize(9);
-                doc.setTextColor(0, 0, 0);
-                doc.setFont('helvetica', 'normal');
-                monthData.incomes.forEach(income => {
-                    const line = `${income.date} - ${income.narration} - ${formatNumber(income.amount)}`;
-                    doc.text(line, marginPoints + 15, currentY);
-                    currentY += 5;
-                });
-                
-                // Month income total
-                doc.setFontSize(9);
-                doc.setTextColor(0, 128, 0);
-                doc.setFont('helvetica', 'bold');
-                doc.text(`Month Income Total: ${formatNumber(monthData.monthIncome)}`, marginPoints + 15, currentY);
-                currentY += 8;
-                
-                // Expense sub-header
-                doc.setTextColor(255, 0, 0);
-                doc.text('EXPENSE:', marginPoints + 10, currentY);
-                currentY += 6;
-                
-                // List individual expenses
-                doc.setFontSize(9);
-                doc.setTextColor(0, 0, 0);
-                doc.setFont('helvetica', 'normal');
-                monthData.expenses.forEach(expense => {
-                    const line = `${expense.date} - ${expense.narration} - ${formatNumber(expense.amount)}`;
-                    doc.text(line, marginPoints + 15, currentY);
-                    currentY += 5;
-                });
-                
-                // Month expense total
-                doc.setFontSize(9);
-                doc.setTextColor(255, 0, 0);
-                doc.setFont('helvetica', 'bold');
-                doc.text(`Month Expense Total: ${formatNumber(monthData.monthExpense)}`, marginPoints + 15, currentY);
-                currentY += 12;
-                
-                // Month balance
-                doc.setFontSize(10);
-                doc.setTextColor(0, 0, 0);
-                doc.setFont('helvetica', 'bold');
-                const monthBalance = monthData.monthIncome - monthData.monthExpense;
-                doc.text(`Month Balance: ${formatNumber(monthBalance)}`, marginPoints + 10, currentY);
-                currentY += 15;
-            });
-            
-            // Final summary
-            if (currentY > pageHeight - marginPoints - 80) {
-                doc.addPage();
-                currentY = marginPoints + 10;
-                // Draw border on new page
-                doc.setDrawColor(0, 102, 204);
-                doc.setLineWidth(0.5);
-                doc.rect(marginPoints, marginPoints, pageWidth - (marginPoints * 2), pageHeight - (marginPoints * 2));
             }
             
-            // Line before summary
-            doc.setDrawColor(0, 0, 0);
-            doc.setLineWidth(0.3);
-            doc.line(marginPoints + 10, currentY, pageWidth - marginPoints - 10, currentY);
+            // Totals section
             currentY += 10;
-            
-            // Year totals
-            doc.setFontSize(12);
-            doc.setTextColor(0, 0, 0);
-            doc.setFont('helvetica', 'bold');
-            doc.text(`YEAR ${selectedYear} SUMMARY`, pageWidth / 2, currentY, { align: 'center' });
-            currentY += 10;
-            
-            // Total Income
-            doc.setFontSize(11);
-            doc.setTextColor(0, 128, 0);
-            doc.text('Total Income:', marginPoints + 10, currentY);
-            doc.text(formatNumber(totalIncome), pageWidth - marginPoints - 10, currentY, { align: 'right' });
-            currentY += 8;
-            
-            // Total Expense
-            doc.setTextColor(255, 0, 0);
-            doc.text('Total Expense:', marginPoints + 10, currentY);
-            doc.text(formatNumber(totalExpense), pageWidth - marginPoints - 10, currentY, { align: 'right' });
-            currentY += 8;
-            
-            // Line
             doc.setDrawColor(0, 0, 0);
             doc.setLineWidth(0.2);
             doc.line(marginPoints + 10, currentY, pageWidth - marginPoints - 10, currentY);
+            currentY += 10;
+            
+            doc.setFontSize(11);
+            doc.setFont('helvetica', 'bold');
+            
+            // Total Income
+            doc.setTextColor(0, 128, 0);
+            doc.text('TOTAL INCOME:', marginPoints + 20, currentY);
+            doc.text(yearIncomeTotal.toFixed(2), marginPoints + 80, currentY);
+            
+            // Total Expense
+            doc.setTextColor(255, 0, 0);
+            doc.text('TOTAL EXPENSE:', pageWidth / 2 + 20, currentY);
+            doc.text(yearExpenseTotal.toFixed(2), pageWidth / 2 + 80, currentY);
+            currentY += 10;
+            
+            // Balance
+            doc.setDrawColor(0, 0, 0);
+            doc.setLineWidth(0.2);
+            doc.line(marginPoints + 10, currentY - 2, pageWidth - marginPoints - 10, currentY - 2);
             currentY += 8;
             
-            // Closing Balance
             doc.setFontSize(12);
             doc.setTextColor(0, 0, 0);
-            doc.setFont('helvetica', 'bold');
-            const closingBalance = totalIncome - totalExpense;
-            doc.text('Closing Balance (Cash in Bank):', marginPoints + 10, currentY);
-            doc.text(formatNumber(closingBalance), pageWidth - marginPoints - 10, currentY, { align: 'right' });
+            doc.text('BALANCE (CASH IN BANK):', marginPoints + 20, currentY);
+            doc.text(yearBalance.toFixed(2), pageWidth - marginPoints - 20, currentY, { align: 'right' });
             currentY += 15;
             
-            // Previous year closing (placeholder - you need to implement this based on actual data)
-            doc.setFontSize(10);
+            // Notes
+            doc.setFontSize(9);
             doc.setTextColor(100, 100, 100);
             doc.setFont('helvetica', 'italic');
-            doc.text(`*Opening Balance (${selectedYear}): To be calculated from ${selectedYear - 1} closing`, marginPoints + 10, currentY);
-            currentY += 6;
-            doc.text(`*Closing Balance (${selectedYear}): ${formatNumber(closingBalance)}`, marginPoints + 10, currentY);
+            
+            // Calculate previous year closing (if available)
+            const prevYear = selectedYear - 1;
+            const prevYearTransactions = allTransactions.filter(transaction => {
+                const transactionYear = new Date(transaction.date).getFullYear();
+                return transactionYear === prevYear;
+            });
+            
+            let prevYearIncome = 0;
+            let prevYearExpense = 0;
+            prevYearTransactions.forEach(transaction => {
+                if (transaction.type === 'income') {
+                    prevYearIncome += transaction.amount;
+                } else if (transaction.type === 'expense') {
+                    prevYearExpense += transaction.amount;
+                }
+            });
+            
+            const prevYearBalance = prevYearIncome - prevYearExpense;
+            
+            doc.text(`Opening Balance (${selectedYear}): ${prevYearBalance.toFixed(2)}`, marginPoints + 10, currentY);
+            currentY += 5;
+            doc.text(`Closing Balance (${selectedYear}): ${yearBalance.toFixed(2)}`, marginPoints + 10, currentY);
             currentY += 15;
             
             // Treasurer signature
@@ -1056,15 +1008,17 @@
             doc.text('This is system generated. No signature required.', pageWidth / 2, footerY, { align: 'center' });
             
             // Save PDF
-            const fileName = `Wealth_Report_${selectedYear}.pdf`;
+            const fileName = `Annual_Report_${selectedYear}.pdf`;
             doc.save(fileName);
         }
 
         // DOM Content Loaded
         document.addEventListener('DOMContentLoaded', () => {
-            // Set default dates
-            setDefaultDates();
+            const loadingSpinner = document.getElementById('loadingSpinner');
             
+            // Set default date to today
+            setDefaultDates();
+
             // Auth State Check
             auth.onAuthStateChanged(async (user) => {
                 if (!user) {
@@ -1078,21 +1032,26 @@
                     return;
                 }
 
+                loadingSpinner.style.display = 'none';
+                
                 // Load initial data
                 loadTransactions();
             });
 
             // Year selection change
             document.getElementById('yearSelect').addEventListener('change', (e) => {
-                selectedYear = parseInt(e.target.value);
-                calculateWealthForYear();
-                displayTransactions();
+                if (e.target.value === 'all') {
+                    selectedYear = 'all';
+                } else {
+                    selectedYear = parseInt(e.target.value);
+                }
+                // For PDF generation only, wealth display is always total
             });
 
             // Generate PDF button
             document.getElementById('generatePdfBtn').addEventListener('click', generateAnnualReport);
 
-            // Add Income
+            // Add/Update Income
             document.getElementById('incomeForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 
@@ -1101,37 +1060,53 @@
                 const amount = parseFloat(document.getElementById('incomeAmount').value);
                 
                 if (!date || !narration || !amount || amount <= 0) {
-                    showError('Please fill all fields with valid values');
                     return;
                 }
                 
-                showLoading();
+                loadingSpinner.style.display = 'block';
                 
                 try {
-                    await db.collection('transactions').add({
-                        type: 'income',
-                        date: date,
-                        narration: narration,
-                        amount: roundToTwo(amount),
-                        createdAt: new Date()
-                    });
+                    if (isEditing && transactionToEdit) {
+                        // Update existing transaction
+                        await db.collection('transactions').doc(transactionToEdit).update({
+                            date: date,
+                            narration: narration,
+                            amount: amount,
+                            type: 'income'
+                        });
+                        
+                        // Reset editing state
+                        isEditing = false;
+                        transactionToEdit = null;
+                        
+                        // Reset button text
+                        document.querySelector('#incomeForm button').innerHTML = '<i class="fas fa-plus-circle me-2"></i> Add Income';
+                    } else {
+                        // Add new transaction
+                        await db.collection('transactions').add({
+                            type: 'income',
+                            date: date,
+                            narration: narration,
+                            amount: amount,
+                            createdAt: new Date()
+                        });
+                    }
                     
                     // Reset form
                     document.getElementById('incomeForm').reset();
                     setDefaultDates();
                     
                     // Reload data
-                    loadTransactions();
+                    await loadTransactions();
                     
                 } catch (error) {
-                    console.error('Error adding income:', error);
-                    showError('Error adding income: ' + error.message);
+                    console.error('Error adding/updating income:', error);
                 } finally {
-                    hideLoading();
+                    loadingSpinner.style.display = 'none';
                 }
             });
 
-            // Add Expense
+            // Add/Update Expense
             document.getElementById('expenseForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 
@@ -1140,33 +1115,49 @@
                 const amount = parseFloat(document.getElementById('expenseAmount').value);
                 
                 if (!date || !narration || !amount || amount <= 0) {
-                    showError('Please fill all fields with valid values');
                     return;
                 }
                 
-                showLoading();
+                loadingSpinner.style.display = 'block';
                 
                 try {
-                    await db.collection('transactions').add({
-                        type: 'expense',
-                        date: date,
-                        narration: narration,
-                        amount: roundToTwo(amount),
-                        createdAt: new Date()
-                    });
+                    if (isEditing && transactionToEdit) {
+                        // Update existing transaction
+                        await db.collection('transactions').doc(transactionToEdit).update({
+                            date: date,
+                            narration: narration,
+                            amount: amount,
+                            type: 'expense'
+                        });
+                        
+                        // Reset editing state
+                        isEditing = false;
+                        transactionToEdit = null;
+                        
+                        // Reset button text
+                        document.querySelector('#expenseForm button').innerHTML = '<i class="fas fa-minus-circle me-2"></i> Add Expense';
+                    } else {
+                        // Add new transaction
+                        await db.collection('transactions').add({
+                            type: 'expense',
+                            date: date,
+                            narration: narration,
+                            amount: amount,
+                            createdAt: new Date()
+                        });
+                    }
                     
                     // Reset form
                     document.getElementById('expenseForm').reset();
                     setDefaultDates();
                     
                     // Reload data
-                    loadTransactions();
+                    await loadTransactions();
                     
                 } catch (error) {
-                    console.error('Error adding expense:', error);
-                    showError('Error adding expense: ' + error.message);
+                    console.error('Error adding/updating expense:', error);
                 } finally {
-                    hideLoading();
+                    loadingSpinner.style.display = 'none';
                 }
             });
 
