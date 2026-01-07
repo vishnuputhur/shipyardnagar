@@ -8,14 +8,10 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Theme Variables */
         :root {
             --primary-orange: #FF6B35;
-            --orange-light: #FF8C42;
-            --orange-dark: #E55A2B;
-            --gradient: linear-gradient(135deg, #FF6B35 0%, #FF8C42 50%, #FFA726 100%);
-            --shadow: 0 8px 25px rgba(255, 107, 53, 0.15);
-            --shadow-hover: 0 12px 35px rgba(255, 107, 53, 0.25);
+            --gradient: linear-gradient(135deg, #FF6B35 0%, #FF8C42 100%);
+            --shadow: 0 4px 15px rgba(255, 107, 53, 0.15);
             --card-bg: rgba(255, 255, 255, 0.95);
         }
 
@@ -27,179 +23,197 @@
             font-family: 'Poppins', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 70px 0 60px 0;
-            position: relative;
-            overflow-x: hidden;
+            padding: 60px 0 40px 0;
             margin: 0;
+            font-size: 14px;
         }
 
         .header-image {
             width: 100%;
             height: auto;
-            max-height: 150px;
+            max-height: 100px;
             object-fit: cover;
             position: fixed;
-            top: 3mm;
+            top: 0;
             left: 0;
             z-index: 1000;
         }
 
         .main-container {
-            max-width: 900px;
+            max-width: 800px;
             margin: 0 auto;
+            padding: 0 10px;
         }
 
         .club-card {
             background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            border-radius: 20px;
-            padding: 20px;
+            border-radius: 12px;
+            padding: 15px;
             box-shadow: var(--shadow);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            margin: 15px;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
         }
 
         .club-title {
             color: var(--primary-orange);
-            font-weight: 700;
-            font-size: 1.8rem;
-            text-align: center;
-            margin-bottom: 20px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .membership-section {
-            text-align: center;
-            padding: 20px;
-            margin: 20px 0;
-        }
-
-        .membership-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin-top: 15px;
-        }
-
-        .club-btn {
-            background: var(--gradient);
-            border: none;
-            border-radius: 12px;
-            padding: 12px 30px;
-            color: white;
             font-weight: 600;
-            font-size: 1rem;
-            box-shadow: var(--shadow);
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-
-        .club-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-hover);
-        }
-
-        .btn-cancel {
-            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-        }
-
-        .btn-skip {
-            background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
-        }
-
-        .stats-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 15px;
-            margin: 20px 0;
-        }
-
-        .stat-card {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            padding: 15px;
-            border-radius: 12px;
+            font-size: 1.2rem;
             text-align: center;
-            border-left: 4px solid var(--primary-orange);
+            margin: 0 0 15px 0;
         }
 
-        [data-theme="dark"] .stat-card {
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin: 10px 0;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 8px 5px;
+            border-radius: 8px;
+            text-align: center;
+            border-left: 3px solid var(--primary-orange);
+            font-size: 0.85rem;
+        }
+
+        [data-theme="dark"] .stat-box {
             background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
         }
 
         .stat-value {
-            font-size: 1.8rem;
-            font-weight: 700;
+            font-size: 1rem;
+            font-weight: 600;
             color: var(--primary-orange);
-            margin: 5px 0;
+            margin: 3px 0;
         }
 
         .stat-label {
-            font-size: 0.9rem;
+            font-size: 0.75rem;
             color: #666;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         [data-theme="dark"] .stat-label {
             color: #ccc;
         }
 
-        .members-table-container {
-            margin: 20px 0;
-            overflow-x: auto;
+        .action-bar {
+            display: flex;
+            gap: 8px;
+            margin: 10px 0;
+            flex-wrap: wrap;
         }
 
-        .members-table {
+        .club-btn {
+            background: var(--gradient);
+            border: none;
+            border-radius: 8px;
+            padding: 8px 12px;
+            color: white;
+            font-weight: 500;
+            font-size: 0.8rem;
+            box-shadow: var(--shadow);
+            transition: all 0.2s ease;
+            cursor: pointer;
+            flex: 1;
+            min-width: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .club-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(255, 107, 53, 0.25);
+        }
+
+        .btn-small {
+            padding: 6px 10px;
+            font-size: 0.75rem;
+            min-width: auto;
+            flex: none;
+        }
+
+        .btn-add {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .btn-pay {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        }
+
+        .btn-exit {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            font-size: 0.7rem;
+            padding: 4px 8px;
+            flex: 0.3;
+            order: 99;
+        }
+
+        .members-table-container {
+            margin: 15px 0;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .mobile-table {
+            display: none;
+        }
+
+        .desktop-table {
             width: 100%;
             border-collapse: collapse;
             background: var(--card-bg);
-            border-radius: 10px;
+            border-radius: 8px;
             overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            font-size: 0.85rem;
         }
 
-        .members-table th {
+        .desktop-table th {
             background: var(--primary-orange);
             color: white;
-            padding: 12px 15px;
+            padding: 8px 10px;
             text-align: left;
             font-weight: 600;
+            font-size: 0.8rem;
         }
 
-        .members-table td {
-            padding: 12px 15px;
+        .desktop-table td {
+            padding: 8px 10px;
             border-bottom: 1px solid #eee;
         }
 
-        [data-theme="dark"] .members-table td {
+        [data-theme="dark"] .desktop-table td {
             border-bottom: 1px solid #444;
         }
 
-        .members-table tr:hover {
+        .desktop-table tr:hover {
             background-color: rgba(255, 107, 53, 0.1);
         }
 
         .current-user {
             background-color: rgba(255, 107, 53, 0.15) !important;
             font-weight: 600;
-            font-size: 1.05rem;
         }
 
         .action-buttons {
             display: flex;
-            gap: 8px;
+            gap: 5px;
+            flex-wrap: wrap;
         }
 
         .action-btn {
-            padding: 6px 12px;
-            border-radius: 6px;
+            padding: 4px 8px;
+            border-radius: 5px;
             border: none;
-            font-size: 0.85rem;
+            font-size: 0.75rem;
             cursor: pointer;
             transition: all 0.2s;
-        }
-
-        .btn-add-expense {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: white;
         }
 
         .btn-edit {
@@ -212,11 +226,160 @@
             color: white;
         }
 
-        .btn-pay {
-            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        .admin-section {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px dashed var(--primary-orange);
+        }
+
+        .admin-title {
+            font-size: 0.9rem;
+            color: var(--primary-orange);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .admin-controls {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .admin-select {
+            flex: 1;
+            min-width: 150px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            font-size: 0.85rem;
+        }
+
+        [data-theme="dark"] .admin-select {
+            background: #333;
+            border-color: #555;
             color: white;
         }
 
+        /* Mobile View */
+        @media (max-width: 768px) {
+            body {
+                padding: 50px 0 40px 0;
+                font-size: 13px;
+            }
+
+            .header-image {
+                max-height: 80px;
+            }
+
+            .club-card {
+                padding: 12px;
+                margin: 0 5px 10px 5px;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 6px;
+            }
+
+            .stat-box {
+                padding: 6px 4px;
+            }
+
+            .stat-value {
+                font-size: 0.9rem;
+            }
+
+            .stat-label {
+                font-size: 0.7rem;
+            }
+
+            .action-bar {
+                gap: 6px;
+            }
+
+            .club-btn {
+                padding: 7px 10px;
+                font-size: 0.75rem;
+                min-width: 80px;
+            }
+
+            .btn-exit {
+                font-size: 0.65rem;
+                padding: 3px 6px;
+                flex: 0.2;
+            }
+
+            .desktop-table {
+                display: none;
+            }
+
+            .mobile-table {
+                display: block;
+            }
+
+            .mobile-member-card {
+                background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+                border-radius: 8px;
+                padding: 10px;
+                margin-bottom: 8px;
+                border-left: 3px solid var(--primary-orange);
+            }
+
+            [data-theme="dark"] .mobile-member-card {
+                background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+            }
+
+            .mobile-member-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 5px;
+            }
+
+            .member-name {
+                font-weight: 600;
+                font-size: 0.85rem;
+            }
+
+            .member-balance {
+                font-weight: 700;
+                font-size: 0.9rem;
+            }
+
+            .mobile-member-details {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 5px;
+                font-size: 0.75rem;
+                margin: 5px 0;
+            }
+
+            .detail-label {
+                color: #666;
+            }
+
+            [data-theme="dark"] .detail-label {
+                color: #ccc;
+            }
+
+            .detail-value {
+                font-weight: 500;
+            }
+
+            .mobile-actions {
+                display: flex;
+                gap: 5px;
+                margin-top: 5px;
+                justify-content: flex-end;
+            }
+
+            .admin-select {
+                min-width: 120px;
+                font-size: 0.8rem;
+            }
+        }
+
+        /* Modal Styles */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -228,34 +391,44 @@
             justify-content: center;
             align-items: center;
             z-index: 1100;
+            padding: 15px;
         }
 
         .modal-content {
             background: var(--card-bg);
-            padding: 25px;
-            border-radius: 15px;
-            max-width: 500px;
-            width: 90%;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 400px;
+            width: 100%;
             max-height: 80vh;
             overflow-y: auto;
+            font-size: 0.9rem;
+        }
+
+        .modal-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--primary-orange);
         }
 
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
 
         .form-group label {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
             font-weight: 500;
+            font-size: 0.85rem;
         }
 
         .form-control {
             width: 100%;
-            padding: 10px;
+            padding: 8px 10px;
             border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 1rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
         }
 
         [data-theme="dark"] .form-control {
@@ -267,8 +440,24 @@
         .modal-buttons {
             display: flex;
             justify-content: flex-end;
-            gap: 10px;
-            margin-top: 20px;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .qrcode-container {
+            text-align: center;
+            margin: 15px 0;
+        }
+
+        .qrcode-placeholder {
+            width: 150px;
+            height: 150px;
+            background: #f0f0f0;
+            margin: 10px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
         }
 
         footer {
@@ -284,7 +473,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 3px 15px;
+            padding: 3px 10px;
             height: 30px;
         }
 
@@ -299,32 +488,12 @@
             background: transparent;
             border: 1px solid #ccc;
             border-radius: 20px;
-            padding: 4px 8px;
+            padding: 3px 8px;
             color: #666;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             transition: all 0.3s ease;
             cursor: pointer;
-            height: 24px;
-        }
-
-        @media (max-width: 768px) {
-            .club-card {
-                margin: 10px;
-                padding: 15px;
-            }
-            
-            .membership-buttons {
-                flex-direction: column;
-                gap: 10px;
-            }
-            
-            .stats-cards {
-                grid-template-columns: 1fr;
-            }
-            
-            .members-table {
-                font-size: 0.9rem;
-            }
+            height: 22px;
         }
     </style>
 </head>
@@ -335,52 +504,53 @@
         <div class="club-card">
             <h1 class="club-title">🏸 Recreation Club</h1>
             
-            <!-- Membership Section -->
-            <div id="membershipSection" class="membership-section" style="display: none;">
-                <h3>Join Recreation Club?</h3>
-                <p>Would you like to become a member of our Recreation Club?</p>
-                <div class="membership-buttons">
-                    <button id="joinBtn" class="club-btn">Yes, Join Now</button>
-                    <button id="skipBtn" class="club-btn btn-skip">No, Skip</button>
+            <!-- Membership Prompt -->
+            <div id="membershipSection" class="membership-section" style="display: none; text-align: center; padding: 20px 0;">
+                <h3 style="font-size: 1rem; margin-bottom: 10px;">Join Recreation Club?</h3>
+                <div style="display: flex; gap: 10px; justify-content: center;">
+                    <button id="joinBtn" class="club-btn">Join Now</button>
+                    <button id="skipBtn" class="club-btn" style="background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);">Skip</button>
                 </div>
             </div>
             
-            <!-- Club Content (Visible only for members) -->
+            <!-- Club Content -->
             <div id="clubContent" style="display: none;">
-                <!-- Statistics Cards -->
-                <div class="stats-cards">
-                    <div class="stat-card">
-                        <div class="stat-label">Total Members</div>
+                <!-- Statistics -->
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-label">Members</div>
                         <div class="stat-value" id="totalMembers">0</div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-label">Total Expenses</div>
-                        <div class="stat-value" id="totalExpenses">₹0</div>
+                    <div class="stat-box">
+                        <div class="stat-label">Total ₹</div>
+                        <div class="stat-value" id="totalExpenses">0</div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-label">Share Per Person</div>
-                        <div class="stat-value" id="sharePerPerson">₹0</div>
+                    <div class="stat-box">
+                        <div class="stat-label">Share ₹</div>
+                        <div class="stat-value" id="sharePerPerson">0</div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-label">Your Balance</div>
-                        <div class="stat-value" id="userBalance">₹0</div>
+                    <div class="stat-box">
+                        <div class="stat-label">Your ₹</div>
+                        <div class="stat-value" id="userBalance">0</div>
                     </div>
                 </div>
                 
                 <!-- Action Buttons -->
-                <div style="text-align: center; margin: 20px 0;">
-                    <button id="addExpenseBtn" class="club-btn" style="margin-right: 10px;">
+                <div class="action-bar">
+                    <button id="addExpenseBtn" class="club-btn btn-add">
                         <i class="fas fa-plus"></i> Add Expense
                     </button>
-                    <button id="cancelMembershipBtn" class="club-btn btn-cancel">
-                        <i class="fas fa-sign-out-alt"></i> Cancel Membership
+                    <button id="viewAllBtn" class="club-btn">
+                        <i class="fas fa-list"></i> All Expenses
+                    </button>
+                    <button id="cancelMembershipBtn" class="club-btn btn-exit">
+                        <i class="fas fa-sign-out-alt"></i> Exit
                     </button>
                 </div>
                 
-                <!-- Members Table -->
+                <!-- Members Table (Desktop) -->
                 <div class="members-table-container">
-                    <h3 style="margin-bottom: 15px;">Members & Balances</h3>
-                    <table class="members-table">
+                    <table class="desktop-table">
                         <thead>
                             <tr>
                                 <th>Name</th>
@@ -394,19 +564,30 @@
                             <!-- Filled by JavaScript -->
                         </tbody>
                     </table>
+                    
+                    <!-- Mobile View -->
+                    <div class="mobile-table" id="mobileMembersList">
+                        <!-- Filled by JavaScript -->
+                    </div>
                 </div>
                 
                 <!-- Admin Section -->
-                <div id="adminSection" style="display: none; margin-top: 30px;">
-                    <h3 style="color: var(--primary-orange); margin-bottom: 15px;">
+                <div id="adminSection" class="admin-section" style="display: none;">
+                    <div class="admin-title">
                         <i class="fas fa-cog"></i> Admin Controls
-                    </h3>
-                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                        <button id="editAllBtn" class="action-btn btn-edit">
-                            <i class="fas fa-edit"></i> Edit All
+                    </div>
+                    <div class="admin-controls">
+                        <select id="addMemberSelect" class="admin-select">
+                            <option value="">Add Member to Club</option>
+                        </select>
+                        <button id="addMemberBtn" class="club-btn btn-small">
+                            <i class="fas fa-user-plus"></i> Add
                         </button>
-                        <button id="deleteAllBtn" class="action-btn btn-delete">
-                            <i class="fas fa-trash"></i> Delete All
+                        <select id="removeMemberSelect" class="admin-select">
+                            <option value="">Remove Member</option>
+                        </select>
+                        <button id="removeMemberBtn" class="club-btn btn-small btn-exit">
+                            <i class="fas fa-user-minus"></i> Remove
                         </button>
                     </div>
                 </div>
@@ -417,11 +598,11 @@
     <!-- Expense Modal -->
     <div id="expenseModal" class="modal-overlay">
         <div class="modal-content">
-            <h3 style="margin-bottom: 20px;">Add Club Expense</h3>
+            <div class="modal-title">Add Club Expense</div>
             <form id="expenseForm">
                 <div class="form-group">
                     <label for="itemName">Item Name</label>
-                    <input type="text" id="itemName" class="form-control" placeholder="e.g., Shuttle Cork, Badminton Net" required>
+                    <input type="text" id="itemName" class="form-control" placeholder="e.g., Shuttle Cork" required>
                 </div>
                 <div class="form-group">
                     <label for="purchasedBy">Purchased By</label>
@@ -438,8 +619,8 @@
                     <input type="date" id="expenseDate" class="form-control" required>
                 </div>
                 <div class="modal-buttons">
-                    <button type="button" id="cancelExpenseBtn" class="club-btn btn-skip">Cancel</button>
-                    <button type="submit" class="club-btn">Save Expense</button>
+                    <button type="button" id="cancelExpenseBtn" class="club-btn" style="background: #6b7280;">Cancel</button>
+                    <button type="submit" class="club-btn">Save</button>
                 </div>
             </form>
         </div>
@@ -448,24 +629,36 @@
     <!-- Payment Modal -->
     <div id="paymentModal" class="modal-overlay">
         <div class="modal-content">
-            <h3 style="margin-bottom: 20px;">Pay Club Due</h3>
-            <div style="text-align: center; padding: 20px;">
-                <div style="font-size: 1.5rem; margin-bottom: 20px;">
-                    Amount Due: <span id="paymentAmount" style="color: var(--primary-orange); font-weight: bold;">₹0</span>
+            <div class="modal-title">Pay Club Due</div>
+            <div class="qrcode-container">
+                <div style="margin-bottom: 10px;">
+                    Amount: <span id="paymentAmount" style="font-weight: 600; color: var(--primary-orange);">₹0</span>
                 </div>
-                <div style="margin-bottom: 20px;">
-                    <p>Scan QR Code or click Pay Now</p>
-                    <div id="qrCode" style="margin: 20px auto; width: 200px; height: 200px; background: #f0f0f0; display: flex; align-items: center; justify-content: center;">
-                        <!-- QR code will be generated here -->
-                        QR Code
-                    </div>
+                <div class="qrcode-placeholder" id="qrCode">
+                    <!-- QR code will be generated here -->
                 </div>
-                <button id="payNowBtn" class="club-btn" style="width: 100%;">
-                    <i class="fas fa-rupee-sign"></i> Pay Now via UPI
-                </button>
-                <div class="modal-buttons">
-                    <button type="button" id="cancelPaymentBtn" class="club-btn btn-skip">Cancel</button>
+                <div style="margin-top: 10px; font-size: 0.8rem; color: #666;">
+                    Scan or click Pay Now
                 </div>
+            </div>
+            <button id="payNowBtn" class="club-btn" style="width: 100%; margin: 10px 0;">
+                <i class="fas fa-rupee-sign"></i> Pay Now via UPI
+            </button>
+            <div class="modal-buttons">
+                <button type="button" id="cancelPaymentBtn" class="club-btn" style="background: #6b7280;">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- All Expenses Modal -->
+    <div id="allExpensesModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-title">All Club Expenses</div>
+            <div id="expensesList" style="max-height: 300px; overflow-y: auto;">
+                <!-- Filled by JavaScript -->
+            </div>
+            <div class="modal-buttons">
+                <button type="button" id="closeExpensesBtn" class="club-btn" style="background: #6b7280;">Close</button>
             </div>
         </div>
     </div>
@@ -481,7 +674,6 @@
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
     
     <script>
-        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyBWswawf9tpxNwVU0BaJ6FCwCvgcjUQXlA",
             authDomain: "shipyard-nagar.firebaseapp.com",
@@ -498,18 +690,16 @@
         let clubExpenses = [];
         let isMember = false;
         let isAdmin = false;
+        let allUsers = [];
 
         document.addEventListener('DOMContentLoaded', () => {
-            // Set theme from localStorage
             const savedTheme = localStorage.getItem('theme') || 'light';
             document.documentElement.setAttribute('data-theme', savedTheme);
             document.getElementById('themeToggle').textContent = savedTheme === 'light' ? '🌞' : '🌙';
-            
-            // Initialize date field with today's date
             document.getElementById('expenseDate').valueAsDate = new Date();
         });
 
-        window.addEventListener('load', () => {
+        window.addEventListener('load', async () => {
             if (typeof firebase === 'undefined') {
                 alert('Firebase failed to load. Please check your internet connection.');
                 return;
@@ -550,29 +740,32 @@
                     if (!clubDoc.exists) {
                         // Ask for membership
                         document.getElementById('membershipSection').style.display = 'block';
-                        
-                        document.getElementById('joinBtn').addEventListener('click', async () => {
-                            await joinClub(user.uid, currentUserData.memberName);
-                            document.getElementById('membershipSection').style.display = 'none';
-                            loadClubData();
-                        });
-                        
-                        document.getElementById('skipBtn').addEventListener('click', () => {
-                            window.location.href = 'index.html';
-                        });
                     } else {
                         isMember = true;
                         document.getElementById('clubContent').style.display = 'block';
-                        loadClubData();
+                        await loadClubData();
                     }
 
                     if (isAdmin) {
                         document.getElementById('adminSection').style.display = 'block';
+                        await loadAllUsers();
                     }
 
                 } catch (error) {
                     console.error('Error:', error);
                 }
+            });
+
+            // Membership buttons
+            document.getElementById('joinBtn').addEventListener('click', async () => {
+                await joinClub(currentUser.uid, currentUserData.memberName);
+                document.getElementById('membershipSection').style.display = 'none';
+                document.getElementById('clubContent').style.display = 'block';
+                await loadClubData();
+            });
+
+            document.getElementById('skipBtn').addEventListener('click', () => {
+                window.location.href = 'index.html';
             });
 
             async function joinClub(userId, userName) {
@@ -587,9 +780,47 @@
                     });
                     
                     isMember = true;
-                    document.getElementById('clubContent').style.display = 'block';
                 } catch (error) {
                     console.error('Join error:', error);
+                }
+            }
+
+            async function loadAllUsers() {
+                try {
+                    const usersSnapshot = await db.collection('users').get();
+                    allUsers = [];
+                    const addMemberSelect = document.getElementById('addMemberSelect');
+                    const removeMemberSelect = document.getElementById('removeMemberSelect');
+                    
+                    addMemberSelect.innerHTML = '<option value="">Add Member to Club</option>';
+                    removeMemberSelect.innerHTML = '<option value="">Remove Member</option>';
+                    
+                    usersSnapshot.forEach(doc => {
+                        const user = doc.data();
+                        allUsers.push({
+                            id: doc.id,
+                            ...user
+                        });
+                        
+                        // Check if user is already in club
+                        const isInClub = clubMembers.some(m => m.id === doc.id);
+                        
+                        if (!isInClub) {
+                            const option = document.createElement('option');
+                            option.value = doc.id;
+                            option.textContent = user.memberName;
+                            addMemberSelect.appendChild(option);
+                        }
+                        
+                        if (isInClub && doc.id !== currentUser.uid) {
+                            const option = document.createElement('option');
+                            option.value = doc.id;
+                            option.textContent = user.memberName;
+                            removeMemberSelect.appendChild(option);
+                        }
+                    });
+                } catch (error) {
+                    console.error('Load users error:', error);
                 }
             }
 
@@ -608,12 +839,14 @@
                     });
 
                     // Load expenses
-                    const expensesSnapshot = await db.collection('recreationClub').doc('expenses').collection('items').get();
+                    const expensesSnapshot = await db.collection('recreationClub').doc('expenses').collection('items').orderBy('timestamp', 'desc').get();
                     clubExpenses = [];
                     expensesSnapshot.forEach(doc => {
+                        const data = doc.data();
                         clubExpenses.push({
                             id: doc.id,
-                            ...doc.data()
+                            ...data,
+                            date: data.date || data.timestamp?.split('T')[0]
                         });
                     });
 
@@ -649,6 +882,11 @@
                     updateStatistics(totalMembers, totalExpenses, sharePerPerson);
                     updateMembersTable();
                     populatePurchasedByDropdown();
+                    
+                    // Reload admin controls if admin
+                    if (isAdmin) {
+                        await loadAllUsers();
+                    }
 
                 } catch (error) {
                     console.error('Load error:', error);
@@ -657,23 +895,26 @@
 
             function updateStatistics(totalMembers, totalExpenses, sharePerPerson) {
                 document.getElementById('totalMembers').textContent = totalMembers;
-                document.getElementById('totalExpenses').textContent = `₹${totalExpenses.toFixed(2)}`;
-                document.getElementById('sharePerPerson').textContent = `₹${sharePerPerson.toFixed(2)}`;
+                document.getElementById('totalExpenses').textContent = totalExpenses.toFixed(0);
+                document.getElementById('sharePerPerson').textContent = sharePerPerson.toFixed(0);
                 
-                // Find current user's balance
                 const currentUserMember = clubMembers.find(m => m.id === currentUser.uid);
                 if (currentUserMember) {
-                    document.getElementById('userBalance').textContent = `₹${currentUserMember.balance.toFixed(2)}`;
+                    const balance = currentUserMember.balance;
+                    document.getElementById('userBalance').textContent = balance.toFixed(0);
                     document.getElementById('userBalance').style.color = 
-                        currentUserMember.balance < 0 ? '#ef4444' : 
-                        currentUserMember.balance > 0 ? '#10b981' : 
+                        balance < 0 ? '#ef4444' : 
+                        balance > 0 ? '#10b981' : 
                         'var(--primary-orange)';
                 }
             }
 
             function updateMembersTable() {
                 const tbody = document.getElementById('membersTableBody');
+                const mobileList = document.getElementById('mobileMembersList');
+                
                 tbody.innerHTML = '';
+                mobileList.innerHTML = '';
                 
                 // Sort: current user first, then by balance
                 const sortedMembers = [...clubMembers].sort((a, b) => {
@@ -682,24 +923,28 @@
                     return a.balance - b.balance;
                 });
 
+                // Desktop table
                 sortedMembers.forEach(member => {
                     const row = document.createElement('tr');
                     if (member.id === currentUser.uid) {
                         row.classList.add('current-user');
                     }
 
+                    const shareAmount = clubMembers.length > 0 ? 
+                        (clubExpenses.reduce((sum, exp) => sum + parseFloat(exp.amount), 0) / clubMembers.length) : 0;
+                    
                     row.innerHTML = `
-                        <td>${member.name} ${member.id === currentUser.uid ? '(You)' : ''}</td>
-                        <td>₹${member.totalExpenses.toFixed(2)}</td>
-                        <td>₹${(clubMembers.length > 0 ? (clubExpenses.reduce((sum, exp) => sum + parseFloat(exp.amount), 0) / clubMembers.length) : 0).toFixed(2)}</td>
-                        <td style="color: ${member.balance < 0 ? '#ef4444' : member.balance > 0 ? '#10b981' : '#666'}">
-                            ₹${member.balance.toFixed(2)}
+                        <td>${member.name} ${member.id === currentUser.uid ? '<span style="color: var(--primary-orange);">(You)</span>' : ''}</td>
+                        <td>₹${member.totalExpenses.toFixed(0)}</td>
+                        <td>₹${shareAmount.toFixed(0)}</td>
+                        <td style="color: ${member.balance < 0 ? '#ef4444' : member.balance > 0 ? '#10b981' : '#666'}; font-weight: ${member.id === currentUser.uid ? '600' : '500'}">
+                            ₹${member.balance.toFixed(0)}
                         </td>
                         <td>
                             <div class="action-buttons">
                                 ${member.id === currentUser.uid || isAdmin ? `
-                                    <button class="action-btn btn-add-expense" onclick="addExpenseFor('${member.id}')">
-                                        <i class="fas fa-plus"></i> Add
+                                    <button class="action-btn" onclick="addExpenseFor('${member.id}')" style="background: #10b981; color: white;">
+                                        <i class="fas fa-plus"></i>
                                     </button>
                                 ` : ''}
                                 ${isAdmin ? `
@@ -711,7 +956,7 @@
                                     </button>
                                 ` : ''}
                                 ${member.balance < 0 ? `
-                                    <button class="action-btn btn-pay" onclick="initiatePayment('${member.id}', ${-member.balance})">
+                                    <button class="action-btn" onclick="initiatePayment('${member.id}', ${-member.balance})" style="background: #8b5cf6; color: white;">
                                         <i class="fas fa-rupee-sign"></i> Pay
                                     </button>
                                 ` : ''}
@@ -719,6 +964,55 @@
                         </td>
                     `;
                     tbody.appendChild(row);
+
+                    // Mobile card
+                    const card = document.createElement('div');
+                    card.className = 'mobile-member-card';
+                    if (member.id === currentUser.uid) {
+                        card.style.backgroundColor = 'rgba(255, 107, 53, 0.15)';
+                    }
+
+                    const shareAmountMobile = shareAmount.toFixed(0);
+                    const balanceColor = member.balance < 0 ? '#ef4444' : member.balance > 0 ? '#10b981' : '#666';
+                    
+                    card.innerHTML = `
+                        <div class="mobile-member-header">
+                            <div class="member-name">${member.name} ${member.id === currentUser.uid ? '(You)' : ''}</div>
+                            <div class="member-balance" style="color: ${balanceColor}">₹${member.balance.toFixed(0)}</div>
+                        </div>
+                        <div class="mobile-member-details">
+                            <div>
+                                <div class="detail-label">Expenses</div>
+                                <div class="detail-value">₹${member.totalExpenses.toFixed(0)}</div>
+                            </div>
+                            <div>
+                                <div class="detail-label">Share Due</div>
+                                <div class="detail-value">₹${shareAmountMobile}</div>
+                            </div>
+                            <div>
+                                <div class="detail-label">Status</div>
+                                <div class="detail-value">${member.balance < 0 ? 'Owes' : member.balance > 0 ? 'Due' : 'Cleared'}</div>
+                            </div>
+                        </div>
+                        <div class="mobile-actions">
+                            ${member.id === currentUser.uid || isAdmin ? `
+                                <button class="action-btn" onclick="addExpenseFor('${member.id}')" style="background: #10b981; color: white; font-size: 0.7rem;">
+                                    <i class="fas fa-plus"></i> Add
+                                </button>
+                            ` : ''}
+                            ${member.balance < 0 ? `
+                                <button class="action-btn" onclick="initiatePayment('${member.id}', ${-member.balance})" style="background: #8b5cf6; color: white; font-size: 0.7rem;">
+                                    <i class="fas fa-rupee-sign"></i> Pay
+                                </button>
+                            ` : ''}
+                            ${isAdmin ? `
+                                <button class="action-btn btn-delete" onclick="deleteMember('${member.id}')" style="font-size: 0.7rem;">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            ` : ''}
+                        </div>
+                    `;
+                    mobileList.appendChild(card);
                 });
             }
 
@@ -772,13 +1066,11 @@
                         timestamp: new Date().toISOString()
                     });
 
-                    // Reset form and close modal
                     document.getElementById('expenseForm').reset();
                     document.getElementById('expenseModal').style.display = 'none';
                     document.getElementById('expenseDate').valueAsDate = new Date();
                     
-                    // Reload data
-                    loadClubData();
+                    await loadClubData();
 
                 } catch (error) {
                     console.error('Save expense error:', error);
@@ -786,8 +1078,57 @@
                 }
             });
 
+            // View all expenses
+            document.getElementById('viewAllBtn').addEventListener('click', () => {
+                showAllExpenses();
+            });
+
+            function showAllExpenses() {
+                const expensesList = document.getElementById('expensesList');
+                expensesList.innerHTML = '';
+                
+                if (clubExpenses.length === 0) {
+                    expensesList.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">No expenses recorded</div>';
+                } else {
+                    clubExpenses.forEach(expense => {
+                        const div = document.createElement('div');
+                        div.style.padding = '8px 0';
+                        div.style.borderBottom = '1px solid #eee';
+                        div.innerHTML = `
+                            <div style="display: flex; justify-content: space-between;">
+                                <div style="font-weight: 500;">${expense.itemName}</div>
+                                <div style="color: var(--primary-orange); font-weight: 600;">₹${parseFloat(expense.amount).toFixed(0)}</div>
+                            </div>
+                            <div style="font-size: 0.8rem; color: #666; margin-top: 2px;">
+                                By: ${expense.purchasedByName} • ${expense.date}
+                                ${isAdmin ? `<span style="margin-left: 10px;"><button onclick="deleteExpense('${expense.id}')" style="color: #ef4444; background: none; border: none; font-size: 0.7rem; cursor: pointer;">Delete</button></span>` : ''}
+                            </div>
+                        `;
+                        expensesList.appendChild(div);
+                    });
+                }
+                
+                document.getElementById('allExpensesModal').style.display = 'flex';
+            }
+
+            document.getElementById('closeExpensesBtn').addEventListener('click', () => {
+                document.getElementById('allExpensesModal').style.display = 'none';
+            });
+
+            window.deleteExpense = async function(expenseId) {
+                if (confirm('Delete this expense?')) {
+                    try {
+                        await db.collection('recreationClub').doc('expenses').collection('items').doc(expenseId).delete();
+                        await loadClubData();
+                        showAllExpenses();
+                    } catch (error) {
+                        console.error('Delete expense error:', error);
+                    }
+                }
+            };
+
             window.initiatePayment = function(memberId, amount) {
-                document.getElementById('paymentAmount').textContent = `₹${amount.toFixed(2)}`;
+                document.getElementById('paymentAmount').textContent = `₹${amount.toFixed(0)}`;
                 document.getElementById('paymentModal').style.display = 'flex';
                 
                 // Generate UPI Payment Link
@@ -796,15 +1137,14 @@
                 
                 // Create QR Code
                 QRCode.toCanvas(document.getElementById('qrCode'), paymentLink, {
-                    width: 180,
-                    height: 180,
+                    width: 140,
+                    height: 140,
                     color: {
                         dark: '#000000',
                         light: '#FFFFFF'
                     }
                 });
                 
-                // Setup Pay Now button
                 document.getElementById('payNowBtn').onclick = () => {
                     window.location.href = paymentLink;
                 };
@@ -823,10 +1163,10 @@
 
             // Cancel Membership
             document.getElementById('cancelMembershipBtn').addEventListener('click', async () => {
-                if (confirm('Are you sure you want to cancel your membership?')) {
+                if (confirm('Exit from Recreation Club?')) {
                     try {
                         await db.collection('recreationClub').doc('members').collection('list').doc(currentUser.uid).delete();
-                        alert('Membership cancelled successfully.');
+                        alert('Membership cancelled.');
                         window.location.href = 'index.html';
                     } catch (error) {
                         console.error('Cancel error:', error);
@@ -835,52 +1175,71 @@
             });
 
             // Admin Functions
-            if (isAdmin) {
-                document.getElementById('editAllBtn').addEventListener('click', () => {
-                    alert('Edit all functionality to be implemented');
-                });
-
-                document.getElementById('deleteAllBtn').addEventListener('click', async () => {
-                    if (confirm('Are you sure you want to delete all expenses? This cannot be undone!')) {
+            document.getElementById('addMemberBtn').addEventListener('click', async () => {
+                const select = document.getElementById('addMemberSelect');
+                const userId = select.value;
+                const user = allUsers.find(u => u.id === userId);
+                
+                if (userId && user) {
+                    if (confirm(`Add ${user.memberName} to club?`)) {
                         try {
-                            const batch = db.batch();
-                            const expensesSnapshot = await db.collection('recreationClub').doc('expenses').collection('items').get();
-                            expensesSnapshot.forEach(doc => {
-                                batch.delete(doc.ref);
+                            await db.collection('recreationClub').doc('members').collection('list').doc(userId).set({
+                                userId: userId,
+                                name: user.memberName,
+                                joinedDate: new Date().toISOString(),
+                                totalExpenses: 0,
+                                balance: 0,
+                                isActive: true
                             });
-                            await batch.commit();
-                            loadClubData();
+                            await loadClubData();
                         } catch (error) {
-                            console.error('Delete all error:', error);
+                            console.error('Add member error:', error);
                         }
                     }
-                });
+                }
+            });
 
-                window.editMember = async function(memberId) {
-                    const newName = prompt('Enter new name:');
-                    if (newName && newName.trim()) {
+            document.getElementById('removeMemberBtn').addEventListener('click', async () => {
+                const select = document.getElementById('removeMemberSelect');
+                const userId = select.value;
+                const user = clubMembers.find(m => m.id === userId);
+                
+                if (userId && user) {
+                    if (confirm(`Remove ${user.name} from club?`)) {
                         try {
-                            await db.collection('recreationClub').doc('members').collection('list').doc(memberId).update({
-                                name: newName.trim()
-                            });
-                            loadClubData();
+                            await db.collection('recreationClub').doc('members').collection('list').doc(userId).delete();
+                            await loadClubData();
                         } catch (error) {
-                            console.error('Edit error:', error);
+                            console.error('Remove member error:', error);
                         }
                     }
-                };
+                }
+            });
 
-                window.deleteMember = async function(memberId) {
-                    if (confirm('Are you sure you want to remove this member?')) {
-                        try {
-                            await db.collection('recreationClub').doc('members').collection('list').doc(memberId).delete();
-                            loadClubData();
-                        } catch (error) {
-                            console.error('Delete error:', error);
-                        }
+            window.editMember = async function(memberId) {
+                const newName = prompt('Enter new name:');
+                if (newName && newName.trim()) {
+                    try {
+                        await db.collection('recreationClub').doc('members').collection('list').doc(memberId).update({
+                            name: newName.trim()
+                        });
+                        await loadClubData();
+                    } catch (error) {
+                        console.error('Edit error:', error);
                     }
-                };
-            }
+                }
+            };
+
+            window.deleteMember = async function(memberId) {
+                if (confirm('Remove this member from club?')) {
+                    try {
+                        await db.collection('recreationClub').doc('members').collection('list').doc(memberId).delete();
+                        await loadClubData();
+                    } catch (error) {
+                        console.error('Delete error:', error);
+                    }
+                }
+            };
         });
     </script>
 </body>
