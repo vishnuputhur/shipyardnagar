@@ -23,7 +23,7 @@
             font-family: 'Poppins', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 60px 0 40px 0;
+            padding: 70px 0 40px 0;
             margin: 0;
             font-size: 14px;
         }
@@ -43,6 +43,11 @@
             max-width: 800px;
             margin: 0 auto;
             padding: 0 10px;
+        }
+
+        /* 7mm gap after header */
+        .content-start {
+            margin-top: 7mm;
         }
 
         .club-card {
@@ -269,6 +274,10 @@
 
             .header-image {
                 max-height: 80px;
+            }
+
+            .content-start {
+                margin-top: 5mm;
             }
 
             .club-card {
@@ -500,7 +509,7 @@
 <body>
     <img src="assets/head.png" alt="Header" class="header-image">
     
-    <div class="main-container">
+    <div class="main-container content-start">
         <div class="club-card">
             <h1 class="club-title">🏸 Recreation Club</h1>
             
@@ -740,12 +749,25 @@
                     if (!clubDoc.exists) {
                         // Ask for membership
                         document.getElementById('membershipSection').style.display = 'block';
+                        
+                        // Setup membership buttons
+                        document.getElementById('joinBtn').onclick = async () => {
+                            await joinClub(user.uid, currentUserData.memberName);
+                            document.getElementById('membershipSection').style.display = 'none';
+                            document.getElementById('clubContent').style.display = 'block';
+                            await loadClubData();
+                        };
+                        
+                        document.getElementById('skipBtn').onclick = () => {
+                            window.location.href = 'index.html';
+                        };
                     } else {
                         isMember = true;
                         document.getElementById('clubContent').style.display = 'block';
                         await loadClubData();
                     }
 
+                    // Show admin controls if admin
                     if (isAdmin) {
                         document.getElementById('adminSection').style.display = 'block';
                         await loadAllUsers();
@@ -753,19 +775,8 @@
 
                 } catch (error) {
                     console.error('Error:', error);
+                    alert('Error loading data. Please try again.');
                 }
-            });
-
-            // Membership buttons
-            document.getElementById('joinBtn').addEventListener('click', async () => {
-                await joinClub(currentUser.uid, currentUserData.memberName);
-                document.getElementById('membershipSection').style.display = 'none';
-                document.getElementById('clubContent').style.display = 'block';
-                await loadClubData();
-            });
-
-            document.getElementById('skipBtn').addEventListener('click', () => {
-                window.location.href = 'index.html';
             });
 
             async function joinClub(userId, userName) {
@@ -782,6 +793,7 @@
                     isMember = true;
                 } catch (error) {
                     console.error('Join error:', error);
+                    alert('Error joining club. Please try again.');
                 }
             }
 
@@ -797,6 +809,8 @@
                     
                     usersSnapshot.forEach(doc => {
                         const user = doc.data();
+                        if (!user.memberName) return;
+                        
                         allUsers.push({
                             id: doc.id,
                             ...user
@@ -832,10 +846,13 @@
                     const membersSnapshot = await db.collection('recreationClub').doc('members').collection('list').get();
                     clubMembers = [];
                     membersSnapshot.forEach(doc => {
-                        clubMembers.push({
-                            id: doc.id,
-                            ...doc.data()
-                        });
+                        const data = doc.data();
+                        if (data.isActive !== false) { // Only show active members
+                            clubMembers.push({
+                                id: doc.id,
+                                ...data
+                            });
+                        }
                     });
 
                     // Load expenses
@@ -846,7 +863,7 @@
                         clubExpenses.push({
                             id: doc.id,
                             ...data,
-                            date: data.date || data.timestamp?.split('T')[0]
+                            date: data.date || (data.timestamp ? data.timestamp.split('T')[0] : new Date().toISOString().split('T')[0])
                         });
                     });
 
@@ -870,12 +887,6 @@
                         
                         member.totalExpenses = memberExpenses;
                         member.balance = memberExpenses - sharePerPerson;
-                        
-                        // Update in database
-                        await db.collection('recreationClub').doc('members').collection('list').doc(member.id).update({
-                            totalExpenses: memberExpenses,
-                            balance: member.balance
-                        });
                     }
 
                     // Update UI
@@ -890,6 +901,7 @@
 
                 } catch (error) {
                     console.error('Load error:', error);
+                    alert('Error loading club data. Please try again.');
                 }
             }
 
@@ -915,6 +927,13 @@
                 
                 tbody.innerHTML = '';
                 mobileList.innerHTML = '';
+                
+                if (clubMembers.length === 0) {
+                    const emptyRow = document.createElement('tr');
+                    emptyRow.innerHTML = '<td colspan="5" style="text-align: center; padding: 20px; color: #666;">No members found</td>';
+                    tbody.appendChild(emptyRow);
+                    return;
+                }
                 
                 // Sort: current user first, then by balance
                 const sortedMembers = [...clubMembers].sort((a, b) => {
@@ -945,14 +964,6 @@
                                 ${member.id === currentUser.uid || isAdmin ? `
                                     <button class="action-btn" onclick="addExpenseFor('${member.id}')" style="background: #10b981; color: white;">
                                         <i class="fas fa-plus"></i>
-                                    </button>
-                                ` : ''}
-                                ${isAdmin ? `
-                                    <button class="action-btn btn-edit" onclick="editMember('${member.id}')">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="action-btn btn-delete" onclick="deleteMember('${member.id}')">
-                                        <i class="fas fa-trash"></i>
                                     </button>
                                 ` : ''}
                                 ${member.balance < 0 ? `
@@ -1005,11 +1016,6 @@
                                     <i class="fas fa-rupee-sign"></i> Pay
                                 </button>
                             ` : ''}
-                            ${isAdmin ? `
-                                <button class="action-btn btn-delete" onclick="deleteMember('${member.id}')" style="font-size: 0.7rem;">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            ` : ''}
                         </div>
                     `;
                     mobileList.appendChild(card);
@@ -1020,15 +1026,22 @@
                 const select = document.getElementById('purchasedBy');
                 select.innerHTML = '<option value="">Select Member</option>';
                 
-                clubMembers.forEach(member => {
+                if (clubMembers.length === 0) {
                     const option = document.createElement('option');
-                    option.value = member.id;
-                    option.textContent = `${member.name} ${member.id === currentUser.uid ? '(You)' : ''}`;
-                    if (member.id === currentUser.uid) {
-                        option.selected = true;
-                    }
+                    option.value = currentUser.uid;
+                    option.textContent = `${currentUserData.memberName} (You)`;
                     select.appendChild(option);
-                });
+                } else {
+                    clubMembers.forEach(member => {
+                        const option = document.createElement('option');
+                        option.value = member.id;
+                        option.textContent = `${member.name} ${member.id === currentUser.uid ? '(You)' : ''}`;
+                        if (member.id === currentUser.uid) {
+                            option.selected = true;
+                        }
+                        select.appendChild(option);
+                    });
+                }
             }
 
             // Modal Functions
@@ -1050,9 +1063,14 @@
                 
                 const itemName = document.getElementById('itemName').value;
                 const purchasedById = document.getElementById('purchasedBy').value;
-                const purchasedByName = clubMembers.find(m => m.id === purchasedById)?.name;
+                const purchasedByName = clubMembers.find(m => m.id === purchasedById)?.name || currentUserData.memberName;
                 const amount = parseFloat(document.getElementById('expenseAmount').value);
                 const date = document.getElementById('expenseDate').value;
+
+                if (!itemName || !purchasedById || !amount || !date) {
+                    alert('Please fill all fields');
+                    return;
+                }
 
                 try {
                     await db.collection('recreationClub').doc('expenses').collection('items').add({
@@ -1192,10 +1210,13 @@
                                 isActive: true
                             });
                             await loadClubData();
+                            select.value = '';
                         } catch (error) {
                             console.error('Add member error:', error);
                         }
                     }
+                } else {
+                    alert('Please select a user');
                 }
             });
 
@@ -1209,37 +1230,15 @@
                         try {
                             await db.collection('recreationClub').doc('members').collection('list').doc(userId).delete();
                             await loadClubData();
+                            select.value = '';
                         } catch (error) {
                             console.error('Remove member error:', error);
                         }
                     }
+                } else {
+                    alert('Please select a member');
                 }
             });
-
-            window.editMember = async function(memberId) {
-                const newName = prompt('Enter new name:');
-                if (newName && newName.trim()) {
-                    try {
-                        await db.collection('recreationClub').doc('members').collection('list').doc(memberId).update({
-                            name: newName.trim()
-                        });
-                        await loadClubData();
-                    } catch (error) {
-                        console.error('Edit error:', error);
-                    }
-                }
-            };
-
-            window.deleteMember = async function(memberId) {
-                if (confirm('Remove this member from club?')) {
-                    try {
-                        await db.collection('recreationClub').doc('members').collection('list').doc(memberId).delete();
-                        await loadClubData();
-                    } catch (error) {
-                        console.error('Delete error:', error);
-                    }
-                }
-            };
         });
     </script>
 </body>
