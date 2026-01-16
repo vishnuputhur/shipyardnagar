@@ -515,20 +515,28 @@
                         Wealth Management
                     </div>
                     
+                    <!-- Navigation Buttons -->
+                    <div class="button-grid">
+                        <a href="dashboard.html" class="admin-btn">
+                            <i class="fas fa-arrow-left me-2"></i>
+                            Back to Dashboard
+                        </a>
+                        <button class="admin-btn" id="logout" style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);">
+                            <i class="fas fa-sign-out-alt me-2"></i>
+                            Logout
+                        </button>
+                        <button class="admin-btn" id="generatePdfBtn">
+                            <i class="fas fa-file-pdf me-2"></i>
+                            Generate Report
+                        </button>
+                    </div>
+
                     <!-- Year Selector -->
                     <div class="year-selector">
                         <label for="yearSelect">Select Year:</label>
                         <select class="form-select year-select" id="yearSelect">
                             <!-- Years will be populated dynamically -->
                         </select>
-                    </div>
-
-                    <!-- Action Buttons -->
-                    <div class="button-grid">
-                        <button class="admin-btn" id="generatePdfBtn">
-                            <i class="fas fa-file-pdf me-2"></i>
-                            Generate Annual Report
-                        </button>
                     </div>
 
                     <!-- Wealth Display - ORIGINAL -->
@@ -557,7 +565,7 @@
                             </div>
                             <button type="submit" class="admin-btn" style="width: 100%; background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
                                 <i class="fas fa-plus-circle me-2"></i>
-                                Add Income
+                                <span id="incomeBtnText">Add Income</span>
                             </button>
                         </form>
                     </div>
@@ -582,14 +590,14 @@
                             </div>
                             <button type="submit" class="admin-btn" style="width: 100%; background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);">
                                 <i class="fas fa-minus-circle me-2"></i>
-                                Add Expense
+                                <span id="expenseBtnText">Add Expense</span>
                             </button>
                         </form>
                     </div>
 
                     <!-- Recent Transactions - ORIGINAL (Last 15) -->
                     <div class="card">
-                        <h5>Recent Transactions (Last 15 - excluding subscriptions)</h5>
+                        <h5>Recent Transactions (Last 15)</h5>
                         <div class="transactions-list" id="transactionsList">
                             <!-- Transactions will be loaded here -->
                         </div>
@@ -602,7 +610,7 @@
     <!-- Footer -->
     <footer>
         <div class="footer-text">
-            <p>Powered by VTSoft 2026</p>
+            <p>Powered by VTSoft 2025</p>
         </div>
         <button id="themeToggle" class="theme-toggle-btn">🌞</button>
     </footer>
@@ -642,14 +650,14 @@
         let transactionToEdit = null;
         let isEditing = false;
 
-        // Set default date to today - ORIGINAL
+        // Set default date to today - ORIGINAL FROM YOUR CODE
         function setDefaultDates() {
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('incomeDate').value = today;
             document.getElementById('expenseDate').value = today;
         }
 
-        // Populate year dropdown - ORIGINAL
+        // Populate year dropdown
         function populateYears() {
             const yearSelect = document.getElementById('yearSelect');
             const currentYear = new Date().getFullYear();
@@ -663,6 +671,11 @@
                 years.add(year);
             });
             
+            // Add current year if no transactions exist
+            if (years.size === 0) {
+                years.add(currentYear);
+            }
+            
             // Add years in descending order
             Array.from(years).sort((a, b) => b - a).forEach(year => {
                 const option = document.createElement('option');
@@ -675,26 +688,35 @@
             });
         }
 
-        // Calculate total wealth - ORIGINAL
-        function calculateTotalWealth() {
-            let totalIncome = 0;
-            let totalExpense = 0;
-            
-            allTransactions.forEach(transaction => {
-                if (transaction.type === 'income') {
-                    totalIncome += transaction.amount;
-                } else if (transaction.type === 'expense') {
-                    totalExpense += transaction.amount;
-                }
-            });
-            
-            const totalWealth = totalIncome - totalExpense;
-            document.getElementById('totalWealth').textContent = '₹' + totalWealth.toLocaleString();
-            
-            return { totalIncome, totalExpense, totalWealth };
+        // Calculate total wealth - ORIGINAL FROM YOUR CODE
+        async function calculateTotalWealth() {
+            try {
+                let totalIncome = 0, totalExpense = 0;
+                
+                // Get all transactions
+                const transactionsSnapshot = await db.collection('transactions').get();
+                
+                transactionsSnapshot.forEach(doc => {
+                    const transaction = doc.data();
+                    if (transaction.type === 'income') {
+                        totalIncome += parseFloat(transaction.amount) || 0;
+                    } else if (transaction.type === 'expense') {
+                        totalExpense += parseFloat(transaction.amount) || 0;
+                    }
+                });
+                
+                const wealth = totalIncome - totalExpense;
+                document.getElementById('totalWealth').textContent = `₹${wealth.toLocaleString()}`;
+                
+                return { totalIncome, totalExpense, totalWealth: wealth };
+            } catch (error) {
+                console.error('Error calculating wealth:', error);
+                document.getElementById('totalWealth').textContent = '₹0 (Error)';
+                return { totalIncome: 0, totalExpense: 0, totalWealth: 0 };
+            }
         }
 
-        // Load all transactions - ORIGINAL
+        // Load all transactions - ORIGINAL FROM YOUR CODE
         async function loadTransactions() {
             const loadingSpinner = document.getElementById('loadingSpinner');
             loadingSpinner.style.display = 'block';
@@ -716,9 +738,9 @@
                 populateYears();
                 
                 // Calculate and display wealth
-                calculateTotalWealth();
+                await calculateTotalWealth();
                 
-                // Display recent transactions (last 15) - EXCLUDING SUBSCRIPTIONS
+                // Display recent transactions (last 15)
                 displayRecentTransactions();
                 
             } catch (error) {
@@ -728,17 +750,12 @@
             }
         }
 
-        // Display recent transactions (last 15) - CHANGED: Exclude subscriptions
+        // Display recent transactions (last 15) - FROM YOUR CODE
         function displayRecentTransactions() {
             const transactionsList = document.getElementById('transactionsList');
             
-            // Filter out subscription entries (narration contains "subscription")
-            const nonSubscriptionTransactions = allTransactions.filter(transaction => {
-                return !transaction.narration.toLowerCase().includes('subscription');
-            });
-            
-            // Get last 15 non-subscription transactions
-            const recentTransactions = nonSubscriptionTransactions.slice(0, 15);
+            // Get last 15 transactions
+            const recentTransactions = allTransactions.slice(0, 15);
             
             if (recentTransactions.length === 0) {
                 transactionsList.innerHTML = '<div class="text-center p-3">No transactions found</div>';
@@ -775,7 +792,7 @@
             });
         }
 
-        // Edit transaction - ORIGINAL
+        // Edit transaction - FIXED VERSION
         window.editTransaction = async function(transactionId) {
             try {
                 const transactionDoc = await db.collection('transactions').doc(transactionId).get();
@@ -794,36 +811,45 @@
                     document.getElementById('incomeNarration').value = transaction.narration;
                     document.getElementById('incomeAmount').value = transaction.amount;
                     
-                    // Change form button to "Update Income"
-                    document.querySelector('#incomeForm button').innerHTML = '<i class="fas fa-save me-2"></i> Update Income';
+                    // Change form button text
+                    document.getElementById('incomeBtnText').textContent = 'Update Income';
                 } else {
                     document.getElementById('expenseDate').value = transaction.date;
                     document.getElementById('expenseNarration').value = transaction.narration;
                     document.getElementById('expenseAmount').value = transaction.amount;
                     
-                    // Change form button to "Update Expense"
-                    document.querySelector('#expenseForm button').innerHTML = '<i class="fas fa-save me-2"></i> Update Expense';
+                    // Change form button text
+                    document.getElementById('expenseBtnText').textContent = 'Update Expense';
                 }
                 
             } catch (error) {
                 console.error('Error loading transaction:', error);
+                alert('Error loading transaction: ' + error.message);
             }
         };
 
-        // Show delete confirmation modal - ORIGINAL
+        // Reset form buttons
+        function resetFormButtons() {
+            document.getElementById('incomeBtnText').textContent = 'Add Income';
+            document.getElementById('expenseBtnText').textContent = 'Add Expense';
+            isEditing = false;
+            transactionToEdit = null;
+        }
+
+        // Show delete confirmation modal
         window.showDeleteConfirmation = function(transactionId, transactionInfo) {
             transactionToDelete = transactionId;
             document.getElementById('transactionToDelete').textContent = transactionInfo;
             document.getElementById('confirmationModal').style.display = 'flex';
         };
 
-        // Hide delete confirmation modal - ORIGINAL
+        // Hide delete confirmation modal
         function hideConfirmationModal() {
             document.getElementById('confirmationModal').style.display = 'none';
             transactionToDelete = null;
         }
 
-        // Delete transaction - ORIGINAL
+        // Delete transaction
         async function deleteTransaction() {
             if (!transactionToDelete) return;
             
@@ -835,16 +861,18 @@
                 
                 // Reload transactions
                 await loadTransactions();
+                alert('Transaction deleted successfully!');
                 
             } catch (error) {
                 console.error('Error deleting transaction:', error);
+                alert('Error deleting transaction: ' + error.message);
             } finally {
                 loadingSpinner.style.display = 'none';
                 hideConfirmationModal();
             }
         }
 
-        // Generate Annual Report PDF - IMPROVED VERSION
+        // Generate Annual Report PDF - SIMPLIFIED WORKING VERSION
         function generateAnnualReport() {
             if (selectedYear === 'all') {
                 alert('Please select a specific year for the report');
@@ -862,342 +890,202 @@
                 return;
             }
             
-            // Separate transactions
-            const incomeTransactions = yearTransactions.filter(t => t.type === 'income');
-            const expenseTransactions = yearTransactions.filter(t => t.type === 'expense');
-            
-            // Separate subscription income from other income
-            const subscriptionIncome = incomeTransactions.filter(t => 
-                t.narration.toLowerCase().includes('subscription')
-            );
-            const otherIncome = incomeTransactions.filter(t => 
-                !t.narration.toLowerCase().includes('subscription')
-            );
-            
-            // Group subscription by month
-            const monthlySubscription = {};
-            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
-                               'July', 'August', 'September', 'October', 'November', 'December'];
-            
-            // Initialize months
-            for (let i = 0; i < 12; i++) {
-                monthlySubscription[i] = {
-                    monthName: monthNames[i],
-                    total: 0
-                };
-            }
-            
-            // Calculate monthly subscription totals
-            subscriptionIncome.forEach(transaction => {
-                const month = new Date(transaction.date).getMonth();
-                monthlySubscription[month].total += transaction.amount;
-            });
-            
             // Calculate totals
-            let totalSubscription = 0;
-            let totalOtherIncome = 0;
+            let totalIncome = 0;
             let totalExpense = 0;
             
-            Object.values(monthlySubscription).forEach(monthData => {
-                totalSubscription += monthData.total;
+            yearTransactions.forEach(transaction => {
+                if (transaction.type === 'income') {
+                    totalIncome += transaction.amount;
+                } else if (transaction.type === 'expense') {
+                    totalExpense += transaction.amount;
+                }
             });
             
-            otherIncome.forEach(transaction => {
-                totalOtherIncome += transaction.amount;
-            });
-            
-            expenseTransactions.forEach(transaction => {
-                totalExpense += transaction.amount;
-            });
-            
-            const totalIncome = totalSubscription + totalOtherIncome;
             const netBalance = totalIncome - totalExpense;
             
             // Create PDF
             const doc = new jsPDF();
             const pageWidth = doc.internal.pageSize.width;
-            const pageHeight = doc.internal.pageSize.height;
-            const margin = 8;
-            const marginPoints = margin * 2.83465;
-            const contentWidth = pageWidth - (marginPoints * 2);
-            
-            // Draw border
-            doc.setDrawColor(0, 102, 204);
-            doc.setLineWidth(0.5);
-            doc.rect(marginPoints, marginPoints, contentWidth, pageHeight - (marginPoints * 2));
             
             // Title
             doc.setFontSize(18);
             doc.setTextColor(0, 102, 204);
             doc.setFont('helvetica', 'bold');
-            doc.text('SHIPYARD NAGAR RESIDENCE ASSOCIATION', pageWidth / 2, marginPoints + 10, { align: 'center' });
+            doc.text('SHIPYARD NAGAR RESIDENCE ASSOCIATION', pageWidth / 2, 20, { align: 'center' });
             
             // Year Report
             doc.setFontSize(16);
             doc.setTextColor(0, 0, 0);
-            doc.setFont('helvetica', 'bold');
-            doc.text(`ANNUAL REPORT - ${selectedYear}`, pageWidth / 2, marginPoints + 20, { align: 'center' });
+            doc.text(`ANNUAL REPORT - ${selectedYear}`, pageWidth / 2, 30, { align: 'center' });
             
             // Line
             doc.setDrawColor(0, 102, 204);
             doc.setLineWidth(0.5);
-            doc.line(marginPoints + 10, marginPoints + 26, pageWidth - marginPoints - 10, marginPoints + 26);
+            doc.line(20, 35, pageWidth - 20, 35);
             
-            let currentY = marginPoints + 34;
+            let currentY = 45;
             
-            // ========== SECTION 1: MONTHLY SUBSCRIPTION SUMMARY ==========
+            // ========== INCOME DETAILS ==========
             doc.setFontSize(12);
             doc.setTextColor(0, 102, 204);
             doc.setFont('helvetica', 'bold');
-            doc.text('MONTHLY SUBSCRIPTION COLLECTION', marginPoints + 10, currentY);
-            currentY += 8;
+            doc.text('INCOME DETAILS', 20, currentY);
+            currentY += 10;
             
-            // Table headers
-            doc.setFontSize(9);
+            // Group income by month
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+                               'July', 'August', 'September', 'October', 'November', 'December'];
+            const monthlyIncome = {};
+            
+            // Initialize
+            for (let i = 0; i < 12; i++) {
+                monthlyIncome[i] = {
+                    monthName: monthNames[i],
+                    total: 0,
+                    transactions: []
+                };
+            }
+            
+            // Populate income data
+            const incomeTransactions = yearTransactions.filter(t => t.type === 'income');
+            incomeTransactions.forEach(transaction => {
+                const month = new Date(transaction.date).getMonth();
+                monthlyIncome[month].total += transaction.amount;
+                monthlyIncome[month].transactions.push(transaction);
+            });
+            
+            // Display monthly totals
+            doc.setFontSize(10);
             doc.setTextColor(0, 0, 0);
             doc.setFont('helvetica', 'bold');
-            doc.text('Month', marginPoints + 15, currentY);
-            doc.text('Amount', marginPoints + 100, currentY);
-            currentY += 6;
+            doc.text('Month', 25, currentY);
+            doc.text('Total Income', 150, currentY);
+            currentY += 8;
             
-            // Month rows
             doc.setFont('helvetica', 'normal');
             for (let month = 0; month < 12; month++) {
-                const monthData = monthlySubscription[month];
-                
-                doc.text(monthData.monthName, marginPoints + 15, currentY);
-                doc.text(monthData.total.toFixed(2), marginPoints + 100, currentY);
-                currentY += 5;
-                
-                // Check page break
-                if (currentY > pageHeight - marginPoints - 50) {
-                    doc.addPage();
-                    currentY = marginPoints + 10;
-                    doc.setDrawColor(0, 102, 204);
-                    doc.setLineWidth(0.5);
-                    doc.rect(marginPoints, marginPoints, contentWidth, pageHeight - (marginPoints * 2));
+                const monthData = monthlyIncome[month];
+                if (monthData.total > 0) {
+                    doc.text(monthData.monthName, 25, currentY);
+                    doc.text(monthData.total.toFixed(2), 150, currentY);
+                    currentY += 6;
+                    
+                    // Check page break
+                    if (currentY > 250) {
+                        doc.addPage();
+                        currentY = 20;
+                    }
                 }
             }
             
-            // Total subscription
-            currentY += 3;
-            doc.setDrawColor(150, 150, 150);
-            doc.setLineWidth(0.2);
-            doc.line(marginPoints + 10, currentY, pageWidth - marginPoints - 10, currentY);
-            currentY += 6;
-            
-            doc.setFont('helvetica', 'bold');
-            doc.text('TOTAL SUBSCRIPTION:', marginPoints + 15, currentY);
-            doc.text(totalSubscription.toFixed(2), marginPoints + 100, currentY);
             currentY += 10;
             
-            // ========== SECTION 2: OTHER INCOME DETAILS ==========
-            if (currentY > pageHeight - marginPoints - 100) {
-                doc.addPage();
-                currentY = marginPoints + 10;
-                doc.setDrawColor(0, 102, 204);
-                doc.setLineWidth(0.5);
-                doc.rect(marginPoints, marginPoints, contentWidth, pageHeight - (marginPoints * 2));
-            }
-            
+            // ========== EXPENSE DETAILS ==========
             doc.setFontSize(12);
             doc.setTextColor(0, 102, 204);
             doc.setFont('helvetica', 'bold');
-            doc.text('OTHER INCOME DETAILS', marginPoints + 10, currentY);
-            currentY += 8;
-            
-            if (otherIncome.length > 0) {
-                doc.setFontSize(8);
-                doc.setTextColor(0, 0, 0);
-                doc.setFont('helvetica', 'bold');
-                doc.text('Date', marginPoints + 15, currentY);
-                doc.text('Narration', marginPoints + 45, currentY);
-                doc.text('Amount', marginPoints + 135, currentY);
-                currentY += 5;
-                
-                doc.setFont('helvetica', 'normal');
-                otherIncome.forEach(transaction => {
-                    if (currentY > pageHeight - marginPoints - 20) {
-                        doc.addPage();
-                        currentY = marginPoints + 10;
-                        doc.setDrawColor(0, 102, 204);
-                        doc.setLineWidth(0.5);
-                        doc.rect(marginPoints, marginPoints, contentWidth, pageHeight - (marginPoints * 2));
-                    }
-                    
-                    doc.text(transaction.date, marginPoints + 15, currentY);
-                    
-                    // Truncate narration if too long
-                    let narration = transaction.narration;
-                    if (narration.length > 30) {
-                        narration = narration.substring(0, 27) + '...';
-                    }
-                    doc.text(narration, marginPoints + 45, currentY);
-                    doc.text(transaction.amount.toFixed(2), marginPoints + 135, currentY);
-                    
-                    currentY += 5;
-                });
-                
-                currentY += 3;
-                doc.setDrawColor(150, 150, 150);
-                doc.setLineWidth(0.2);
-                doc.line(marginPoints + 10, currentY, pageWidth - marginPoints - 10, currentY);
-                currentY += 6;
-                
-                doc.setFont('helvetica', 'bold');
-                doc.text('TOTAL OTHER INCOME:', marginPoints + 15, currentY);
-                doc.text(totalOtherIncome.toFixed(2), marginPoints + 135, currentY);
-                currentY += 10;
-            } else {
-                doc.setFontSize(9);
-                doc.setTextColor(100, 100, 100);
-                doc.setFont('helvetica', 'italic');
-                doc.text('No other income transactions', marginPoints + 15, currentY);
-                currentY += 10;
-            }
-            
-            // ========== SECTION 3: EXPENSE DETAILS ==========
-            if (currentY > pageHeight - marginPoints - 100) {
-                doc.addPage();
-                currentY = marginPoints + 10;
-                doc.setDrawColor(0, 102, 204);
-                doc.setLineWidth(0.5);
-                doc.rect(marginPoints, marginPoints, contentWidth, pageHeight - (marginPoints * 2));
-            }
-            
-            doc.setFontSize(12);
-            doc.setTextColor(0, 102, 204);
-            doc.setFont('helvetica', 'bold');
-            doc.text('EXPENSE DETAILS', marginPoints + 10, currentY);
-            currentY += 8;
-            
-            if (expenseTransactions.length > 0) {
-                doc.setFontSize(8);
-                doc.setTextColor(0, 0, 0);
-                doc.setFont('helvetica', 'bold');
-                doc.text('Date', marginPoints + 15, currentY);
-                doc.text('Narration', marginPoints + 45, currentY);
-                doc.text('Amount', marginPoints + 135, currentY);
-                currentY += 5;
-                
-                doc.setFont('helvetica', 'normal');
-                expenseTransactions.forEach(transaction => {
-                    if (currentY > pageHeight - marginPoints - 20) {
-                        doc.addPage();
-                        currentY = marginPoints + 10;
-                        doc.setDrawColor(0, 102, 204);
-                        doc.setLineWidth(0.5);
-                        doc.rect(marginPoints, marginPoints, contentWidth, pageHeight - (marginPoints * 2));
-                    }
-                    
-                    doc.text(transaction.date, marginPoints + 15, currentY);
-                    
-                    // Truncate narration
-                    let narration = transaction.narration;
-                    if (narration.length > 30) {
-                        narration = narration.substring(0, 27) + '...';
-                    }
-                    doc.text(narration, marginPoints + 45, currentY);
-                    doc.text(transaction.amount.toFixed(2), marginPoints + 135, currentY);
-                    
-                    currentY += 5;
-                });
-                
-                currentY += 3;
-                doc.setDrawColor(150, 150, 150);
-                doc.setLineWidth(0.2);
-                doc.line(marginPoints + 10, currentY, pageWidth - marginPoints - 10, currentY);
-                currentY += 6;
-                
-                doc.setFont('helvetica', 'bold');
-                doc.text('TOTAL EXPENSES:', marginPoints + 15, currentY);
-                doc.text(totalExpense.toFixed(2), marginPoints + 135, currentY);
-                currentY += 10;
-            } else {
-                doc.setFontSize(9);
-                doc.setTextColor(100, 100, 100);
-                doc.setFont('helvetica', 'italic');
-                doc.text('No expense transactions', marginPoints + 15, currentY);
-                currentY += 10;
-            }
-            
-            // ========== SECTION 4: SUMMARY ==========
-            if (currentY > pageHeight - marginPoints - 50) {
-                doc.addPage();
-                currentY = marginPoints + 10;
-                doc.setDrawColor(0, 102, 204);
-                doc.setLineWidth(0.5);
-                doc.rect(marginPoints, marginPoints, contentWidth, pageHeight - (marginPoints * 2));
-            }
-            
-            currentY += 10;
-            doc.setDrawColor(0, 0, 0);
-            doc.setLineWidth(0.3);
-            doc.line(marginPoints + 10, currentY, pageWidth - marginPoints - 10, currentY);
+            doc.text('EXPENSE DETAILS', 20, currentY);
             currentY += 10;
             
-            doc.setFontSize(12);
-            doc.setFont('helvetica', 'bold');
-            doc.setTextColor(0, 0, 0);
-            doc.text('ANNUAL SUMMARY', marginPoints + 10, currentY);
-            currentY += 10;
+            // Group expense by month
+            const monthlyExpense = {};
             
+            // Initialize
+            for (let i = 0; i < 12; i++) {
+                monthlyExpense[i] = {
+                    monthName: monthNames[i],
+                    total: 0,
+                    transactions: []
+                };
+            }
+            
+            // Populate expense data
+            const expenseTransactions = yearTransactions.filter(t => t.type === 'expense');
+            expenseTransactions.forEach(transaction => {
+                const month = new Date(transaction.date).getMonth();
+                monthlyExpense[month].total += transaction.amount;
+                monthlyExpense[month].transactions.push(transaction);
+            });
+            
+            // Display monthly totals
             doc.setFontSize(10);
-            doc.setFont('helvetica', 'normal');
-            
-            // Subscription
-            doc.text('Subscription Income:', marginPoints + 15, currentY);
-            doc.text(totalSubscription.toFixed(2), pageWidth - marginPoints - 15, currentY, { align: 'right' });
-            currentY += 6;
-            
-            // Other Income
-            doc.text('Other Income:', marginPoints + 15, currentY);
-            doc.text(totalOtherIncome.toFixed(2), pageWidth - marginPoints - 15, currentY, { align: 'right' });
+            doc.setTextColor(0, 0, 0);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Month', 25, currentY);
+            doc.text('Total Expense', 150, currentY);
             currentY += 8;
             
-            doc.setFont('helvetica', 'bold');
-            doc.text('TOTAL INCOME:', marginPoints + 15, currentY);
-            doc.text(totalIncome.toFixed(2), pageWidth - marginPoints - 15, currentY, { align: 'right' });
+            doc.setFont('helvetica', 'normal');
+            for (let month = 0; month < 12; month++) {
+                const monthData = monthlyExpense[month];
+                if (monthData.total > 0) {
+                    doc.text(monthData.monthName, 25, currentY);
+                    doc.text(monthData.total.toFixed(2), 150, currentY);
+                    currentY += 6;
+                    
+                    // Check page break
+                    if (currentY > 250) {
+                        doc.addPage();
+                        currentY = 20;
+                    }
+                }
+            }
+            
+            // ========== SUMMARY ==========
+            if (currentY > 200) {
+                doc.addPage();
+                currentY = 20;
+            }
+            
+            currentY += 10;
+            doc.setDrawColor(0, 0, 0);
+            doc.setLineWidth(0.3);
+            doc.line(20, currentY, pageWidth - 20, currentY);
             currentY += 10;
             
-            // Expenses
+            doc.setFontSize(14);
+            doc.setFont('helvetica', 'bold');
+            doc.text('ANNUAL SUMMARY', 20, currentY);
+            currentY += 10;
+            
+            doc.setFontSize(12);
             doc.setFont('helvetica', 'normal');
-            doc.text('Total Expenses:', marginPoints + 15, currentY);
-            doc.text(totalExpense.toFixed(2), pageWidth - marginPoints - 15, currentY, { align: 'right' });
+            doc.text(`Total Income: ${totalIncome.toFixed(2)}`, 25, currentY);
+            currentY += 8;
+            doc.text(`Total Expense: ${totalExpense.toFixed(2)}`, 25, currentY);
             currentY += 10;
             
             doc.setDrawColor(0, 0, 0);
             doc.setLineWidth(0.3);
-            doc.line(marginPoints + 10, currentY, pageWidth - marginPoints - 10, currentY);
+            doc.line(20, currentY, pageWidth - 20, currentY);
             currentY += 10;
             
-            // Net Balance
-            doc.setFontSize(12);
+            doc.setFontSize(14);
             doc.setFont('helvetica', 'bold');
-            doc.text('NET BALANCE (CASH IN BANK):', marginPoints + 15, currentY);
-            doc.text(netBalance.toFixed(2), pageWidth - marginPoints - 15, currentY, { align: 'right' });
+            doc.text(`NET BALANCE: ${netBalance.toFixed(2)}`, 25, currentY);
             currentY += 15;
             
             // Treasurer signature
             doc.setFontSize(10);
             doc.setTextColor(0, 0, 0);
             doc.setFont('helvetica', 'bold');
-            doc.text('Treasurer', pageWidth - marginPoints - 10, currentY, { align: 'right' });
-            doc.text('Vishnu T', pageWidth - marginPoints - 10, currentY + 6, { align: 'right' });
+            doc.text('Treasurer', pageWidth - 30, currentY, { align: 'right' });
+            doc.text('Vishnu T', pageWidth - 30, currentY + 6, { align: 'right' });
             
             // Footer
-            const footerY = pageHeight - marginPoints - 5;
+            const footerY = doc.internal.pageSize.height - 10;
             doc.setFontSize(8);
             doc.setTextColor(100, 100, 100);
             doc.setFont('helvetica', 'italic');
-            doc.text('This is system generated. No signature required.', pageWidth / 2, footerY, { align: 'center' });
+            doc.text('System generated report', pageWidth / 2, footerY, { align: 'center' });
             
             // Save PDF
             const fileName = `Annual_Report_${selectedYear}.pdf`;
             doc.save(fileName);
         }
 
-        // DOM Content Loaded - ORIGINAL
+        // DOM Content Loaded
         document.addEventListener('DOMContentLoaded', () => {
             const loadingSpinner = document.getElementById('loadingSpinner');
             
@@ -1207,12 +1095,14 @@
             // Auth State Check
             auth.onAuthStateChanged(async (user) => {
                 if (!user) {
+                    alert('No user logged in. Redirecting to login...');
                     window.location.href = 'login.html';
                     return;
                 }
 
                 const userDoc = await db.collection('users').doc(user.uid).get();
                 if (!userDoc.exists || userDoc.data().role !== 'admin') {
+                    alert('Permission denied. Only admins can access this page. Redirecting to login...');
                     window.location.href = 'login.html';
                     return;
                 }
@@ -1220,7 +1110,16 @@
                 loadingSpinner.style.display = 'none';
                 
                 // Load initial data
-                loadTransactions();
+                await loadTransactions();
+            });
+
+            // Logout
+            document.getElementById('logout').addEventListener('click', () => {
+                auth.signOut().then(() => {
+                    window.location.href = 'login.html';
+                }).catch((error) => {
+                    alert('Logout Error: ' + error.message);
+                });
             });
 
             // Year selection change
@@ -1235,7 +1134,7 @@
             // Generate PDF button
             document.getElementById('generatePdfBtn').addEventListener('click', generateAnnualReport);
 
-            // Add/Update Income - ORIGINAL
+            // Add/Update Income
             document.getElementById('incomeForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 
@@ -1244,6 +1143,7 @@
                 const amount = parseFloat(document.getElementById('incomeAmount').value);
                 
                 if (!date || !narration || !amount || amount <= 0) {
+                    alert('Please fill all fields with valid values');
                     return;
                 }
                 
@@ -1259,12 +1159,8 @@
                             type: 'income'
                         });
                         
-                        // Reset editing state
-                        isEditing = false;
-                        transactionToEdit = null;
-                        
-                        // Reset button text
-                        document.querySelector('#incomeForm button').innerHTML = '<i class="fas fa-plus-circle me-2"></i> Add Income';
+                        resetFormButtons();
+                        alert('Income updated successfully!');
                     } else {
                         // Add new transaction
                         await db.collection('transactions').add({
@@ -1274,23 +1170,25 @@
                             amount: amount,
                             createdAt: new Date()
                         });
+                        alert('Income added successfully!');
                     }
                     
                     // Reset form
                     document.getElementById('incomeForm').reset();
                     setDefaultDates();
                     
-                    // Reload data
+                    // Refresh data
                     await loadTransactions();
                     
                 } catch (error) {
                     console.error('Error adding/updating income:', error);
+                    alert('Error: ' + error.message);
                 } finally {
                     loadingSpinner.style.display = 'none';
                 }
             });
 
-            // Add/Update Expense - ORIGINAL
+            // Add/Update Expense
             document.getElementById('expenseForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 
@@ -1299,6 +1197,7 @@
                 const amount = parseFloat(document.getElementById('expenseAmount').value);
                 
                 if (!date || !narration || !amount || amount <= 0) {
+                    alert('Please fill all fields with valid values');
                     return;
                 }
                 
@@ -1314,12 +1213,8 @@
                             type: 'expense'
                         });
                         
-                        // Reset editing state
-                        isEditing = false;
-                        transactionToEdit = null;
-                        
-                        // Reset button text
-                        document.querySelector('#expenseForm button').innerHTML = '<i class="fas fa-minus-circle me-2"></i> Add Expense';
+                        resetFormButtons();
+                        alert('Expense updated successfully!');
                     } else {
                         // Add new transaction
                         await db.collection('transactions').add({
@@ -1329,27 +1224,29 @@
                             amount: amount,
                             createdAt: new Date()
                         });
+                        alert('Expense added successfully!');
                     }
                     
                     // Reset form
                     document.getElementById('expenseForm').reset();
                     setDefaultDates();
                     
-                    // Reload data
+                    // Refresh data
                     await loadTransactions();
                     
                 } catch (error) {
                     console.error('Error adding/updating expense:', error);
+                    alert('Error: ' + error.message);
                 } finally {
                     loadingSpinner.style.display = 'none';
                 }
             });
 
-            // Confirmation modal buttons - ORIGINAL
+            // Confirmation modal buttons
             document.getElementById('confirmYes').addEventListener('click', deleteTransaction);
             document.getElementById('confirmNo').addEventListener('click', hideConfirmationModal);
 
-            // Theme Toggle - ORIGINAL
+            // Theme Toggle
             const themeToggle = document.getElementById('themeToggle');
             if (themeToggle) {
                 themeToggle.addEventListener('click', () => {
