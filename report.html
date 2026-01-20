@@ -367,7 +367,7 @@
                         <ul class="mb-0 mt-2" style="padding-left: 20px;">
                             <li>Report will include all transactions for the selected year</li>
                             <li>Monthly subscriptions will be grouped together</li>
-                            <li>Other income and expenses will be listed separately with narration</li>
+                            <li>Only transactions with narration will be listed</li>
                             <li>Annual summary with total income, expenses, and net balance</li>
                         </ul>
                     </div>
@@ -419,49 +419,24 @@
         let allTransactions = [];
         let selectedYear = new Date().getFullYear();
 
-        // Fixed member count for subscription (as per your information)
+        // Fixed member count and monthly rate (as per your information)
         const FIXED_MEMBER_COUNT = 23;
         const MONTHLY_SUBSCRIPTION_RATE = 200; // 200 rupees per member per month
 
-        // Function to check if a transaction is a subscription - SIMPLIFIED VERSION
-        function isSubscription(transaction) {
+        // Function to check if transaction has valid narration
+        function hasValidNarration(transaction) {
             if (!transaction || !transaction.narration) return false;
             
-            // SIMPLIFIED: Any income transaction is considered subscription for grouping
-            // This will group ALL monthly income entries together
-            const narration = transaction.narration.toLowerCase();
+            const narration = transaction.narration.toString().trim();
             
-            // Common words that might indicate subscription
-            const subscriptionIndicators = [
-                'subscription', 'monthly', 'സബ്സ്ക്രിപ്ഷൻ', 'വരി', 
-                'മാസവരി', 'മാസിക', 'collection', 'ശമ്പളം',
-                'ഫീസ്', 'fee', 'പണം', 'amount', 'മാസ', 'വരിക'
-            ];
+            // Check if narration is not empty and not just whitespace
+            if (narration.length === 0) return false;
             
-            // Check if narration contains any subscription indicator
-            for (const indicator of subscriptionIndicators) {
-                if (narration.includes(indicator.toLowerCase())) {
-                    console.log("Subscription detected (keyword match):", transaction.narration);
-                    return true;
-                }
-            }
+            // Check if narration is not just "N/A" or similar
+            const invalidNarrations = ['n/a', 'na', 'none', 'no narration', ''];
+            if (invalidNarrations.includes(narration.toLowerCase())) return false;
             
-            // Check if it's a recurring monthly amount (200, 400, 4600, etc.)
-            const amount = transaction.amount || 0;
-            if (amount > 0 && amount <= 500) {
-                // Small amounts that could be individual subscriptions
-                console.log("Subscription detected (small amount):", transaction.narration, amount);
-                return true;
-            }
-            
-            // Check if amount matches monthly subscription pattern (200 * members = 4600)
-            const expectedMonthlyTotal = FIXED_MEMBER_COUNT * MONTHLY_SUBSCRIPTION_RATE; // 4600
-            if (Math.abs(amount - expectedMonthlyTotal) <= 100) { // Allow small variation
-                console.log("Subscription detected (matching monthly total):", transaction.narration, amount);
-                return true;
-            }
-            
-            return false;
+            return true;
         }
 
         // Function to normalize date
@@ -565,18 +540,10 @@
             }
         }
 
-        // Load all transactions - FIXED VERSION
+        // Load all transactions
         async function loadTransactions() {
             try {
                 console.log("Loading transactions from Firestore...");
-                
-                // First, let's check what fields exist in the database
-                const sampleDoc = await db.collection('transactions').limit(1).get();
-                if (!sampleDoc.empty) {
-                    const sampleData = sampleDoc.docs[0].data();
-                    console.log("Sample transaction fields:", Object.keys(sampleData));
-                    console.log("Sample transaction:", sampleData);
-                }
                 
                 const transactionsSnapshot = await db.collection('transactions').get();
                 
@@ -600,24 +567,16 @@
                         transaction.dateObj = normalizedDate.dateObj;
                     }
                     
-                    // Debug log for each transaction
-                    console.log("Transaction loaded:", {
-                        id: transaction.id,
-                        type: transaction.type,
-                        narration: transaction.narration,
-                        amount: transaction.amount,
-                        date: transaction.date,
-                        originalDate: transaction.originalDate,
-                        isSubscription: isSubscription(transaction)
-                    });
+                    // Check if transaction has valid narration
+                    transaction.hasValidNarration = hasValidNarration(transaction);
                     
                     allTransactions.push(transaction);
                 });
                 
                 console.log("Total transactions loaded:", allTransactions.length);
+                console.log("Transactions with valid narration:", allTransactions.filter(t => t.hasValidNarration).length);
                 console.log("Income transactions:", allTransactions.filter(t => t.type === 'income').length);
                 console.log("Expense transactions:", allTransactions.filter(t => t.type === 'expense').length);
-                console.log("Subscriptions detected:", allTransactions.filter(t => isSubscription(t)).length);
                 
                 return true;
             } catch (error) {
@@ -653,7 +612,7 @@
             document.getElementById('errorMessage').style.display = 'none';
         }
 
-        // Generate Annual Report PDF - COMPLETELY REWRITTEN VERSION
+        // Generate Annual Report PDF - WITH NARRATION FILTER
         async function generateAnnualReport() {
             if (!selectedYear) {
                 showError('Please select a year');
@@ -670,40 +629,35 @@
             try {
                 console.log(`=== GENERATING REPORT FOR YEAR ${selectedYear} ===`);
                 
-                // Filter transactions for selected year
+                // Filter transactions for selected year AND with valid narration
                 const yearTransactions = allTransactions.filter(transaction => {
                     if (!transaction || !transaction.dateObj) return false;
                     
                     try {
                         const year = transaction.dateObj.getFullYear();
-                        return year === parseInt(selectedYear);
+                        const hasNarration = transaction.hasValidNarration;
+                        
+                        return year === parseInt(selectedYear) && hasNarration;
                     } catch (error) {
-                        console.error("Error getting year from dateObj:", error);
+                        console.error("Error filtering transaction:", error);
                         return false;
                     }
                 });
                 
-                console.log(`Year ${selectedYear} transactions:`, yearTransactions.length);
+                console.log(`Year ${selectedYear} transactions with narration:`, yearTransactions.length);
                 
                 if (yearTransactions.length === 0) {
-                    throw new Error(`No transactions found for year ${selectedYear}`);
+                    throw new Error(`No transactions with narration found for year ${selectedYear}`);
                 }
                 
-                // Log all transactions for debugging
-                console.log("ALL TRANSACTIONS FOR YEAR:");
-                yearTransactions.forEach((t, i) => {
-                    console.log(`${i+1}. Type: ${t.type}, Narration: "${t.narration}", Amount: ${t.amount}, Date: ${t.date}`);
-                });
-                
-                // SIMPLIFIED LOGIC: Group all income transactions as subscriptions
-                // (Since you mentioned all members pay 200 each month)
+                // Separate income and expense transactions
                 const incomeTransactions = yearTransactions.filter(t => t.type === 'income');
                 const expenseTransactions = yearTransactions.filter(t => t.type === 'expense');
                 
-                console.log("Income transactions:", incomeTransactions.length);
-                console.log("Expense transactions:", expenseTransactions.length);
+                console.log("Income transactions with narration:", incomeTransactions.length);
+                console.log("Expense transactions with narration:", expenseTransactions.length);
                 
-                // Group income by month (all income is considered subscription)
+                // Group income by month
                 const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
                                    'July', 'August', 'September', 'October', 'November', 'December'];
                 
@@ -711,8 +665,7 @@
                 for (let i = 0; i < 12; i++) {
                     monthlyIncome[i] = {
                         monthName: monthNames[i],
-                        total: 0,
-                        transactions: []
+                        total: 0
                     };
                 }
                 
@@ -720,17 +673,10 @@
                     try {
                         if (!transaction.dateObj) return;
                         
-                        const month = transaction.dateObj.getMonth(); // 0-11
+                        const month = transaction.dateObj.getMonth();
                         
                         if (month >= 0 && month < 12) {
                             monthlyIncome[month].total += transaction.amount;
-                            monthlyIncome[month].transactions.push({
-                                narration: transaction.narration,
-                                amount: transaction.amount,
-                                date: transaction.date
-                            });
-                            
-                            console.log(`Added to month ${monthNames[month]}: ${transaction.narration} - ${transaction.amount}`);
                         }
                     } catch (error) {
                         console.error("Error processing income date:", transaction.date, error);
@@ -746,10 +692,14 @@
                 
                 const netBalance = totalIncome - totalExpense;
                 
+                // Calculate expected monthly subscription (23 members × ₹200)
+                const expectedMonthlyTotal = FIXED_MEMBER_COUNT * MONTHLY_SUBSCRIPTION_RATE;
+                
                 console.log("Monthly income data:", monthlyIncome);
                 console.log("Total income:", totalIncome);
                 console.log("Total expense:", totalExpense);
                 console.log("Net balance:", netBalance);
+                console.log("Expected monthly total:", expectedMonthlyTotal);
                 
                 // Create PDF
                 const doc = new jsPDF();
@@ -773,17 +723,17 @@
                 
                 let currentY = 45;
                 
-                // ========== MONTHLY INCOME/SUBSCRIPTION SUMMARY ==========
+                // ========== MONTHLY SUBSCRIPTION SUMMARY ==========
                 doc.setFontSize(12);
                 doc.setTextColor(0, 102, 204);
                 doc.setFont('helvetica', 'bold');
-                doc.text('MONTHLY INCOME COLLECTION', 20, currentY);
+                doc.text('MONTHLY SUBSCRIPTION SUMMARY', 20, currentY);
                 currentY += 8;
                 
                 doc.setFontSize(10);
                 doc.setTextColor(100, 100, 100);
                 doc.setFont('helvetica', 'italic');
-                doc.text(`(23 members × ₹200 each = ₹4,600 per month)`, 20, currentY);
+                doc.text(`(23 members × ₹200 per member = ₹4,600 expected monthly)`, 20, currentY);
                 currentY += 8;
                 
                 // Display monthly income totals
@@ -793,7 +743,7 @@
                 doc.text('Month', 25, currentY);
                 doc.text('Members', 70, currentY);
                 doc.text('Amount per Member', 110, currentY);
-                doc.text('Total Amount', 160, currentY);
+                doc.text('Total Collected', 160, currentY);
                 currentY += 8;
                 
                 doc.setFont('helvetica', 'normal');
@@ -817,13 +767,13 @@
                 }
                 
                 if (!hasMonthlyData) {
-                    doc.text('No income data available for this year', 25, currentY);
+                    doc.text('No subscription data available for this year', 25, currentY);
                     currentY += 6;
                 }
                 
                 currentY += 10;
                 
-                // ========== INDIVIDUAL INCOME TRANSACTIONS ==========
+                // ========== OTHER INCOME TRANSACTIONS (with narration) ==========
                 if (incomeTransactions.length > 0) {
                     if (currentY > 200) {
                         doc.addPage();
@@ -833,8 +783,14 @@
                     doc.setFontSize(12);
                     doc.setTextColor(0, 102, 204);
                     doc.setFont('helvetica', 'bold');
-                    doc.text('INDIVIDUAL INCOME TRANSACTIONS', 20, currentY);
-                    currentY += 10;
+                    doc.text('OTHER INCOME TRANSACTIONS', 20, currentY);
+                    currentY += 8;
+                    
+                    doc.setFontSize(10);
+                    doc.setTextColor(100, 100, 100);
+                    doc.setFont('helvetica', 'italic');
+                    doc.text('(Only transactions with narration are shown)', 20, currentY);
+                    currentY += 8;
                     
                     doc.setFontSize(10);
                     doc.setTextColor(0, 0, 0);
@@ -854,7 +810,9 @@
                         }
                     });
                     
+                    let incomeCount = 0;
                     incomeTransactions.forEach(transaction => {
+                        incomeCount++;
                         doc.text(transaction.date || 'N/A', 25, currentY);
                         
                         // Truncate long narration
@@ -871,10 +829,11 @@
                         }
                     });
                     
+                    console.log(`Displayed ${incomeCount} income transactions in PDF`);
                     currentY += 10;
                 }
                 
-                // ========== EXPENSE DETAILS ==========
+                // ========== EXPENSE DETAILS (with narration) ==========
                 if (expenseTransactions.length > 0) {
                     if (currentY > 200) {
                         doc.addPage();
@@ -885,7 +844,13 @@
                     doc.setTextColor(0, 102, 204);
                     doc.setFont('helvetica', 'bold');
                     doc.text('EXPENSE DETAILS', 20, currentY);
-                    currentY += 10;
+                    currentY += 8;
+                    
+                    doc.setFontSize(10);
+                    doc.setTextColor(100, 100, 100);
+                    doc.setFont('helvetica', 'italic');
+                    doc.text('(Only transactions with narration are shown)', 20, currentY);
+                    currentY += 8;
                     
                     doc.setFontSize(10);
                     doc.setTextColor(0, 0, 0);
@@ -905,7 +870,9 @@
                         }
                     });
                     
+                    let expenseCount = 0;
                     expenseTransactions.forEach(transaction => {
+                        expenseCount++;
                         doc.text(transaction.date || 'N/A', 25, currentY);
                         
                         // Truncate long narration
@@ -921,6 +888,8 @@
                             currentY = 20;
                         }
                     });
+                    
+                    console.log(`Displayed ${expenseCount} expense transactions in PDF`);
                 }
                 
                 // ========== ANNUAL SUMMARY ==========
@@ -944,11 +913,11 @@
                 doc.setFont('helvetica', 'normal');
                 
                 // Income Summary
-                doc.text(`Total Income:`, 25, currentY);
+                doc.text(`Total Income (with narration):`, 25, currentY);
                 doc.text(`${totalIncome.toFixed(2)}`, 140, currentY);
                 currentY += 8;
                 
-                doc.text(`Total Expenses:`, 25, currentY);
+                doc.text(`Total Expenses (with narration):`, 25, currentY);
                 doc.text(`${totalExpense.toFixed(2)}`, 140, currentY);
                 currentY += 10;
                 
@@ -969,6 +938,13 @@
                 
                 // Reset text color
                 doc.setTextColor(0, 0, 0);
+                
+                // Note about filtered transactions
+                doc.setFontSize(8);
+                doc.setTextColor(100, 100, 100);
+                doc.setFont('helvetica', 'italic');
+                doc.text('*Note: Only transactions with narration are included in this report', 20, currentY);
+                currentY += 6;
                 
                 // Treasurer signature
                 doc.setFontSize(10);
