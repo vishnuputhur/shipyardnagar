@@ -7,8 +7,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- jsPDF Library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root {
             --primary-orange: #FF6B35;
@@ -440,17 +438,29 @@
             color: white;
         }
 
-        /* Year Selector */
-        .year-selector {
-            margin-bottom: 20px;
+        /* Download Reports Button */
+        .download-reports-btn {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%);
+            border: none;
+            border-radius: 12px;
+            padding: 15px 30px;
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+            margin-top: 30px;
+            width: 100%;
             display: flex;
-            gap: 10px;
             align-items: center;
             justify-content: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            text-decoration: none;
         }
 
-        .year-select {
-            width: 120px;
+        .download-reports-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(30, 58, 138, 0.3);
+            color: white;
         }
 
         /* Responsive */
@@ -515,29 +525,11 @@
                         Wealth Management
                     </div>
                     
-                    <!-- Navigation Buttons -->
-                    <div class="button-grid">
-                        <a href="dashboard.html" class="admin-btn">
-                            <i class="fas fa-arrow-left me-2"></i>
-                            Back to Dashboard
-                        </a>
-                        <button class="admin-btn" id="logout" style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);">
-                            <i class="fas fa-sign-out-alt me-2"></i>
-                            Logout
-                        </button>
-                        <button class="admin-btn" id="generatePdfBtn">
-                            <i class="fas fa-file-pdf me-2"></i>
-                            Generate Report
-                        </button>
-                    </div>
-
-                    <!-- Year Selector -->
-                    <div class="year-selector">
-                        <label for="yearSelect">Select Year:</label>
-                        <select class="form-select year-select" id="yearSelect">
-                            <!-- Years will be populated dynamically -->
-                        </select>
-                    </div>
+                    <!-- Download Reports Button -->
+                    <a href="report.html" class="download-reports-btn">
+                        <i class="fas fa-download me-2"></i>
+                        Download Reports
+                    </a>
 
                     <!-- Wealth Display - ORIGINAL -->
                     <div class="wealth-display">
@@ -597,7 +589,7 @@
 
                     <!-- Recent Transactions - ORIGINAL (Last 15) -->
                     <div class="card">
-                        <h5>Recent Transactions (Last 15 - Excluding Subscriptions)</h5>
+                        <h5>Recent Transactions (Last 15)</h5>
                         <div class="transactions-list" id="transactionsList">
                             <!-- Transactions will be loaded here -->
                         </div>
@@ -642,59 +634,17 @@
 
         const auth = firebase.auth();
         const db = firebase.firestore();
-        const { jsPDF } = window.jspdf;
 
         let allTransactions = [];
-        let selectedYear = new Date().getFullYear();
         let transactionToDelete = null;
         let transactionToEdit = null;
         let isEditing = false;
-
-        // Subscription keywords to identify subscription transactions
-        const subscriptionKeywords = ['subscription', 'monthly', 'മാസവരി', 'മാസിക', 'സബ്സ്ക്രിപ്ഷൻ', 'വരി'];
-
-        // Function to check if a transaction is a subscription
-        function isSubscription(transaction) {
-            const narration = transaction.narration.toLowerCase();
-            return subscriptionKeywords.some(keyword => narration.includes(keyword.toLowerCase()));
-        }
 
         // Set default date to today - ORIGINAL FROM YOUR CODE
         function setDefaultDates() {
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('incomeDate').value = today;
             document.getElementById('expenseDate').value = today;
-        }
-
-        // Populate year dropdown
-        function populateYears() {
-            const yearSelect = document.getElementById('yearSelect');
-            const currentYear = new Date().getFullYear();
-            
-            yearSelect.innerHTML = '<option value="all">All Years</option>';
-            
-            // Add available years from transactions
-            const years = new Set();
-            allTransactions.forEach(transaction => {
-                const year = new Date(transaction.date).getFullYear();
-                years.add(year);
-            });
-            
-            // Add current year if no transactions exist
-            if (years.size === 0) {
-                years.add(currentYear);
-            }
-            
-            // Add years in descending order
-            Array.from(years).sort((a, b) => b - a).forEach(year => {
-                const option = document.createElement('option');
-                option.value = year;
-                option.textContent = year;
-                if (year === selectedYear) {
-                    option.selected = true;
-                }
-                yearSelect.appendChild(option);
-            });
         }
 
         // Calculate total wealth - ORIGINAL FROM YOUR CODE
@@ -725,7 +675,7 @@
             }
         }
 
-        // Load all transactions - MODIFIED: Filter out subscriptions for display
+        // Load all transactions - ORIGINAL FROM YOUR CODE
         async function loadTransactions() {
             const loadingSpinner = document.getElementById('loadingSpinner');
             loadingSpinner.style.display = 'block';
@@ -743,13 +693,10 @@
                     allTransactions.push(transaction);
                 });
                 
-                // Update year dropdown
-                populateYears();
-                
                 // Calculate and display wealth
                 await calculateTotalWealth();
                 
-                // Display recent transactions (last 15, excluding subscriptions)
+                // Display recent transactions (last 15)
                 displayRecentTransactions();
                 
             } catch (error) {
@@ -759,15 +706,12 @@
             }
         }
 
-        // Display recent transactions (last 15) - MODIFIED: Excluding subscriptions
+        // Display recent transactions (last 15) - FROM YOUR CODE
         function displayRecentTransactions() {
             const transactionsList = document.getElementById('transactionsList');
             
-            // Filter out subscription transactions
-            const nonSubscriptionTransactions = allTransactions.filter(transaction => !isSubscription(transaction));
-            
-            // Get last 15 non-subscription transactions
-            const recentTransactions = nonSubscriptionTransactions.slice(0, 15);
+            // Get last 15 transactions
+            const recentTransactions = allTransactions.slice(0, 15);
             
             if (recentTransactions.length === 0) {
                 transactionsList.innerHTML = '<div class="text-center p-3">No transactions found</div>';
@@ -804,7 +748,7 @@
             });
         }
 
-        // Edit transaction
+        // Edit transaction - FIXED VERSION
         window.editTransaction = async function(transactionId) {
             try {
                 const transactionDoc = await db.collection('transactions').doc(transactionId).get();
@@ -884,269 +828,6 @@
             }
         }
 
-        // Generate Annual Report PDF - MODIFIED: Group subscriptions separately
-        function generateAnnualReport() {
-            if (selectedYear === 'all') {
-                alert('Please select a specific year for the report');
-                return;
-            }
-            
-            // Filter transactions for selected year
-            const yearTransactions = allTransactions.filter(transaction => {
-                const transactionYear = new Date(transaction.date).getFullYear();
-                return transactionYear === parseInt(selectedYear);
-            });
-            
-            if (yearTransactions.length === 0) {
-                alert(`No transactions found for year ${selectedYear}`);
-                return;
-            }
-            
-            // Separate subscription and non-subscription transactions
-            const subscriptionTransactions = yearTransactions.filter(transaction => 
-                transaction.type === 'income' && isSubscription(transaction));
-            
-            const nonSubscriptionIncome = yearTransactions.filter(transaction => 
-                transaction.type === 'income' && !isSubscription(transaction));
-            
-            const expenseTransactions = yearTransactions.filter(transaction => 
-                transaction.type === 'expense');
-            
-            // Calculate totals
-            let subscriptionTotal = 0;
-            subscriptionTransactions.forEach(transaction => {
-                subscriptionTotal += transaction.amount;
-            });
-            
-            let nonSubscriptionIncomeTotal = 0;
-            nonSubscriptionIncome.forEach(transaction => {
-                nonSubscriptionIncomeTotal += transaction.amount;
-            });
-            
-            let expenseTotal = 0;
-            expenseTransactions.forEach(transaction => {
-                expenseTotal += transaction.amount;
-            });
-            
-            const totalIncome = subscriptionTotal + nonSubscriptionIncomeTotal;
-            const netBalance = totalIncome - expenseTotal;
-            
-            // Group subscription by month
-            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
-                               'July', 'August', 'September', 'October', 'November', 'December'];
-            
-            const monthlySubscription = {};
-            for (let i = 0; i < 12; i++) {
-                monthlySubscription[i] = {
-                    monthName: monthNames[i],
-                    total: 0
-                };
-            }
-            
-            subscriptionTransactions.forEach(transaction => {
-                const month = new Date(transaction.date).getMonth();
-                monthlySubscription[month].total += transaction.amount;
-            });
-            
-            // Create PDF
-            const doc = new jsPDF();
-            const pageWidth = doc.internal.pageSize.width;
-            
-            // Title
-            doc.setFontSize(18);
-            doc.setTextColor(0, 102, 204);
-            doc.setFont('helvetica', 'bold');
-            doc.text('SHIPYARD NAGAR RESIDENCE ASSOCIATION', pageWidth / 2, 20, { align: 'center' });
-            
-            // Year Report
-            doc.setFontSize(16);
-            doc.setTextColor(0, 0, 0);
-            doc.text(`ANNUAL REPORT - ${selectedYear}`, pageWidth / 2, 30, { align: 'center' });
-            
-            // Line
-            doc.setDrawColor(0, 102, 204);
-            doc.setLineWidth(0.5);
-            doc.line(20, 35, pageWidth - 20, 35);
-            
-            let currentY = 45;
-            
-            // ========== SUBSCRIPTION SUMMARY ==========
-            doc.setFontSize(12);
-            doc.setTextColor(0, 102, 204);
-            doc.setFont('helvetica', 'bold');
-            doc.text('SUBSCRIPTION SUMMARY (Monthly Collection)', 20, currentY);
-            currentY += 10;
-            
-            // Display monthly subscription totals
-            doc.setFontSize(10);
-            doc.setTextColor(0, 0, 0);
-            doc.setFont('helvetica', 'bold');
-            doc.text('Month', 25, currentY);
-            doc.text('Total Subscription', 150, currentY);
-            currentY += 8;
-            
-            doc.setFont('helvetica', 'normal');
-            let hasSubscriptionData = false;
-            for (let month = 0; month < 12; month++) {
-                const monthData = monthlySubscription[month];
-                if (monthData.total > 0) {
-                    hasSubscriptionData = true;
-                    doc.text(monthData.monthName, 25, currentY);
-                    doc.text(monthData.total.toFixed(2), 150, currentY);
-                    currentY += 6;
-                    
-                    // Check page break
-                    if (currentY > 250) {
-                        doc.addPage();
-                        currentY = 20;
-                    }
-                }
-            }
-            
-            if (!hasSubscriptionData) {
-                doc.text('No subscription data', 25, currentY);
-                currentY += 6;
-            }
-            
-            currentY += 10;
-            
-            // ========== OTHER INCOME DETAILS ==========
-            if (nonSubscriptionIncome.length > 0) {
-                if (currentY > 200) {
-                    doc.addPage();
-                    currentY = 20;
-                }
-                
-                doc.setFontSize(12);
-                doc.setTextColor(0, 102, 204);
-                doc.setFont('helvetica', 'bold');
-                doc.text('OTHER INCOME DETAILS', 20, currentY);
-                currentY += 10;
-                
-                doc.setFontSize(10);
-                doc.setTextColor(0, 0, 0);
-                doc.setFont('helvetica', 'bold');
-                doc.text('Date', 25, currentY);
-                doc.text('Narration', 70, currentY);
-                doc.text('Amount', 150, currentY);
-                currentY += 8;
-                
-                doc.setFont('helvetica', 'normal');
-                nonSubscriptionIncome.forEach(transaction => {
-                    doc.text(transaction.date, 25, currentY);
-                    
-                    // Truncate long narration
-                    const narration = transaction.narration.length > 25 ? 
-                        transaction.narration.substring(0, 22) + '...' : transaction.narration;
-                    doc.text(narration, 70, currentY);
-                    doc.text(transaction.amount.toFixed(2), 150, currentY);
-                    currentY += 6;
-                    
-                    // Check page break
-                    if (currentY > 250) {
-                        doc.addPage();
-                        currentY = 20;
-                    }
-                });
-                
-                currentY += 10;
-            }
-            
-            // ========== EXPENSE DETAILS ==========
-            if (expenseTransactions.length > 0) {
-                if (currentY > 200) {
-                    doc.addPage();
-                    currentY = 20;
-                }
-                
-                doc.setFontSize(12);
-                doc.setTextColor(0, 102, 204);
-                doc.setFont('helvetica', 'bold');
-                doc.text('EXPENSE DETAILS', 20, currentY);
-                currentY += 10;
-                
-                doc.setFontSize(10);
-                doc.setTextColor(0, 0, 0);
-                doc.setFont('helvetica', 'bold');
-                doc.text('Date', 25, currentY);
-                doc.text('Narration', 70, currentY);
-                doc.text('Amount', 150, currentY);
-                currentY += 8;
-                
-                doc.setFont('helvetica', 'normal');
-                expenseTransactions.forEach(transaction => {
-                    doc.text(transaction.date, 25, currentY);
-                    
-                    // Truncate long narration
-                    const narration = transaction.narration.length > 25 ? 
-                        transaction.narration.substring(0, 22) + '...' : transaction.narration;
-                    doc.text(narration, 70, currentY);
-                    doc.text(transaction.amount.toFixed(2), 150, currentY);
-                    currentY += 6;
-                    
-                    // Check page break
-                    if (currentY > 250) {
-                        doc.addPage();
-                        currentY = 20;
-                    }
-                });
-            }
-            
-            // ========== SUMMARY ==========
-            if (currentY > 200) {
-                doc.addPage();
-                currentY = 20;
-            }
-            
-            currentY += 10;
-            doc.setDrawColor(0, 0, 0);
-            doc.setLineWidth(0.3);
-            doc.line(20, currentY, pageWidth - 20, currentY);
-            currentY += 10;
-            
-            doc.setFontSize(14);
-            doc.setFont('helvetica', 'bold');
-            doc.text('ANNUAL SUMMARY', 20, currentY);
-            currentY += 10;
-            
-            doc.setFontSize(12);
-            doc.setFont('helvetica', 'normal');
-            doc.text(`Total Subscription Income: ${subscriptionTotal.toFixed(2)}`, 25, currentY);
-            currentY += 8;
-            doc.text(`Other Income: ${nonSubscriptionIncomeTotal.toFixed(2)}`, 25, currentY);
-            currentY += 8;
-            doc.text(`Total Expense: ${expenseTotal.toFixed(2)}`, 25, currentY);
-            currentY += 10;
-            
-            doc.setDrawColor(0, 0, 0);
-            doc.setLineWidth(0.3);
-            doc.line(20, currentY, pageWidth - 20, currentY);
-            currentY += 10;
-            
-            doc.setFontSize(14);
-            doc.setFont('helvetica', 'bold');
-            doc.text(`NET BALANCE: ${netBalance.toFixed(2)}`, 25, currentY);
-            currentY += 15;
-            
-            // Treasurer signature
-            doc.setFontSize(10);
-            doc.setTextColor(0, 0, 0);
-            doc.setFont('helvetica', 'bold');
-            doc.text('Treasurer', pageWidth - 30, currentY, { align: 'right' });
-            doc.text('Vishnu T', pageWidth - 30, currentY + 6, { align: 'right' });
-            
-            // Footer
-            const footerY = doc.internal.pageSize.height - 10;
-            doc.setFontSize(8);
-            doc.setTextColor(100, 100, 100);
-            doc.setFont('helvetica', 'italic');
-            doc.text('System generated report', pageWidth / 2, footerY, { align: 'center' });
-            
-            // Save PDF
-            const fileName = `Annual_Report_${selectedYear}.pdf`;
-            doc.save(fileName);
-        }
-
         // DOM Content Loaded
         document.addEventListener('DOMContentLoaded', () => {
             const loadingSpinner = document.getElementById('loadingSpinner');
@@ -1174,27 +855,6 @@
                 // Load initial data
                 await loadTransactions();
             });
-
-            // Logout
-            document.getElementById('logout').addEventListener('click', () => {
-                auth.signOut().then(() => {
-                    window.location.href = 'login.html';
-                }).catch((error) => {
-                    alert('Logout Error: ' + error.message);
-                });
-            });
-
-            // Year selection change
-            document.getElementById('yearSelect').addEventListener('change', (e) => {
-                if (e.target.value === 'all') {
-                    selectedYear = 'all';
-                } else {
-                    selectedYear = parseInt(e.target.value);
-                }
-            });
-
-            // Generate PDF button
-            document.getElementById('generatePdfBtn').addEventListener('click', generateAnnualReport);
 
             // Add/Update Income
             document.getElementById('incomeForm').addEventListener('submit', async (e) => {
