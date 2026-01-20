@@ -382,7 +382,7 @@
             <p>Powered by VTSoft 2026</p>
         </div>
         <button id="themeToggle" class="theme-toggle-btn">🌞</button>
-    </footer>
+</footer>
 
     <!-- Loading Spinner -->
     <div id="loadingSpinner">
@@ -419,13 +419,13 @@
         let allTransactions = [];
         let selectedYear = new Date().getFullYear();
 
-        // Function to check if a transaction is a subscription - FIXED VERSION
+        // Function to check if a transaction is a subscription - IMPROVED VERSION
         function isSubscription(transaction) {
             if (!transaction || !transaction.narration) return false;
             
             const subscriptionKeywords = [
                 'subscription', 'monthly', 'സബ്സ്ക്രിപ്ഷൻ', 'വരി', 
-                'monthly subscription', 'മാസവരി', 'മാസിക', 'subscription'
+                'monthly subscription', 'മാസവരി', 'മാസിക', 'മാസികം'
             ];
             
             const narration = transaction.narration.toLowerCase();
@@ -440,6 +440,15 @@
             return false;
         }
 
+        // Function to extract member count from subscription narration
+        function getMemberCountFromNarration(narration) {
+            if (!narration) return 1;
+            
+            // Look for numbers in the narration (like "30 members", "30 nos", etc.)
+            const match = narration.match(/\b(\d+)\b/);
+            return match ? parseInt(match[1]) : 1;
+        }
+
         // Populate year dropdown - FIXED VERSION
         function populateYears() {
             const yearSelect = document.getElementById('yearSelect');
@@ -452,12 +461,26 @@
             allTransactions.forEach(transaction => {
                 if (transaction && transaction.date) {
                     try {
-                        const transactionYear = new Date(transaction.date).getFullYear();
+                        const dateStr = transaction.date;
+                        let transactionYear;
+                        
+                        if (dateStr.includes('T')) {
+                            // ISO format
+                            transactionYear = new Date(dateStr).getFullYear();
+                        } else if (dateStr.includes('-')) {
+                            // YYYY-MM-DD format
+                            const parts = dateStr.split('-');
+                            transactionYear = parseInt(parts[0]);
+                        } else {
+                            // Try to parse as date
+                            transactionYear = new Date(dateStr).getFullYear();
+                        }
+                        
                         if (!isNaN(transactionYear)) {
                             years.add(transactionYear);
                         }
                     } catch (error) {
-                        console.error("Error parsing date:", transaction.date);
+                        console.error("Error parsing date:", transaction.date, error);
                     }
                 }
             });
@@ -507,15 +530,29 @@
                     transaction.amount = parseFloat(transaction.amount) || 0;
                     
                     // Ensure date is in correct format
-                    if (transaction.date && typeof transaction.date === 'string') {
-                        // If date is in timestamp format, convert to YYYY-MM-DD
-                        if (transaction.date.includes('T')) {
-                            const dateObj = new Date(transaction.date);
-                            transaction.date = dateObj.toISOString().split('T')[0];
+                    if (transaction.date) {
+                        try {
+                            // If date is a Firebase Timestamp
+                            if (transaction.date.toDate) {
+                                const dateObj = transaction.date.toDate();
+                                transaction.date = dateObj.toISOString().split('T')[0];
+                            }
+                            // If date is in timestamp format
+                            else if (transaction.date.includes('T')) {
+                                const dateObj = new Date(transaction.date);
+                                transaction.date = dateObj.toISOString().split('T')[0];
+                            }
+                        } catch (error) {
+                            console.error("Error processing date:", transaction.date, error);
                         }
                     }
                     
                     allTransactions.push(transaction);
+                    
+                    // Debug: Check if subscription
+                    if (isSubscription(transaction)) {
+                        console.log("Subscription found:", transaction.narration, "Amount:", transaction.amount);
+                    }
                 });
                 
                 console.log("Transactions loaded:", allTransactions.length);
@@ -553,7 +590,7 @@
             document.getElementById('errorMessage').style.display = 'none';
         }
 
-        // Generate Annual Report PDF - FIXED VERSION
+        // Generate Annual Report PDF - FIXED VERSION WITH MONTHLY SUBSCRIPTION GROUPING
         async function generateAnnualReport() {
             if (!selectedYear) {
                 showError('Please select a year');
@@ -573,10 +610,18 @@
                     if (!transaction || !transaction.date) return false;
                     
                     try {
-                        const transactionDate = new Date(transaction.date);
-                        if (isNaN(transactionDate)) return false;
+                        let transactionYear;
+                        const dateStr = transaction.date;
                         
-                        const transactionYear = transactionDate.getFullYear();
+                        if (dateStr.includes('-')) {
+                            // YYYY-MM-DD format
+                            const parts = dateStr.split('-');
+                            transactionYear = parseInt(parts[0]);
+                        } else {
+                            // Try to parse as date
+                            transactionYear = new Date(dateStr).getFullYear();
+                        }
+                        
                         return transactionYear === parseInt(selectedYear);
                     } catch (error) {
                         console.error("Error parsing date in filter:", transaction.date);
@@ -600,6 +645,10 @@
                 const expenseTransactions = yearTransactions.filter(transaction => 
                     transaction.type === 'expense');
                 
+                console.log("Subscription transactions:", subscriptionTransactions.length);
+                console.log("Non-subscription income:", nonSubscriptionIncome.length);
+                console.log("Expense transactions:", expenseTransactions.length);
+                
                 // Calculate subscription totals by month
                 const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
                                    'July', 'August', 'September', 'October', 'November', 'December'];
@@ -609,17 +658,37 @@
                     monthlySubscription[i] = {
                         monthName: monthNames[i],
                         total: 0,
-                        count: 0
+                        memberCount: 0,
+                        transactionCount: 0
                     };
                 }
                 
                 subscriptionTransactions.forEach(transaction => {
                     try {
-                        const month = new Date(transaction.date).getMonth();
-                        monthlySubscription[month].total += transaction.amount;
-                        monthlySubscription[month].count++;
+                        let month;
+                        const dateStr = transaction.date;
+                        
+                        if (dateStr.includes('-')) {
+                            // YYYY-MM-DD format
+                            const parts = dateStr.split('-');
+                            month = parseInt(parts[1]) - 1; // Month is 0-indexed
+                        } else {
+                            // Try to parse as date
+                            month = new Date(dateStr).getMonth();
+                        }
+                        
+                        if (month >= 0 && month < 12) {
+                            monthlySubscription[month].total += transaction.amount;
+                            monthlySubscription[month].transactionCount++;
+                            
+                            // Try to extract member count from narration
+                            const memberCount = getMemberCountFromNarration(transaction.narration);
+                            monthlySubscription[month].memberCount += memberCount;
+                            
+                            console.log(`Month ${month} (${monthNames[month]}): Added ${transaction.amount} from "${transaction.narration}", member count: ${memberCount}`);
+                        }
                     } catch (error) {
-                        console.error("Error processing subscription date:", transaction.date);
+                        console.error("Error processing subscription date:", transaction.date, error);
                     }
                 });
                 
@@ -641,6 +710,18 @@
                 
                 const totalIncome = subscriptionTotal + nonSubscriptionIncomeTotal;
                 const netBalance = totalIncome - expenseTotal;
+                
+                // Calculate total members (unique count by month)
+                let totalMembers = 0;
+                Object.values(monthlySubscription).forEach(monthData => {
+                    if (monthData.memberCount > 0) {
+                        totalMembers = Math.max(totalMembers, monthData.memberCount); // Take max from any month
+                    }
+                });
+                
+                console.log("Monthly subscription data:", monthlySubscription);
+                console.log("Subscription total:", subscriptionTotal);
+                console.log("Total members:", totalMembers);
                 
                 // Create PDF
                 const doc = new jsPDF();
@@ -676,21 +757,19 @@
                 doc.setTextColor(0, 0, 0);
                 doc.setFont('helvetica', 'bold');
                 doc.text('Month', 25, currentY);
-                doc.text('No. of Members', 80, currentY);
-                doc.text('Total Amount', 140, currentY);
+                doc.text('Members', 70, currentY);
+                doc.text('Total Amount', 120, currentY);
                 currentY += 8;
                 
                 doc.setFont('helvetica', 'normal');
                 let hasSubscriptionData = false;
-                let totalMembers = 0;
                 for (let month = 0; month < 12; month++) {
                     const monthData = monthlySubscription[month];
                     if (monthData.total > 0) {
                         hasSubscriptionData = true;
-                        totalMembers += monthData.count;
                         doc.text(monthData.monthName, 25, currentY);
-                        doc.text(monthData.count.toString(), 80, currentY);
-                        doc.text(monthData.total.toFixed(2), 140, currentY);
+                        doc.text(monthData.memberCount.toString(), 70, currentY);
+                        doc.text(monthData.total.toFixed(2), 120, currentY);
                         currentY += 6;
                         
                         // Check page break
@@ -725,22 +804,28 @@
                     doc.setTextColor(0, 0, 0);
                     doc.setFont('helvetica', 'bold');
                     doc.text('Date', 25, currentY);
-                    doc.text('Narration', 60, currentY);
-                    doc.text('Amount', 150, currentY);
+                    doc.text('Narration', 50, currentY); // Increased width by 20mm
+                    doc.text('Amount', 160, currentY);
                     currentY += 8;
                     
                     doc.setFont('helvetica', 'normal');
                     // Sort by date descending
-                    nonSubscriptionIncome.sort((a, b) => new Date(b.date) - new Date(a.date));
+                    nonSubscriptionIncome.sort((a, b) => {
+                        try {
+                            return new Date(b.date) - new Date(a.date);
+                        } catch {
+                            return 0;
+                        }
+                    });
                     
                     nonSubscriptionIncome.forEach(transaction => {
                         doc.text(transaction.date || 'N/A', 25, currentY);
                         
-                        // Truncate long narration
-                        const narration = transaction.narration && transaction.narration.length > 30 ? 
-                            transaction.narration.substring(0, 27) + '...' : transaction.narration || 'N/A';
-                        doc.text(narration, 60, currentY);
-                        doc.text(transaction.amount.toFixed(2), 150, currentY);
+                        // Truncate long narration (more space now)
+                        const narration = transaction.narration && transaction.narration.length > 45 ? 
+                            transaction.narration.substring(0, 42) + '...' : transaction.narration || 'N/A';
+                        doc.text(narration, 50, currentY); // Start at 50 instead of 60
+                        doc.text(transaction.amount.toFixed(2), 160, currentY); // Removed ₹ symbol
                         currentY += 6;
                         
                         // Check page break
@@ -770,22 +855,28 @@
                     doc.setTextColor(0, 0, 0);
                     doc.setFont('helvetica', 'bold');
                     doc.text('Date', 25, currentY);
-                    doc.text('Narration', 60, currentY);
-                    doc.text('Amount', 150, currentY);
+                    doc.text('Narration', 50, currentY); // Increased width by 20mm
+                    doc.text('Amount', 160, currentY);
                     currentY += 8;
                     
                     doc.setFont('helvetica', 'normal');
                     // Sort by date descending
-                    expenseTransactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+                    expenseTransactions.sort((a, b) => {
+                        try {
+                            return new Date(b.date) - new Date(a.date);
+                        } catch {
+                            return 0;
+                        }
+                    });
                     
                     expenseTransactions.forEach(transaction => {
                         doc.text(transaction.date || 'N/A', 25, currentY);
                         
-                        // Truncate long narration
-                        const narration = transaction.narration && transaction.narration.length > 30 ? 
-                            transaction.narration.substring(0, 27) + '...' : transaction.narration || 'N/A';
-                        doc.text(narration, 60, currentY);
-                        doc.text(transaction.amount.toFixed(2), 150, currentY);
+                        // Truncate long narration (more space now)
+                        const narration = transaction.narration && transaction.narration.length > 45 ? 
+                            transaction.narration.substring(0, 42) + '...' : transaction.narration || 'N/A';
+                        doc.text(narration, 50, currentY); // Start at 50 instead of 60
+                        doc.text(transaction.amount.toFixed(2), 160, currentY); // Removed ₹ symbol
                         currentY += 6;
                         
                         // Check page break
@@ -818,19 +909,19 @@
                 
                 // Subscription Summary
                 doc.text(`Subscription Income:`, 25, currentY);
-                doc.text(`₹${subscriptionTotal.toFixed(2)} (${totalMembers} members)`, 140, currentY);
+                doc.text(`${subscriptionTotal.toFixed(2)} (${totalMembers} members)`, 140, currentY);
                 currentY += 8;
                 
                 doc.text(`Other Income:`, 25, currentY);
-                doc.text(`₹${nonSubscriptionIncomeTotal.toFixed(2)}`, 140, currentY);
+                doc.text(`${nonSubscriptionIncomeTotal.toFixed(2)}`, 140, currentY);
                 currentY += 8;
                 
                 doc.text(`Total Income:`, 25, currentY);
-                doc.text(`₹${totalIncome.toFixed(2)}`, 140, currentY);
+                doc.text(`${totalIncome.toFixed(2)}`, 140, currentY);
                 currentY += 10;
                 
                 doc.text(`Total Expenses:`, 25, currentY);
-                doc.text(`₹${expenseTotal.toFixed(2)}`, 140, currentY);
+                doc.text(`${expenseTotal.toFixed(2)}`, 140, currentY);
                 currentY += 10;
                 
                 doc.setDrawColor(0, 0, 0);
@@ -845,7 +936,7 @@
                 } else {
                     doc.setTextColor(255, 0, 0); // Red for negative
                 }
-                doc.text(`NET BALANCE: ₹${netBalance.toFixed(2)}`, 25, currentY);
+                doc.text(`NET BALANCE: ${netBalance.toFixed(2)}`, 25, currentY);
                 currentY += 15;
                 
                 // Reset text color
