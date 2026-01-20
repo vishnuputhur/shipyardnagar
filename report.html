@@ -423,9 +423,12 @@
         function isSubscription(transaction) {
             if (!transaction || !transaction.narration) return false;
             
+            // Common subscription keywords in both English and Malayalam
             const subscriptionKeywords = [
                 'subscription', 'monthly', 'സബ്സ്ക്രിപ്ഷൻ', 'വരി', 
-                'monthly subscription', 'മാസവരി', 'മാസിക', 'മാസികം'
+                'monthly subscription', 'മാസവരി', 'മാസിക', 'മാസികം',
+                'sub', 'മാസ', 'വരിക', 'collection', 'ശമ്പളം',
+                'ഫീസ്', 'fee', 'ഫീ', 'പണം', 'amount'
             ];
             
             const narration = transaction.narration.toLowerCase();
@@ -433,6 +436,21 @@
             // Check if it contains subscription keywords
             for (const keyword of subscriptionKeywords) {
                 if (narration.includes(keyword.toLowerCase())) {
+                    console.log("Subscription detected:", narration, "Keyword:", keyword);
+                    return true;
+                }
+            }
+            
+            // Also check for common patterns
+            const patterns = [
+                /\d+\s*(members?|പേർ|പേര്|പേരുകൾ)/i, // 30 members, 30 പേർ
+                /\d+\s*(nos?|നമ്പർ|നമ്പറുകൾ)/i, // 30 nos
+                /(മാസ|month).*(വരി|collection|amount)/i // മാസവരി, monthly collection
+            ];
+            
+            for (const pattern of patterns) {
+                if (pattern.test(narration)) {
+                    console.log("Subscription pattern detected:", narration);
                     return true;
                 }
             }
@@ -444,9 +462,63 @@
         function getMemberCountFromNarration(narration) {
             if (!narration) return 1;
             
-            // Look for numbers in the narration (like "30 members", "30 nos", etc.)
-            const match = narration.match(/\b(\d+)\b/);
-            return match ? parseInt(match[1]) : 1;
+            console.log("Extracting member count from:", narration);
+            
+            // Look for numbers in the narration (like "30 members", "30 nos", "30 പേർ", etc.)
+            const patterns = [
+                /\b(\d+)\s*(members?|പേർ|പേര്|പേരുകൾ)\b/i,
+                /\b(\d+)\s*(nos?|നമ്പർ|നമ്പറുകൾ)\b/i,
+                /\b(\d+)\s*(people|പേര്)\b/i,
+                /\b(\d+)\b/ // Just a number
+            ];
+            
+            for (const pattern of patterns) {
+                const match = narration.match(pattern);
+                if (match) {
+                    const count = parseInt(match[1]);
+                    console.log("Found member count:", count, "Pattern:", pattern);
+                    return count;
+                }
+            }
+            
+            console.log("No member count found, defaulting to 1");
+            return 1; // Default to 1 if no number found
+        }
+
+        // Function to normalize date - handles various date formats
+        function normalizeDate(dateString) {
+            if (!dateString) return null;
+            
+            try {
+                // If it's a Firebase Timestamp
+                if (dateString.toDate && typeof dateString.toDate === 'function') {
+                    const date = dateString.toDate();
+                    return date.toISOString().split('T')[0]; // YYYY-MM-DD
+                }
+                
+                // If it's already in YYYY-MM-DD format
+                if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+                    return dateString;
+                }
+                
+                // If it's in ISO format
+                if (dateString.includes('T')) {
+                    const date = new Date(dateString);
+                    return date.toISOString().split('T')[0];
+                }
+                
+                // Try to parse as date
+                const date = new Date(dateString);
+                if (!isNaN(date.getTime())) {
+                    return date.toISOString().split('T')[0];
+                }
+                
+                console.error("Could not parse date:", dateString);
+                return null;
+            } catch (error) {
+                console.error("Error normalizing date:", dateString, error);
+                return null;
+            }
         }
 
         // Populate year dropdown - FIXED VERSION
@@ -461,26 +533,15 @@
             allTransactions.forEach(transaction => {
                 if (transaction && transaction.date) {
                     try {
-                        const dateStr = transaction.date;
-                        let transactionYear;
-                        
-                        if (dateStr.includes('T')) {
-                            // ISO format
-                            transactionYear = new Date(dateStr).getFullYear();
-                        } else if (dateStr.includes('-')) {
-                            // YYYY-MM-DD format
-                            const parts = dateStr.split('-');
-                            transactionYear = parseInt(parts[0]);
-                        } else {
-                            // Try to parse as date
-                            transactionYear = new Date(dateStr).getFullYear();
-                        }
-                        
-                        if (!isNaN(transactionYear)) {
-                            years.add(transactionYear);
+                        const normalizedDate = normalizeDate(transaction.date);
+                        if (normalizedDate) {
+                            const year = parseInt(normalizedDate.split('-')[0]);
+                            if (!isNaN(year)) {
+                                years.add(year);
+                            }
                         }
                     } catch (error) {
-                        console.error("Error parsing date:", transaction.date, error);
+                        console.error("Error getting year from date:", transaction.date, error);
                     }
                 }
             });
@@ -529,32 +590,24 @@
                     transaction.id = doc.id;
                     transaction.amount = parseFloat(transaction.amount) || 0;
                     
-                    // Ensure date is in correct format
-                    if (transaction.date) {
-                        try {
-                            // If date is a Firebase Timestamp
-                            if (transaction.date.toDate) {
-                                const dateObj = transaction.date.toDate();
-                                transaction.date = dateObj.toISOString().split('T')[0];
-                            }
-                            // If date is in timestamp format
-                            else if (transaction.date.includes('T')) {
-                                const dateObj = new Date(transaction.date);
-                                transaction.date = dateObj.toISOString().split('T')[0];
-                            }
-                        } catch (error) {
-                            console.error("Error processing date:", transaction.date, error);
-                        }
+                    // Normalize date
+                    transaction.originalDate = transaction.date;
+                    transaction.date = normalizeDate(transaction.date);
+                    
+                    // Debug subscription detection
+                    if (isSubscription(transaction)) {
+                        console.log("SUBSCRIPTION DETECTED:", {
+                            narration: transaction.narration,
+                            amount: transaction.amount,
+                            date: transaction.date,
+                            type: transaction.type
+                        });
                     }
                     
                     allTransactions.push(transaction);
-                    
-                    // Debug: Check if subscription
-                    if (isSubscription(transaction)) {
-                        console.log("Subscription found:", transaction.narration, "Amount:", transaction.amount);
-                    }
                 });
                 
+                console.log("Total subscriptions found:", allTransactions.filter(t => isSubscription(t)).length);
                 console.log("Transactions loaded:", allTransactions.length);
                 return true;
             } catch (error) {
@@ -590,7 +643,7 @@
             document.getElementById('errorMessage').style.display = 'none';
         }
 
-        // Generate Annual Report PDF - FIXED VERSION WITH MONTHLY SUBSCRIPTION GROUPING
+        // Generate Annual Report PDF - FIXED VERSION
         async function generateAnnualReport() {
             if (!selectedYear) {
                 showError('Please select a year');
@@ -605,39 +658,39 @@
             loadingSpinner.style.display = 'block';
             
             try {
+                console.log(`Generating report for year: ${selectedYear}`);
+                console.log("Total transactions:", allTransactions.length);
+                
                 // Filter transactions for selected year
                 const yearTransactions = allTransactions.filter(transaction => {
                     if (!transaction || !transaction.date) return false;
                     
                     try {
-                        let transactionYear;
-                        const dateStr = transaction.date;
+                        const normalizedDate = transaction.date;
+                        if (!normalizedDate) return false;
                         
-                        if (dateStr.includes('-')) {
-                            // YYYY-MM-DD format
-                            const parts = dateStr.split('-');
-                            transactionYear = parseInt(parts[0]);
-                        } else {
-                            // Try to parse as date
-                            transactionYear = new Date(dateStr).getFullYear();
-                        }
-                        
-                        return transactionYear === parseInt(selectedYear);
+                        const year = parseInt(normalizedDate.split('-')[0]);
+                        return year === parseInt(selectedYear);
                     } catch (error) {
                         console.error("Error parsing date in filter:", transaction.date);
                         return false;
                     }
                 });
                 
-                console.log("Year transactions for", selectedYear, ":", yearTransactions.length);
+                console.log(`Year ${selectedYear} transactions:`, yearTransactions.length);
                 
                 if (yearTransactions.length === 0) {
                     throw new Error(`No transactions found for year ${selectedYear}`);
                 }
                 
                 // Separate subscription and non-subscription transactions
-                const subscriptionTransactions = yearTransactions.filter(transaction => 
-                    transaction.type === 'income' && isSubscription(transaction));
+                const subscriptionTransactions = yearTransactions.filter(transaction => {
+                    const isSub = isSubscription(transaction) && transaction.type === 'income';
+                    if (isSub) {
+                        console.log("Subscription for report:", transaction.narration, "Amount:", transaction.amount);
+                    }
+                    return isSub;
+                });
                 
                 const nonSubscriptionIncome = yearTransactions.filter(transaction => 
                     transaction.type === 'income' && !isSubscription(transaction));
@@ -648,6 +701,11 @@
                 console.log("Subscription transactions:", subscriptionTransactions.length);
                 console.log("Non-subscription income:", nonSubscriptionIncome.length);
                 console.log("Expense transactions:", expenseTransactions.length);
+                
+                // Debug: List all subscription transactions
+                subscriptionTransactions.forEach((t, i) => {
+                    console.log(`Sub ${i+1}:`, t.narration, t.amount, t.date);
+                });
                 
                 // Calculate subscription totals by month
                 const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
@@ -665,17 +723,10 @@
                 
                 subscriptionTransactions.forEach(transaction => {
                     try {
-                        let month;
-                        const dateStr = transaction.date;
+                        if (!transaction.date) return;
                         
-                        if (dateStr.includes('-')) {
-                            // YYYY-MM-DD format
-                            const parts = dateStr.split('-');
-                            month = parseInt(parts[1]) - 1; // Month is 0-indexed
-                        } else {
-                            // Try to parse as date
-                            month = new Date(dateStr).getMonth();
-                        }
+                        const normalizedDate = transaction.date;
+                        const month = parseInt(normalizedDate.split('-')[1]) - 1; // Month is 0-indexed
                         
                         if (month >= 0 && month < 12) {
                             monthlySubscription[month].total += transaction.amount;
@@ -683,7 +734,10 @@
                             
                             // Try to extract member count from narration
                             const memberCount = getMemberCountFromNarration(transaction.narration);
-                            monthlySubscription[month].memberCount += memberCount;
+                            monthlySubscription[month].memberCount = Math.max(
+                                monthlySubscription[month].memberCount, 
+                                memberCount
+                            );
                             
                             console.log(`Month ${month} (${monthNames[month]}): Added ${transaction.amount} from "${transaction.narration}", member count: ${memberCount}`);
                         }
@@ -711,11 +765,11 @@
                 const totalIncome = subscriptionTotal + nonSubscriptionIncomeTotal;
                 const netBalance = totalIncome - expenseTotal;
                 
-                // Calculate total members (unique count by month)
+                // Calculate total members (max from any month)
                 let totalMembers = 0;
                 Object.values(monthlySubscription).forEach(monthData => {
-                    if (monthData.memberCount > 0) {
-                        totalMembers = Math.max(totalMembers, monthData.memberCount); // Take max from any month
+                    if (monthData.memberCount > totalMembers) {
+                        totalMembers = monthData.memberCount;
                     }
                 });
                 
@@ -824,8 +878,8 @@
                         // Truncate long narration (more space now)
                         const narration = transaction.narration && transaction.narration.length > 45 ? 
                             transaction.narration.substring(0, 42) + '...' : transaction.narration || 'N/A';
-                        doc.text(narration, 50, currentY); // Start at 50 instead of 60
-                        doc.text(transaction.amount.toFixed(2), 160, currentY); // Removed ₹ symbol
+                        doc.text(narration, 50, currentY);
+                        doc.text(transaction.amount.toFixed(2), 160, currentY);
                         currentY += 6;
                         
                         // Check page break
@@ -855,7 +909,7 @@
                     doc.setTextColor(0, 0, 0);
                     doc.setFont('helvetica', 'bold');
                     doc.text('Date', 25, currentY);
-                    doc.text('Narration', 50, currentY); // Increased width by 20mm
+                    doc.text('Narration', 50, currentY);
                     doc.text('Amount', 160, currentY);
                     currentY += 8;
                     
@@ -872,11 +926,11 @@
                     expenseTransactions.forEach(transaction => {
                         doc.text(transaction.date || 'N/A', 25, currentY);
                         
-                        // Truncate long narration (more space now)
+                        // Truncate long narration
                         const narration = transaction.narration && transaction.narration.length > 45 ? 
                             transaction.narration.substring(0, 42) + '...' : transaction.narration || 'N/A';
-                        doc.text(narration, 50, currentY); // Start at 50 instead of 60
-                        doc.text(transaction.amount.toFixed(2), 160, currentY); // Removed ₹ symbol
+                        doc.text(narration, 50, currentY);
+                        doc.text(transaction.amount.toFixed(2), 160, currentY);
                         currentY += 6;
                         
                         // Check page break
