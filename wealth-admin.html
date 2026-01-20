@@ -136,15 +136,6 @@
             border-color: var(--primary-orange);
         }
 
-        /* Button Grid Layout */
-        .button-grid {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
         /* Form Styling */
         .card {
             margin-top: 20px;
@@ -474,14 +465,6 @@
                 margin: 100px 10px 50px 10px;
             }
             
-            .button-grid {
-                flex-direction: column;
-            }
-            
-            .admin-btn {
-                width: 100%;
-            }
-            
             .wealth-amount {
                 font-size: 2rem;
             }
@@ -525,12 +508,6 @@
                         Wealth Management
                     </div>
                     
-                    <!-- Download Reports Button -->
-                    <a href="report.html" class="download-reports-btn">
-                        <i class="fas fa-download me-2"></i>
-                        Download Reports
-                    </a>
-
                     <!-- Wealth Display - ORIGINAL -->
                     <div class="wealth-display">
                         <div class="wealth-label">OUR WEALTH</div>
@@ -589,11 +566,17 @@
 
                     <!-- Recent Transactions - ORIGINAL (Last 15) -->
                     <div class="card">
-                        <h5>Recent Transactions (Last 15)</h5>
+                        <h5>Recent Transactions (Last 15 - Excluding Subscriptions)</h5>
                         <div class="transactions-list" id="transactionsList">
                             <!-- Transactions will be loaded here -->
                         </div>
                     </div>
+
+                    <!-- Download Reports Button (LAST) -->
+                    <a href="report.html" class="download-reports-btn">
+                        <i class="fas fa-download me-2"></i>
+                        Download Reports
+                    </a>
                 </div>
             </div>
         </div>
@@ -602,7 +585,7 @@
     <!-- Footer -->
     <footer>
         <div class="footer-text">
-            <p>Powered by VTSoft 2025</p>
+            <p>Powered by VTSoft 2026</p>
         </div>
         <button id="themeToggle" class="theme-toggle-btn">🌞</button>
     </footer>
@@ -640,6 +623,28 @@
         let transactionToEdit = null;
         let isEditing = false;
 
+        // Subscription keywords to identify subscription transactions
+        const subscriptionKeywords = ['subscription', 'monthly', 'മാസവരി', 'മാസിക', 'സബ്സ്ക്രിപ്ഷൻ', 'വരി'];
+
+        // Function to check if a transaction is a subscription
+        function isSubscription(transaction) {
+            const narration = transaction.narration.toLowerCase();
+            return subscriptionKeywords.some(keyword => narration.includes(keyword.toLowerCase()));
+        }
+
+        // Function to scroll to form
+        function scrollToForm(formId) {
+            const formElement = document.getElementById(formId);
+            if (formElement) {
+                formElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                // Focus on the first input field
+                const firstInput = formElement.querySelector('input');
+                if (firstInput) {
+                    firstInput.focus();
+                }
+            }
+        }
+
         // Set default date to today - ORIGINAL FROM YOUR CODE
         function setDefaultDates() {
             const today = new Date().toISOString().split('T')[0];
@@ -675,7 +680,7 @@
             }
         }
 
-        // Load all transactions - ORIGINAL FROM YOUR CODE
+        // Load all transactions - MODIFIED: Filter out subscriptions for display
         async function loadTransactions() {
             const loadingSpinner = document.getElementById('loadingSpinner');
             loadingSpinner.style.display = 'block';
@@ -696,7 +701,7 @@
                 // Calculate and display wealth
                 await calculateTotalWealth();
                 
-                // Display recent transactions (last 15)
+                // Display recent transactions (last 15, excluding subscriptions)
                 displayRecentTransactions();
                 
             } catch (error) {
@@ -706,12 +711,15 @@
             }
         }
 
-        // Display recent transactions (last 15) - FROM YOUR CODE
+        // Display recent transactions (last 15) - MODIFIED: Excluding subscriptions
         function displayRecentTransactions() {
             const transactionsList = document.getElementById('transactionsList');
             
-            // Get last 15 transactions
-            const recentTransactions = allTransactions.slice(0, 15);
+            // Filter out subscription transactions
+            const nonSubscriptionTransactions = allTransactions.filter(transaction => !isSubscription(transaction));
+            
+            // Get last 15 non-subscription transactions
+            const recentTransactions = nonSubscriptionTransactions.slice(0, 15);
             
             if (recentTransactions.length === 0) {
                 transactionsList.innerHTML = '<div class="text-center p-3">No transactions found</div>';
@@ -748,7 +756,7 @@
             });
         }
 
-        // Edit transaction - FIXED VERSION
+        // Edit transaction - MODIFIED: Scroll to form
         window.editTransaction = async function(transactionId) {
             try {
                 const transactionDoc = await db.collection('transactions').doc(transactionId).get();
@@ -769,6 +777,9 @@
                     
                     // Change form button text
                     document.getElementById('incomeBtnText').textContent = 'Update Income';
+                    
+                    // Scroll to income form
+                    scrollToForm('incomeForm');
                 } else {
                     document.getElementById('expenseDate').value = transaction.date;
                     document.getElementById('expenseNarration').value = transaction.narration;
@@ -776,6 +787,9 @@
                     
                     // Change form button text
                     document.getElementById('expenseBtnText').textContent = 'Update Expense';
+                    
+                    // Scroll to expense form
+                    scrollToForm('expenseForm');
                 }
                 
             } catch (error) {
