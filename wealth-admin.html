@@ -597,7 +597,7 @@
 
                     <!-- Recent Transactions - ORIGINAL (Last 15) -->
                     <div class="card">
-                        <h5>Recent Transactions (Last 15)</h5>
+                        <h5>Recent Transactions (Last 15 - Excluding Subscriptions)</h5>
                         <div class="transactions-list" id="transactionsList">
                             <!-- Transactions will be loaded here -->
                         </div>
@@ -649,6 +649,15 @@
         let transactionToDelete = null;
         let transactionToEdit = null;
         let isEditing = false;
+
+        // Subscription keywords to identify subscription transactions
+        const subscriptionKeywords = ['subscription', 'monthly', 'മാസവരി', 'മാസിക', 'സബ്സ്ക്രിപ്ഷൻ', 'വരി'];
+
+        // Function to check if a transaction is a subscription
+        function isSubscription(transaction) {
+            const narration = transaction.narration.toLowerCase();
+            return subscriptionKeywords.some(keyword => narration.includes(keyword.toLowerCase()));
+        }
 
         // Set default date to today - ORIGINAL FROM YOUR CODE
         function setDefaultDates() {
@@ -716,7 +725,7 @@
             }
         }
 
-        // Load all transactions - ORIGINAL FROM YOUR CODE
+        // Load all transactions - MODIFIED: Filter out subscriptions for display
         async function loadTransactions() {
             const loadingSpinner = document.getElementById('loadingSpinner');
             loadingSpinner.style.display = 'block';
@@ -740,7 +749,7 @@
                 // Calculate and display wealth
                 await calculateTotalWealth();
                 
-                // Display recent transactions (last 15)
+                // Display recent transactions (last 15, excluding subscriptions)
                 displayRecentTransactions();
                 
             } catch (error) {
@@ -750,12 +759,15 @@
             }
         }
 
-        // Display recent transactions (last 15) - FROM YOUR CODE
+        // Display recent transactions (last 15) - MODIFIED: Excluding subscriptions
         function displayRecentTransactions() {
             const transactionsList = document.getElementById('transactionsList');
             
-            // Get last 15 transactions
-            const recentTransactions = allTransactions.slice(0, 15);
+            // Filter out subscription transactions
+            const nonSubscriptionTransactions = allTransactions.filter(transaction => !isSubscription(transaction));
+            
+            // Get last 15 non-subscription transactions
+            const recentTransactions = nonSubscriptionTransactions.slice(0, 15);
             
             if (recentTransactions.length === 0) {
                 transactionsList.innerHTML = '<div class="text-center p-3">No transactions found</div>';
@@ -792,7 +804,7 @@
             });
         }
 
-        // Edit transaction - FIXED VERSION
+        // Edit transaction
         window.editTransaction = async function(transactionId) {
             try {
                 const transactionDoc = await db.collection('transactions').doc(transactionId).get();
@@ -872,7 +884,7 @@
             }
         }
 
-        // Generate Annual Report PDF - SIMPLIFIED WORKING VERSION
+        // Generate Annual Report PDF - MODIFIED: Group subscriptions separately
         function generateAnnualReport() {
             if (selectedYear === 'all') {
                 alert('Please select a specific year for the report');
@@ -890,19 +902,51 @@
                 return;
             }
             
-            // Calculate totals
-            let totalIncome = 0;
-            let totalExpense = 0;
+            // Separate subscription and non-subscription transactions
+            const subscriptionTransactions = yearTransactions.filter(transaction => 
+                transaction.type === 'income' && isSubscription(transaction));
             
-            yearTransactions.forEach(transaction => {
-                if (transaction.type === 'income') {
-                    totalIncome += transaction.amount;
-                } else if (transaction.type === 'expense') {
-                    totalExpense += transaction.amount;
-                }
+            const nonSubscriptionIncome = yearTransactions.filter(transaction => 
+                transaction.type === 'income' && !isSubscription(transaction));
+            
+            const expenseTransactions = yearTransactions.filter(transaction => 
+                transaction.type === 'expense');
+            
+            // Calculate totals
+            let subscriptionTotal = 0;
+            subscriptionTransactions.forEach(transaction => {
+                subscriptionTotal += transaction.amount;
             });
             
-            const netBalance = totalIncome - totalExpense;
+            let nonSubscriptionIncomeTotal = 0;
+            nonSubscriptionIncome.forEach(transaction => {
+                nonSubscriptionIncomeTotal += transaction.amount;
+            });
+            
+            let expenseTotal = 0;
+            expenseTransactions.forEach(transaction => {
+                expenseTotal += transaction.amount;
+            });
+            
+            const totalIncome = subscriptionTotal + nonSubscriptionIncomeTotal;
+            const netBalance = totalIncome - expenseTotal;
+            
+            // Group subscription by month
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+                               'July', 'August', 'September', 'October', 'November', 'December'];
+            
+            const monthlySubscription = {};
+            for (let i = 0; i < 12; i++) {
+                monthlySubscription[i] = {
+                    monthName: monthNames[i],
+                    total: 0
+                };
+            }
+            
+            subscriptionTransactions.forEach(transaction => {
+                const month = new Date(transaction.date).getMonth();
+                monthlySubscription[month].total += transaction.amount;
+            });
             
             // Create PDF
             const doc = new jsPDF();
@@ -926,47 +970,27 @@
             
             let currentY = 45;
             
-            // ========== INCOME DETAILS ==========
+            // ========== SUBSCRIPTION SUMMARY ==========
             doc.setFontSize(12);
             doc.setTextColor(0, 102, 204);
             doc.setFont('helvetica', 'bold');
-            doc.text('INCOME DETAILS', 20, currentY);
+            doc.text('SUBSCRIPTION SUMMARY (Monthly Collection)', 20, currentY);
             currentY += 10;
             
-            // Group income by month
-            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
-                               'July', 'August', 'September', 'October', 'November', 'December'];
-            const monthlyIncome = {};
-            
-            // Initialize
-            for (let i = 0; i < 12; i++) {
-                monthlyIncome[i] = {
-                    monthName: monthNames[i],
-                    total: 0,
-                    transactions: []
-                };
-            }
-            
-            // Populate income data
-            const incomeTransactions = yearTransactions.filter(t => t.type === 'income');
-            incomeTransactions.forEach(transaction => {
-                const month = new Date(transaction.date).getMonth();
-                monthlyIncome[month].total += transaction.amount;
-                monthlyIncome[month].transactions.push(transaction);
-            });
-            
-            // Display monthly totals
+            // Display monthly subscription totals
             doc.setFontSize(10);
             doc.setTextColor(0, 0, 0);
             doc.setFont('helvetica', 'bold');
             doc.text('Month', 25, currentY);
-            doc.text('Total Income', 150, currentY);
+            doc.text('Total Subscription', 150, currentY);
             currentY += 8;
             
             doc.setFont('helvetica', 'normal');
+            let hasSubscriptionData = false;
             for (let month = 0; month < 12; month++) {
-                const monthData = monthlyIncome[month];
+                const monthData = monthlySubscription[month];
                 if (monthData.total > 0) {
+                    hasSubscriptionData = true;
                     doc.text(monthData.monthName, 25, currentY);
                     doc.text(monthData.total.toFixed(2), 150, currentY);
                     currentY += 6;
@@ -979,49 +1003,85 @@
                 }
             }
             
+            if (!hasSubscriptionData) {
+                doc.text('No subscription data', 25, currentY);
+                currentY += 6;
+            }
+            
             currentY += 10;
+            
+            // ========== OTHER INCOME DETAILS ==========
+            if (nonSubscriptionIncome.length > 0) {
+                if (currentY > 200) {
+                    doc.addPage();
+                    currentY = 20;
+                }
+                
+                doc.setFontSize(12);
+                doc.setTextColor(0, 102, 204);
+                doc.setFont('helvetica', 'bold');
+                doc.text('OTHER INCOME DETAILS', 20, currentY);
+                currentY += 10;
+                
+                doc.setFontSize(10);
+                doc.setTextColor(0, 0, 0);
+                doc.setFont('helvetica', 'bold');
+                doc.text('Date', 25, currentY);
+                doc.text('Narration', 70, currentY);
+                doc.text('Amount', 150, currentY);
+                currentY += 8;
+                
+                doc.setFont('helvetica', 'normal');
+                nonSubscriptionIncome.forEach(transaction => {
+                    doc.text(transaction.date, 25, currentY);
+                    
+                    // Truncate long narration
+                    const narration = transaction.narration.length > 25 ? 
+                        transaction.narration.substring(0, 22) + '...' : transaction.narration;
+                    doc.text(narration, 70, currentY);
+                    doc.text(transaction.amount.toFixed(2), 150, currentY);
+                    currentY += 6;
+                    
+                    // Check page break
+                    if (currentY > 250) {
+                        doc.addPage();
+                        currentY = 20;
+                    }
+                });
+                
+                currentY += 10;
+            }
             
             // ========== EXPENSE DETAILS ==========
-            doc.setFontSize(12);
-            doc.setTextColor(0, 102, 204);
-            doc.setFont('helvetica', 'bold');
-            doc.text('EXPENSE DETAILS', 20, currentY);
-            currentY += 10;
-            
-            // Group expense by month
-            const monthlyExpense = {};
-            
-            // Initialize
-            for (let i = 0; i < 12; i++) {
-                monthlyExpense[i] = {
-                    monthName: monthNames[i],
-                    total: 0,
-                    transactions: []
-                };
-            }
-            
-            // Populate expense data
-            const expenseTransactions = yearTransactions.filter(t => t.type === 'expense');
-            expenseTransactions.forEach(transaction => {
-                const month = new Date(transaction.date).getMonth();
-                monthlyExpense[month].total += transaction.amount;
-                monthlyExpense[month].transactions.push(transaction);
-            });
-            
-            // Display monthly totals
-            doc.setFontSize(10);
-            doc.setTextColor(0, 0, 0);
-            doc.setFont('helvetica', 'bold');
-            doc.text('Month', 25, currentY);
-            doc.text('Total Expense', 150, currentY);
-            currentY += 8;
-            
-            doc.setFont('helvetica', 'normal');
-            for (let month = 0; month < 12; month++) {
-                const monthData = monthlyExpense[month];
-                if (monthData.total > 0) {
-                    doc.text(monthData.monthName, 25, currentY);
-                    doc.text(monthData.total.toFixed(2), 150, currentY);
+            if (expenseTransactions.length > 0) {
+                if (currentY > 200) {
+                    doc.addPage();
+                    currentY = 20;
+                }
+                
+                doc.setFontSize(12);
+                doc.setTextColor(0, 102, 204);
+                doc.setFont('helvetica', 'bold');
+                doc.text('EXPENSE DETAILS', 20, currentY);
+                currentY += 10;
+                
+                doc.setFontSize(10);
+                doc.setTextColor(0, 0, 0);
+                doc.setFont('helvetica', 'bold');
+                doc.text('Date', 25, currentY);
+                doc.text('Narration', 70, currentY);
+                doc.text('Amount', 150, currentY);
+                currentY += 8;
+                
+                doc.setFont('helvetica', 'normal');
+                expenseTransactions.forEach(transaction => {
+                    doc.text(transaction.date, 25, currentY);
+                    
+                    // Truncate long narration
+                    const narration = transaction.narration.length > 25 ? 
+                        transaction.narration.substring(0, 22) + '...' : transaction.narration;
+                    doc.text(narration, 70, currentY);
+                    doc.text(transaction.amount.toFixed(2), 150, currentY);
                     currentY += 6;
                     
                     // Check page break
@@ -1029,7 +1089,7 @@
                         doc.addPage();
                         currentY = 20;
                     }
-                }
+                });
             }
             
             // ========== SUMMARY ==========
@@ -1051,9 +1111,11 @@
             
             doc.setFontSize(12);
             doc.setFont('helvetica', 'normal');
-            doc.text(`Total Income: ${totalIncome.toFixed(2)}`, 25, currentY);
+            doc.text(`Total Subscription Income: ${subscriptionTotal.toFixed(2)}`, 25, currentY);
             currentY += 8;
-            doc.text(`Total Expense: ${totalExpense.toFixed(2)}`, 25, currentY);
+            doc.text(`Other Income: ${nonSubscriptionIncomeTotal.toFixed(2)}`, 25, currentY);
+            currentY += 8;
+            doc.text(`Total Expense: ${expenseTotal.toFixed(2)}`, 25, currentY);
             currentY += 10;
             
             doc.setDrawColor(0, 0, 0);
