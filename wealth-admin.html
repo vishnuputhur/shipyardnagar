@@ -630,11 +630,27 @@
             document.getElementById('expenseDate').value = today;
         }
 
-        // Function to check if a transaction is a subscription
+        // Function to check if a transaction is a subscription - FIXED VERSION
         function isSubscription(transaction) {
-            const subscriptionKeywords = ['subscription', 'monthly', 'മാസവരി', 'മാസിക', 'സബ്സ്ക്രിപ്ഷൻ', 'വരി'];
+            // നിങ്ങളുടെ Firestore-ൽ എങ്ങനെയാണ് subscription entries ഉള്ളത് അത് കണ്ടെത്താനുള്ള വഴി
+            const subscriptionKeywords = [
+                'subscription', 'monthly', 'സബ്സ്ക്രിപ്ഷൻ', 'വരി', 
+                'monthly subscription', 'മാസവരി', 'മാസിക'
+            ];
+            
+            if (!transaction.narration) return false;
+            
             const narration = transaction.narration.toLowerCase();
-            return subscriptionKeywords.some(keyword => narration.includes(keyword.toLowerCase()));
+            
+            // Check if it contains subscription keywords
+            for (const keyword of subscriptionKeywords) {
+                if (narration.includes(keyword.toLowerCase())) {
+                    console.log("Found subscription:", transaction.narration);
+                    return true;
+                }
+            }
+            
+            return false;
         }
 
         // Function to scroll to form
@@ -678,15 +694,20 @@
             }
         }
 
-        // Load all transactions - MODIFIED FROM YOUR CODE
+        // Load all transactions - FIXED VERSION
         async function loadTransactions() {
             const loadingSpinner = document.getElementById('loadingSpinner');
             loadingSpinner.style.display = 'block';
             
             try {
+                console.log("Loading transactions from Firestore...");
+                
+                // നിങ്ങളുടെ യഥാർത്ഥ കോഡിൽ പോലെ 'createdAt' ഉപയോഗിക്കുന്നു
                 const transactionsSnapshot = await db.collection('transactions')
-                    .orderBy('date', 'desc')
+                    .orderBy('createdAt', 'desc')
                     .get();
+                
+                console.log("Total transactions found:", transactionsSnapshot.size);
                 
                 allTransactions = [];
                 transactionsSnapshot.forEach(doc => {
@@ -694,6 +715,9 @@
                     transaction.id = doc.id;
                     transaction.amount = parseFloat(transaction.amount) || 0;
                     allTransactions.push(transaction);
+                    
+                    // Debug log
+                    console.log("Transaction:", transaction.narration, "| Type:", transaction.type, "| Amount:", transaction.amount, "| Is subscription?", isSubscription(transaction));
                 });
                 
                 // Calculate and display wealth
@@ -704,23 +728,30 @@
                 
             } catch (error) {
                 console.error('Error loading transactions:', error);
+                document.getElementById('transactionsList').innerHTML = '<div class="text-center p-3">Error loading transactions: ' + error.message + '</div>';
             } finally {
                 loadingSpinner.style.display = 'none';
             }
         }
 
-        // Display recent transactions (last 15) - FROM YOUR CODE WITH SUBSCRIPTION FILTER
+        // Display recent transactions (last 15) - FIXED VERSION
         function displayRecentTransactions() {
             const transactionsList = document.getElementById('transactionsList');
+            
+            console.log("All transactions count:", allTransactions.length);
             
             // Get all non-subscription transactions
             const nonSubscriptionTransactions = allTransactions.filter(transaction => !isSubscription(transaction));
             
+            console.log("Non-subscription transactions count:", nonSubscriptionTransactions.length);
+            
             // Get last 15 non-subscription transactions
             const recentTransactions = nonSubscriptionTransactions.slice(0, 15);
             
+            console.log("Recent transactions to display:", recentTransactions.length);
+            
             if (recentTransactions.length === 0) {
-                transactionsList.innerHTML = '<div class="text-center p-3">No transactions found</div>';
+                transactionsList.innerHTML = '<div class="text-center p-3">No non-subscription transactions found. Add a transaction to see it here.</div>';
                 return;
             }
             
@@ -754,7 +785,7 @@
             });
         }
 
-        // Edit transaction - MODIFIED: Scroll to form
+        // Edit transaction - FIXED VERSION
         window.editTransaction = async function(transactionId) {
             try {
                 const transactionDoc = await db.collection('transactions').doc(transactionId).get();
@@ -896,13 +927,13 @@
                         resetFormButtons();
                         alert('Income updated successfully!');
                     } else {
-                        // Add new transaction
+                        // Add new transaction - നിങ്ങളുടെ യഥാർത്ഥ കോഡിൽ പോലെ
                         await db.collection('transactions').add({
                             type: 'income',
                             date: date,
                             narration: narration,
                             amount: amount,
-                            createdAt: new Date()
+                            createdAt: new Date() // ഇത് ശ്രദ്ധിക്കുക - നിങ്ങളുടെ യഥാർത്ഥ കോഡിൽ പോലെ
                         });
                         alert('Income added successfully!');
                     }
@@ -950,13 +981,13 @@
                         resetFormButtons();
                         alert('Expense updated successfully!');
                     } else {
-                        // Add new transaction
+                        // Add new transaction - നിങ്ങളുടെ യഥാർത്ഥ കോഡിൽ പോലെ
                         await db.collection('transactions').add({
                             type: 'expense',
                             date: date,
                             narration: narration,
                             amount: amount,
-                            createdAt: new Date()
+                            createdAt: new Date() // ഇത് ശ്രദ്ധിക്കുക - നിങ്ങളുടെ യഥാർത്ഥ കോഡിൽ പോലെ
                         });
                         alert('Expense added successfully!');
                     }
