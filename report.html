@@ -625,10 +625,19 @@
                 }
                 
                 // Separate income and expense transactions
-                const incomeTransactions = yearTransactions.filter(t => 
-    t.type === 'income' && !t.narration
+                // Separate income and expense transactions
+const allIncomeTransactions = yearTransactions.filter(t => t.type === 'income');
+const expenseTransactions = yearTransactions.filter(t => t.type === 'expense');
+
+// Subscription = income WITHOUT narration
+const subscriptionTransactions = allIncomeTransactions.filter(t => 
+    !t.narration || t.narration === ''
 );
-                const expenseTransactions = yearTransactions.filter(t => t.type === 'expense');
+
+// Other income = income WITH narration
+const incomeWithNarration = allIncomeTransactions.filter(t => 
+    t.narration && t.narration !== ''
+);
                 
                 console.log("Income transactions:", incomeTransactions.length);
                 console.log("Expense transactions:", expenseTransactions.length);
@@ -645,7 +654,7 @@
                     };
                 }
                 
-                incomeTransactions.forEach(transaction => {
+                subscriptionTransactions.forEach(transaction => {
                     try {
                         if (!transaction.dateObj) return;
                         
@@ -660,8 +669,7 @@
                 });
                 
                 // Filter income transactions with narration for detailed listing
-                const incomeWithNarration = incomeTransactions.filter(t => 
-                    t.narration && t.narration.toString().trim().length > 0);
+                
                 
                 // Filter expense transactions with narration for detailed listing
                 const expenseWithNarration = expenseTransactions.filter(t => 
@@ -672,7 +680,7 @@
                 
                 // Calculate totals (ALL transactions, including those without narration)
                 let totalIncome = 0;
-                incomeTransactions.forEach(t => totalIncome += t.amount);
+allIncomeTransactions.forEach(t => totalIncome += t.amount);
                 
                 let totalExpense = 0;
                 expenseTransactions.forEach(t => totalExpense += t.amount);
