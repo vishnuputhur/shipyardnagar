@@ -625,7 +625,9 @@
                 }
                 
                 // Separate income and expense transactions
-                const incomeTransactions = yearTransactions.filter(t => t.type === 'income');
+                const incomeTransactions = yearTransactions.filter(t => 
+    t.type === 'income' && !t.narration
+);
                 const expenseTransactions = yearTransactions.filter(t => t.type === 'expense');
                 
                 console.log("Income transactions:", incomeTransactions.length);
