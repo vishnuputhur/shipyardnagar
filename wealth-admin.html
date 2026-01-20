@@ -623,11 +623,16 @@
         let transactionToEdit = null;
         let isEditing = false;
 
-        // Subscription keywords to identify subscription transactions
-        const subscriptionKeywords = ['subscription', 'monthly', 'മാസവരി', 'മാസിക', 'സബ്സ്ക്രിപ്ഷൻ', 'വരി'];
+        // Set default date to today - ORIGINAL FROM YOUR CODE
+        function setDefaultDates() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('incomeDate').value = today;
+            document.getElementById('expenseDate').value = today;
+        }
 
         // Function to check if a transaction is a subscription
         function isSubscription(transaction) {
+            const subscriptionKeywords = ['subscription', 'monthly', 'മാസവരി', 'മാസിക', 'സബ്സ്ക്രിപ്ഷൻ', 'വരി'];
             const narration = transaction.narration.toLowerCase();
             return subscriptionKeywords.some(keyword => narration.includes(keyword.toLowerCase()));
         }
@@ -637,19 +642,12 @@
             const formElement = document.getElementById(formId);
             if (formElement) {
                 formElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                // Focus on the first input field
-                const firstInput = formElement.querySelector('input');
-                if (firstInput) {
-                    firstInput.focus();
+                // Focus on the narration field
+                const narrationInput = formElement.querySelector('input[type="text"]');
+                if (narrationInput) {
+                    narrationInput.focus();
                 }
             }
-        }
-
-        // Set default date to today - ORIGINAL FROM YOUR CODE
-        function setDefaultDates() {
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('incomeDate').value = today;
-            document.getElementById('expenseDate').value = today;
         }
 
         // Calculate total wealth - ORIGINAL FROM YOUR CODE
@@ -680,7 +678,7 @@
             }
         }
 
-        // Load all transactions - MODIFIED: Filter out subscriptions for display
+        // Load all transactions - MODIFIED FROM YOUR CODE
         async function loadTransactions() {
             const loadingSpinner = document.getElementById('loadingSpinner');
             loadingSpinner.style.display = 'block';
@@ -711,11 +709,11 @@
             }
         }
 
-        // Display recent transactions (last 15) - MODIFIED: Excluding subscriptions
+        // Display recent transactions (last 15) - FROM YOUR CODE WITH SUBSCRIPTION FILTER
         function displayRecentTransactions() {
             const transactionsList = document.getElementById('transactionsList');
             
-            // Filter out subscription transactions
+            // Get all non-subscription transactions
             const nonSubscriptionTransactions = allTransactions.filter(transaction => !isSubscription(transaction));
             
             // Get last 15 non-subscription transactions
