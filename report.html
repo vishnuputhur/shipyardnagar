@@ -396,7 +396,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 
     <script>
-        // Firebase Config - ORIGINAL
+        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyBWswawf9tpxNwVU0BaJ6FCwCvgcjUQXlA",
             authDomain: "shipyard-nagar.firebaseapp.com",
@@ -407,7 +407,7 @@
             measurementId: "G-V8CQ4YCCQ5"
         };
 
-        // Initialize Firebase - ORIGINAL
+        // Initialize Firebase
         if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
         }
@@ -551,10 +551,6 @@
                 });
                 
                 console.log("Total transactions loaded:", allTransactions.length);
-                console.log("All income transactions:", allIncomeTransactions.length);
-console.log("Subscription transactions:", subscriptionTransactions.length);
-console.log("Other income transactions:", incomeWithNarration.length);
-console.log("Expense transactions:", expenseTransactions.length);
                 
                 return true;
             } catch (error) {
@@ -590,7 +586,7 @@ console.log("Expense transactions:", expenseTransactions.length);
             document.getElementById('errorMessage').style.display = 'none';
         }
 
-        // Generate Annual Report PDF - FINAL CORRECTED VERSION
+        // Generate Annual Report PDF - CORRECTED VERSION
         async function generateAnnualReport() {
             if (!selectedYear) {
                 showError('Please select a year');
@@ -627,26 +623,25 @@ console.log("Expense transactions:", expenseTransactions.length);
                 }
                 
                 // Separate income and expense transactions
-                // Separate income and expense transactions
-const allIncomeTransactions = yearTransactions.filter(t => t.type === 'income');
-const expenseTransactions = yearTransactions.filter(t => t.type === 'expense');
-
-// Subscription = income WITHOUT narration
-const subscriptionTransactions = allIncomeTransactions.filter(t => 
-    !t.narration || t.narration === ''
-);
-
-// Other income = income WITH narration
-const incomeWithNarration = allIncomeTransactions.filter(t => 
-    t.narration && t.narration !== ''
-);
+                const allIncomeTransactions = yearTransactions.filter(t => t.type === 'income');
+                const expenseTransactions = yearTransactions.filter(t => t.type === 'expense');
+                
+                // CORRECTED: Subscription = income WITHOUT narration (empty or null)
+                const subscriptionTransactions = allIncomeTransactions.filter(t => 
+                    !t.narration || t.narration.toString().trim() === ''
+                );
+                
+                // CORRECTED: Other income = income WITH narration (non-empty)
+                const incomeWithNarration = allIncomeTransactions.filter(t => 
+                    t.narration && t.narration.toString().trim() !== ''
+                );
                 
                 console.log("All income transactions:", allIncomeTransactions.length);
-console.log("Subscription transactions:", subscriptionTransactions.length);
-console.log("Other income transactions:", incomeWithNarration.length);
-console.log("Expense transactions:", expenseTransactions.length);
+                console.log("Subscription transactions:", subscriptionTransactions.length);
+                console.log("Other income transactions:", incomeWithNarration.length);
+                console.log("Expense transactions:", expenseTransactions.length);
                 
-                // Group income by month for subscription summary
+                // Group subscription income by month
                 const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
                                    'July', 'August', 'September', 'October', 'November', 'December'];
                 
@@ -672,21 +667,18 @@ console.log("Expense transactions:", expenseTransactions.length);
                     }
                 });
                 
-                // Filter income transactions with narration for detailed listing
-                
-                
                 // Filter expense transactions with narration for detailed listing
                 const expenseWithNarration = expenseTransactions.filter(t => 
-                    t.narration && t.narration.toString().trim().length > 0);
+                    t.narration && t.narration.toString().trim() !== '');
                 
-                console.log("All income transactions:", allIncomeTransactions.length);
-console.log("Subscription transactions:", subscriptionTransactions.length);
-console.log("Other income transactions:", incomeWithNarration.length);
-console.log("Expense transactions:", expenseTransactions.length);
+                // Calculate totals
+                let totalSubscriptionIncome = 0;
+                subscriptionTransactions.forEach(t => totalSubscriptionIncome += t.amount);
                 
-                // Calculate totals (ALL transactions, including those without narration)
-                let totalIncome = 0;
-allIncomeTransactions.forEach(t => totalIncome += t.amount);
+                let totalOtherIncome = 0;
+                incomeWithNarration.forEach(t => totalOtherIncome += t.amount);
+                
+                let totalIncome = totalSubscriptionIncome + totalOtherIncome;
                 
                 let totalExpense = 0;
                 expenseTransactions.forEach(t => totalExpense += t.amount);
@@ -694,8 +686,10 @@ allIncomeTransactions.forEach(t => totalIncome += t.amount);
                 const netBalance = totalIncome - totalExpense;
                 
                 console.log("Monthly income data:", monthlyIncome);
-                console.log("Total income (all):", totalIncome);
-                console.log("Total expense (all):", totalExpense);
+                console.log("Total Subscription Income:", totalSubscriptionIncome);
+                console.log("Total Other Income:", totalOtherIncome);
+                console.log("Total Income:", totalIncome);
+                console.log("Total Expense:", totalExpense);
                 console.log("Net balance:", netBalance);
                 
                 // Create PDF
@@ -758,6 +752,16 @@ allIncomeTransactions.forEach(t => totalIncome += t.amount);
                     currentY += 6;
                 }
                 
+                // Subscription Total
+                currentY += 5;
+                doc.setDrawColor(150, 150, 150);
+                doc.setLineWidth(0.2);
+                doc.line(25, currentY, 180, currentY);
+                currentY += 8;
+                
+                doc.setFont('helvetica', 'bold');
+                doc.text('Total Subscription Income:', 25, currentY);
+                doc.text(totalSubscriptionIncome.toFixed(2), 150, currentY);
                 currentY += 10;
                 
                 // ========== OTHER INCOME TRANSACTIONS (with narration only) ==========
@@ -808,6 +812,16 @@ allIncomeTransactions.forEach(t => totalIncome += t.amount);
                         }
                     });
                     
+                    // Other Income Total
+                    currentY += 5;
+                    doc.setDrawColor(150, 150, 150);
+                    doc.setLineWidth(0.2);
+                    doc.line(25, currentY, 180, currentY);
+                    currentY += 8;
+                    
+                    doc.setFont('helvetica', 'bold');
+                    doc.text('Total Other Income:', 25, currentY);
+                    doc.text(totalOtherIncome.toFixed(2), 160, currentY);
                     currentY += 10;
                 }
                 
@@ -880,11 +894,26 @@ allIncomeTransactions.forEach(t => totalIncome += t.amount);
                 doc.setFontSize(12);
                 doc.setFont('helvetica', 'normal');
                 
-                // Income Summary
-                doc.text(`Total Income:`, 25, currentY);
-                doc.text(`${totalIncome.toFixed(2)}`, 140, currentY);
+                // Income Summary - Separated
+                doc.text(`Subscription Income:`, 25, currentY);
+                doc.text(`${totalSubscriptionIncome.toFixed(2)}`, 140, currentY);
                 currentY += 8;
                 
+                doc.text(`Other Income:`, 25, currentY);
+                doc.text(`${totalOtherIncome.toFixed(2)}`, 140, currentY);
+                currentY += 8;
+                
+                doc.setDrawColor(150, 150, 150);
+                doc.setLineWidth(0.2);
+                doc.line(25, currentY, 180, currentY);
+                currentY += 8;
+                
+                doc.setFont('helvetica', 'bold');
+                doc.text(`TOTAL INCOME:`, 25, currentY);
+                doc.text(`${totalIncome.toFixed(2)}`, 140, currentY);
+                currentY += 10;
+                
+                doc.setFont('helvetica', 'normal');
                 doc.text(`Total Expenses:`, 25, currentY);
                 doc.text(`${totalExpense.toFixed(2)}`, 140, currentY);
                 currentY += 10;
