@@ -551,8 +551,10 @@
                 });
                 
                 console.log("Total transactions loaded:", allTransactions.length);
-                console.log("Income transactions:", allTransactions.filter(t => t.type === 'income').length);
-                console.log("Expense transactions:", allTransactions.filter(t => t.type === 'expense').length);
+                console.log("All income transactions:", allIncomeTransactions.length);
+console.log("Subscription transactions:", subscriptionTransactions.length);
+console.log("Other income transactions:", incomeWithNarration.length);
+console.log("Expense transactions:", expenseTransactions.length);
                 
                 return true;
             } catch (error) {
@@ -639,8 +641,10 @@ const incomeWithNarration = allIncomeTransactions.filter(t =>
     t.narration && t.narration !== ''
 );
                 
-                console.log("Income transactions:", incomeTransactions.length);
-                console.log("Expense transactions:", expenseTransactions.length);
+                console.log("All income transactions:", allIncomeTransactions.length);
+console.log("Subscription transactions:", subscriptionTransactions.length);
+console.log("Other income transactions:", incomeWithNarration.length);
+console.log("Expense transactions:", expenseTransactions.length);
                 
                 // Group income by month for subscription summary
                 const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
@@ -675,8 +679,10 @@ const incomeWithNarration = allIncomeTransactions.filter(t =>
                 const expenseWithNarration = expenseTransactions.filter(t => 
                     t.narration && t.narration.toString().trim().length > 0);
                 
-                console.log("Income with narration:", incomeWithNarration.length);
-                console.log("Expense with narration:", expenseWithNarration.length);
+                console.log("All income transactions:", allIncomeTransactions.length);
+console.log("Subscription transactions:", subscriptionTransactions.length);
+console.log("Other income transactions:", incomeWithNarration.length);
+console.log("Expense transactions:", expenseTransactions.length);
                 
                 // Calculate totals (ALL transactions, including those without narration)
                 let totalIncome = 0;
