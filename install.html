@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Install Shipyard Nagar App</title>
+    <link rel="manifest" href="manifest.json">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #667eea; --dark: #4b5dff; }
+        body { font-family: 'Poppins', sans-serif; text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 50px 20px; min-height: 100vh; margin: 0; box-sizing: border-box; }
+        .install-card { background: white; color: #333; border-radius: 25px; padding: 40px 20px; max-width: 400px; margin: auto; box-shadow: 0 15px 35px rgba(0,0,0,0.2); }
+        .logo { width: 120px; border-radius: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); margin-bottom: 20px; border: 3px solid #667eea; }
+        .btn-install { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 15px 40px; border-radius: 12px; font-weight: 600; cursor: pointer; width: 100%; font-size: 18px; margin-top: 10px; transition: 0.3s; }
+        .btn-install:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4); }
+        .badge { font-size: 0.7rem; background: #f0f4ff; padding: 4px 12px; border-radius: 20px; font-weight: 700; color: #667eea; }
+        .made-in { margin-top: 25px; font-size: 0.8rem; color: #666; font-weight: 600; }
+        .skip-link { display: block; margin-top: 20px; color: #888; text-decoration: none; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="install-card">
+        <span class="badge">2026 RESIDENT UPDATE</span>
+        <br><br>
+        <img src="icon-512.png" class="logo" alt="Shipyard Nagar Logo">
+        <h2 style="margin-bottom: 5px;">Shipyard Nagar</h2>
+        <p style="font-size: 0.85rem; color: #666;">Your official association app for subscriptions, wealth tracking, and community updates.</p>
+        
+        <button id="installBtn" class="btn-install" style="display: none;">Install App</button>
+        <div id="waitMsg" style="color: #888; font-size: 14px;">Preparing installation...</div>
+        
+        <a href="index.html" class="skip-link">Continue to Web Version</a>
+        
+        <div class="made-in">Powered by VTSoft | Made in India</div>
+    </div>
+
+    <script>
+        let deferredPrompt;
+        const installBtn = document.getElementById('installBtn');
+        const waitMsg = document.getElementById('waitMsg');
+
+        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js'); }
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installBtn.style.display = 'block';
+            waitMsg.style.display = 'none';
+        });
+
+        installBtn.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') window.location.href = 'index.html';
+            }
+        });
+
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>
