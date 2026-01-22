@@ -1,4 +1,4 @@
-const CACHE_NAME = 'shipyard-nagar-v1';
+const CACHE_NAME = 'shipyard-nagar-v2';
 const assets = [
   './',
   './index.html',
