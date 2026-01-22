@@ -822,10 +822,25 @@
             }
 
             const handlePayment = (url) => {
-                const amount = document.getElementById('amount').value;
-                if (amount < 10) return alert('Please enter minimum ₹10!');
-                window.location.href = url;
-            };
+    const amount = document.getElementById('amount').value;
+    if (amount < 10) return alert('Please enter minimum ₹10!');
+
+    let finalUrl = url;
+
+    // യൂസർ നിൽക്കുന്നത് APK-യിലാണോ എന്ന് പരിശോധിക്കുന്നു
+    const isWebView = /wv|WebView/i.test(navigator.userAgent);
+    
+    // APK-യിൽ അല്ലങ്കിൽ (അതായത് PWA-യിലോ ബ്രൗസറിലോ ആണെങ്കിൽ) 
+    // 'openchrome://' മാറ്റി സാധാരണ 'https://' ആക്കി മാറ്റുന്നു.
+    if (!isWebView) {
+        if (finalUrl.startsWith('openchrome://')) {
+            finalUrl = finalUrl.replace('openchrome://', 'https://');
+        }
+    }
+
+    window.location.href = finalUrl;
+};
+
 
             document.getElementById('gpayButton').addEventListener('click', () => {
                 const amt = document.getElementById('amount').value;
