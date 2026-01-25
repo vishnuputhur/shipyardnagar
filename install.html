@@ -27,7 +27,7 @@
         <p style="font-size: 0.85rem; color: #666;">Your official association app for subscriptions, wealth tracking, and community updates.</p>
         
         <button id="installBtn" class="btn-install" style="display: none;">Install App</button>
-        <div id="waitMsg" style="color: #888; font-size: 14px;">Preparing installation...</div>
+        <div id="waitMsg" style="color: #888; font-size: 14px; margin-top: 15px;">Preparing installation...</div>
         
         <a href="index.html" class="skip-link">Continue to Web Version</a>
         
@@ -39,7 +39,9 @@
         const installBtn = document.getElementById('installBtn');
         const waitMsg = document.getElementById('waitMsg');
 
-        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js'); }
+        if ('serviceWorker' in navigator) { 
+            navigator.serviceWorker.register('./sw.js'); 
+        }
 
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
@@ -52,10 +54,27 @@
             if (deferredPrompt) {
                 deferredPrompt.prompt();
                 const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') window.location.href = 'index.html';
+                
+                if (outcome === 'accepted') {
+                    // 1. ഇൻസ്റ്റാൾ ബട്ടൺ മറയ്ക്കുന്നു
+                    installBtn.style.display = 'none';
+                    
+                    // 2. ആദ്യം "Installing..." മെസ്സേജ് കാണിക്കുന്നു
+                    waitMsg.style.display = 'block';
+                    waitMsg.style.color = '#667eea';
+                    waitMsg.innerHTML = "<b>Installing... please wait</b>";
+                    
+                    // 3. മൂന്ന് സെക്കൻഡിന് ശേഷം സക്സസ് മെസ്സേജിലേക്ക് മാറ്റുന്നു
+                    setTimeout(() => {
+                        waitMsg.style.color = '#059669'; // പച്ച കളർ
+                        waitMsg.innerHTML = "<b style='font-size:18px;'>Successfully Installed!</b>";
+                    }, 3000);
+                }
+                deferredPrompt = null;
             }
         });
 
+        // ഇൻസ്റ്റാൾ ചെയ്തതാണെങ്കിൽ ഡയറക്ട് ആപ്പിലേക്ക്
         if (window.matchMedia('(display-mode: standalone)').matches) {
             window.location.href = 'index.html';
         }
