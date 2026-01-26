@@ -565,14 +565,7 @@
     });
   }
 </script>
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js');
 
-  // അപ്ഡേറ്റ് കണ്ടാൽ ഉടൻ പേജ് റീലോഡ് ചെയ്യും
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
-    window.location.reload();
-  });
-}
 
 </body>
 </html>
