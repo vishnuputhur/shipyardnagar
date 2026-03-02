@@ -849,7 +849,7 @@
 
             document.getElementById('credButton').addEventListener('click', () => {
                 const amt = document.getElementById('amount').value;
-                const upiId = 'BHARATPE.8P0O1J0O8P31576@fbpe';
+                const upiId = 'vishnuputhur@sbi';
                 const note = `Member ${currentMemberNumber} - New Year Function Expense`;
                 handlePayment(`upi://pay?pa=${upiId}&pn=Shipyard%20Nagar&am=${amt}&cu=INR&tn=${encodeURIComponent(note)}`);
             });
