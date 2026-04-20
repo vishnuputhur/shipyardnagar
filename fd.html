@@ -147,12 +147,30 @@
         .btn-outline-close:hover { background: #ef4444; color: white; }
         .modal-content-custom { background: var(--card-bg); backdrop-filter: blur(20px); border-radius: 20px; }
         
-        footer {
-            position: fixed; bottom: 0; width: 100%;
-            background: rgba(248, 248, 248, 0.9); backdrop-filter: blur(10px);
-            color: #666; font-size: 0.65rem; z-index: 1000;
-            border-top: 1px solid rgba(255,107,53,0.2);
-            display: flex; justify-content: space-between; align-items: center;
+       footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background: rgba(248, 248, 248, 0.9);
+    backdrop-filter: blur(10px);
+    color: #666;
+    font-size: 0.65rem;
+    z-index: 1000;
+    border-top: 1px solid rgba(255, 107, 53, 0.2);
+    display: flex;
+    align-items: center;
+    padding: 2px 12px;
+    height: 28px;
+
+}
+
+
+.footer-text {
+    flex-grow: 1;
+    text-align: center;
+    margin-left: 30px;
+}
+ align-items: center;
             padding: 2px 12px; height: 28px;
         }
         [data-theme="dark"] footer { background: rgba(45,45,45,0.9); color: #ccc; }
