@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
     <style>
-        /* CSS Styles - kept exactly as original, only removed profile warning styles if needed, but structure preserved */
+        /* === EXACT LAYOUT FROM THE EXAMPLE – COMPACT, 2-COLUMN GRID === */
         :root {
             --primary-orange: #FF6B35;
             --orange-light: #FF8C42;
@@ -138,18 +138,18 @@
         .due-status-good { color: #22c55e; font-weight: 600; }
         .due-status-pending { color: #ef4444; font-weight: 600; }
 
-        /* Updated Button Grid: 2 columns by default, responsive */
+        /* ===== MENU LAYOUT – EXACTLY AS THE EXAMPLE ===== */
         .button-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
+            gap: 10px;
             margin-top: 20px;
         }
 
         .app-btn {
             background: var(--gradient);
             border: none;
-            border-radius: 14px;
+            border-radius: 12px;
             padding: 12px 8px;
             color: white;
             font-weight: 500;
@@ -158,7 +158,7 @@
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
-            height: 70px;
+            height: 65px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -185,7 +185,7 @@
         }
 
         .app-btn:hover::before { left: 100%; }
-        .app-btn i { font-size: 1.3rem; margin-bottom: 6px; }
+        .app-btn i { font-size: 1.1rem; margin-bottom: 4px; }
         
         .admin-btn {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -193,10 +193,9 @@
             grid-column: span 2;
         }
 
-        /* Profile warning removed - no longer needed as per request */
-        .profile-btn-container {
-            position: relative;
-            grid-column: span 1;
+        /* "Change Password" spans full width */
+        .full-width-btn {
+            grid-column: span 2;
         }
 
         footer {
@@ -248,17 +247,15 @@
                 grid-template-columns: 1fr; 
                 gap: 10px; 
             }
-            .admin-btn { grid-column: span 1; }
+            .admin-btn, .full-width-btn { grid-column: span 1; }
             .header-image { max-height: 120px; }
             .logo-container { margin: 90px 0 15px 0; }
             .logo-container img { max-height: 130px; }
             .main-card { padding: 15px; margin: 0 10px 50px 10px; }
-            .app-btn { height: 65px; font-size: 0.75rem; }
-            .app-btn i { font-size: 1.2rem; }
+            .app-btn { height: 60px; font-size: 0.75rem; }
+            .app-btn i { font-size: 1rem; }
             footer { padding: 3px 10px; height: 28px; }
         }
-
-        /* No profile warning styles needed - removed entirely */
     </style>
 </head>
 <body>
@@ -286,31 +283,20 @@
                         </div>
                     </div>
                     
-                    <!-- REARRANGED BUTTONS as per requirement: 
-                         1. Subscription
-                         2. Expense
-                         3. Fixed Deposit (new fd.html)
-                         4. Members
-                         5. Profile
-                         6. Recreation Club
-                         7. Chitty (renamed from chitti but keep same link chitty.html)
-                         8. Loan
-                         9. Change Password
-                         Admin button appears separately (if admin only)
-                    -->
+                    <!-- BUTTON GRID – EXACT ORDER & LAYOUT AS REQUESTED -->
                     <div class="button-grid">
                         <!-- 1. Subscription -->
                         <button id="subscriptionBtn" class="app-btn">
                             <i class="fas fa-credit-card"></i> Subscription
                         </button>
                         
-                        <!-- 2. Expenses (Wealth / Expenses page) -->
+                        <!-- 2. Expenses -->
                         <button id="expensesBtn" class="app-btn">
-                            <i class="fas fa-receipt"></i> Expenses
+                            <i class="fas fa-receipt"></i> Expense
                         </button>
                         
-                        <!-- 3. Fixed Deposit (NEW - fd.html) -->
-                        <button id="fixedDepositBtn" class="app-btn">
+                        <!-- 3. Fixed Deposit -->
+                        <button id="fdBtn" class="app-btn">
                             <i class="fas fa-piggy-bank"></i> Fixed Deposit
                         </button>
                         
@@ -329,7 +315,7 @@
                             <i class="fas fa-gamepad"></i> Recreation Club
                         </button>
                         
-                        <!-- 7. Chitty (original Chitti link remains chitty.html) -->
+                        <!-- 7. Chitty -->
                         <button id="chittiBtn" class="app-btn">
                             <i class="fas fa-hand-holding-usd"></i> Chitty
                         </button>
@@ -339,12 +325,12 @@
                             <i class="fas fa-university"></i> Loan
                         </button>
                         
-                        <!-- 9. Change Password -->
-                        <button id="passwordBtn" class="app-btn">
+                        <!-- 9. Change Password – spans both columns -->
+                        <button id="passwordBtn" class="app-btn full-width-btn">
                             <i class="fas fa-key"></i> Change Password
                         </button>
                         
-                        <!-- Admin Dashboard Button (only visible if admin) -->
+                        <!-- Admin Dashboard – only visible for admin, spans both columns -->
                         <div id="adminTab" style="display: none; grid-column: span 2;">
                             <button id="adminBtn" class="app-btn admin-btn">
                                 <i class="fas fa-cog"></i> Admin Dashboard
@@ -366,7 +352,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js" defer></script>
 
     <script>
-        // ✅ OPTIMIZATION: Load cached data IMMEDIATELY (preserved)
+        // ========== FULL ORIGINAL FUNCTIONALITY (caching, wealth, due) – LAYOUT ONLY CHANGED ==========
         document.addEventListener('DOMContentLoaded', () => {
             const cachedName = localStorage.getItem('cached_userName');
             const cachedWealth = localStorage.getItem('cached_totalWealth');
@@ -382,27 +368,21 @@
             if(cachedDue) document.getElementById('monthlyDue').innerHTML = cachedDue;
             if(cachedRole === 'admin') document.getElementById('adminTab').style.display = 'block';
             
-            // Set Theme from Cache
             const savedTheme = localStorage.getItem('theme') || 'light';
             document.documentElement.setAttribute('data-theme', savedTheme);
             const themeBtn = document.getElementById('themeToggle');
             if(themeBtn) themeBtn.textContent = savedTheme === 'light' ? '🌞' : '🌙';
 
-            // Click events for wealth and due info (remain same)
             document.getElementById('wealthInfo').addEventListener('click', () => {
                 window.location.href = 'wealth-user.html';
             });
-            
             document.getElementById('dueInfo').addEventListener('click', () => {
                 window.location.href = 'subscription.html';
             });
         });
 
-        // Wait for Firebase to load
         window.addEventListener('load', () => {
-            
             if (typeof firebase === 'undefined') {
-                // If firebase fails to load (offline etc), keep cached but no dynamic updates
                 console.warn("Firebase not loaded");
                 return;
             }
@@ -422,16 +402,13 @@
             const auth = firebase.auth();
             const db = firebase.firestore();
 
-            // UI Elements
             const userNameEl = document.getElementById('user-name');
             const totalWealth = document.getElementById('totalWealth');
             const monthlyDue = document.getElementById('monthlyDue');
             const adminTab = document.getElementById('adminTab');
 
-            // Auth State Listener with CACHING
             auth.onAuthStateChanged((user) => {
                 if (user) {
-                    // Fetch user data
                     db.collection('users').doc(user.uid).get()
                         .then((doc) => {
                             if (doc.exists) {
@@ -446,13 +423,10 @@
 
                                 if (data.role === "admin") {
                                     adminTab.style.display = 'block';
-                                    adminTab.style.gridColumn = 'span 2';
                                 } else {
                                     adminTab.style.display = 'none';
                                 }
 
-                                // Profile warning completely removed as requested - no checks, no messages.
-                                // Calculate wealth and due as before
                                 calculateTotalWealth();
                                 calculateMonthlyDue(user.uid);
                             }
@@ -529,16 +503,15 @@
                 }
             }
 
-            // BUTTON MAPPING (Updated with new order and fixed deposit link)
-            // All original functionality preserved, only added fd.html for Fixed Deposit
+            // Button navigation (matches new IDs)
             const buttonsConfig = {
                 'subscriptionBtn': 'subscription.html',
                 'expensesBtn': 'wealth-user.html',
-                'fixedDepositBtn': 'fd.html',      // New Fixed Deposit tab as requested
+                'fdBtn': 'fd.html',
                 'memberListBtn': 'members.html',
                 'profileBtn': 'profile.html',
                 'clubBtn': 'club.html',
-                'chittiBtn': 'chitty.html',        // Chitty remains same as chitty.html
+                'chittiBtn': 'chitty.html',
                 'loanBtn': 'loan.html',
                 'passwordBtn': 'pass.html',
                 'adminBtn': 'dashboard.html'
@@ -554,7 +527,7 @@
                 }
             }
 
-            // Theme Toggle Logic (unchanged)
+            // Theme toggle
             const themeToggle = document.getElementById('themeToggle');
             if (themeToggle) {
                 themeToggle.addEventListener('click', () => {
@@ -567,10 +540,8 @@
                 });
             }
         });
-    </script>
-    
-    <script>
-        // Service Worker Registration (unchanged, PWA support)
+
+        // Service Worker registration
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js')
