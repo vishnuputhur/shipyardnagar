@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
     <style>
-        /* === EXACT LAYOUT FROM THE EXAMPLE – COMPACT, 2-COLUMN GRID === */
+        /* === EXACT LAYOUT FROM THE EXAMPLE – BUT NOW STRICT 2-COLUMN, 35mm BUTTONS === */
         :root {
             --primary-orange: #FF6B35;
             --orange-light: #FF8C42;
@@ -138,11 +138,12 @@
         .due-status-good { color: #22c55e; font-weight: 600; }
         .due-status-pending { color: #ef4444; font-weight: 600; }
 
-        /* ===== MENU LAYOUT – EXACTLY AS THE EXAMPLE ===== */
+        /* ===== MODIFIED BUTTON LAYOUT: 2 COLUMNS, EACH BUTTON EXACTLY 35mm WIDTH ===== */
         .button-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
+            grid-template-columns: repeat(2, 35mm);  /* each column exactly 35mm */
+            gap: 12px 10px;  /* row-gap 12px, column-gap 10px */
+            justify-content: center;
             margin-top: 20px;
         }
 
@@ -163,11 +164,15 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            width: 100%;
+            width: 35mm;           /* enforce exact width 35mm */
+            min-width: 35mm;
+            max-width: 35mm;
             text-align: center;
             cursor: pointer;
+            box-sizing: border-box;
         }
 
+        /* Ensure buttons never stretch or shrink */
         .app-btn::before {
             content: '';
             position: absolute;
@@ -187,17 +192,13 @@
         .app-btn:hover::before { left: 100%; }
         .app-btn i { font-size: 1.1rem; margin-bottom: 4px; }
         
+        /* Admin button uses same styling, no full-width override */
         .admin-btn {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            margin-top: 0;
-            grid-column: span 2;
         }
 
-        /* "Change Password" spans full width */
-        .full-width-btn {
-            grid-column: span 2;
-        }
-
+        /* Removed all full-width / grid-column span classes */
+        /* No media query to change columns — always 2 columns, 35mm each */
         footer {
             position: fixed;
             bottom: 0;
@@ -242,17 +243,23 @@
             border-color: var(--primary-orange);
         }
 
+        /* Small screens: maintain same 35mm buttons, allow horizontal scroll if needed */
         @media (max-width: 576px) {
-            .button-grid { 
-                grid-template-columns: 1fr; 
-                gap: 10px; 
-            }
-            .admin-btn, .full-width-btn { grid-column: span 1; }
             .header-image { max-height: 120px; }
             .logo-container { margin: 90px 0 15px 0; }
             .logo-container img { max-height: 130px; }
             .main-card { padding: 15px; margin: 0 10px 50px 10px; }
-            .app-btn { height: 60px; font-size: 0.75rem; }
+            .button-grid {
+                gap: 10px;
+                justify-content: center;
+                /* keep 2 columns 35mm each, no change */
+            }
+            .app-btn {
+                height: 60px;
+                font-size: 0.75rem;
+                width: 35mm;
+                min-width: 35mm;
+            }
             .app-btn i { font-size: 1rem; }
             footer { padding: 3px 10px; height: 28px; }
         }
@@ -283,7 +290,7 @@
                         </div>
                     </div>
                     
-                    <!-- BUTTON GRID – EXACT ORDER & LAYOUT AS REQUESTED -->
+                    <!-- BUTTON GRID – STRICT 2 PER ROW, EACH 35mm WIDTH, ORIGINAL ORDER -->
                     <div class="button-grid">
                         <!-- 1. Subscription -->
                         <button id="subscriptionBtn" class="app-btn">
@@ -325,17 +332,15 @@
                             <i class="fas fa-university"></i> Loan
                         </button>
                         
-                        <!-- 9. Change Password – spans both columns -->
-                        <button id="passwordBtn" class="app-btn full-width-btn">
+                        <!-- 9. Change Password – normal button, no full-width class -->
+                        <button id="passwordBtn" class="app-btn">
                             <i class="fas fa-key"></i> Change Password
                         </button>
                         
-                        <!-- Admin Dashboard – only visible for admin, spans both columns -->
-                        <div id="adminTab" style="display: none; grid-column: span 2;">
-                            <button id="adminBtn" class="app-btn admin-btn">
-                                <i class="fas fa-cog"></i> Admin Dashboard
-                            </button>
-                        </div>
+                        <!-- 10. Admin Dashboard – hidden by default, shown via JS if user is admin -->
+                        <button id="adminBtn" class="app-btn admin-btn" style="display: none;">
+                            <i class="fas fa-cog"></i> Admin Dashboard
+                        </button>
                     </div>
                 </div>
             </div>
@@ -352,7 +357,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js" defer></script>
 
     <script>
-        // ========== FULL ORIGINAL FUNCTIONALITY (caching, wealth, due) – LAYOUT ONLY CHANGED ==========
+        // ========== FULL ORIGINAL FUNCTIONALITY (caching, wealth, due) – LAYOUT ONLY CHANGED: 35mm BUTTONS, 2 PER ROW ==========
         document.addEventListener('DOMContentLoaded', () => {
             const cachedName = localStorage.getItem('cached_userName');
             const cachedWealth = localStorage.getItem('cached_totalWealth');
@@ -366,7 +371,14 @@
             }
             if(cachedWealth) document.getElementById('totalWealth').textContent = cachedWealth;
             if(cachedDue) document.getElementById('monthlyDue').innerHTML = cachedDue;
-            if(cachedRole === 'admin') document.getElementById('adminTab').style.display = 'block';
+            
+            // Admin button visibility based on cached role (will be overridden by real-time later)
+            const adminBtn = document.getElementById('adminBtn');
+            if(cachedRole === 'admin' && adminBtn) {
+                adminBtn.style.display = 'flex';
+            } else if(adminBtn) {
+                adminBtn.style.display = 'none';
+            }
             
             const savedTheme = localStorage.getItem('theme') || 'light';
             document.documentElement.setAttribute('data-theme', savedTheme);
@@ -405,7 +417,7 @@
             const userNameEl = document.getElementById('user-name');
             const totalWealth = document.getElementById('totalWealth');
             const monthlyDue = document.getElementById('monthlyDue');
-            const adminTab = document.getElementById('adminTab');
+            const adminBtn = document.getElementById('adminBtn');
 
             auth.onAuthStateChanged((user) => {
                 if (user) {
@@ -422,9 +434,9 @@
                                 localStorage.setItem('cached_userRole', data.role || 'member');
 
                                 if (data.role === "admin") {
-                                    adminTab.style.display = 'block';
+                                    if (adminBtn) adminBtn.style.display = 'flex';
                                 } else {
-                                    adminTab.style.display = 'none';
+                                    if (adminBtn) adminBtn.style.display = 'none';
                                 }
 
                                 calculateTotalWealth();
@@ -503,7 +515,7 @@
                 }
             }
 
-            // Button navigation (matches new IDs)
+            // Button navigation mapping (all IDs exactly as in HTML)
             const buttonsConfig = {
                 'subscriptionBtn': 'subscription.html',
                 'expensesBtn': 'wealth-user.html',
@@ -541,7 +553,7 @@
             }
         });
 
-        // Service Worker registration
+        // Service Worker registration (original preserved)
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js')
