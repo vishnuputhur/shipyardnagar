@@ -10,270 +10,174 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
             --primary-orange: #FF6B35;
-            --orange-light: #FF8C42;
-            --orange-dark: #E55A2B;
             --gradient: linear-gradient(135deg, #FF6B35 0%, #FF8C42 50%, #FFA726 100%);
             --shadow: 0 8px 25px rgba(255, 107, 53, 0.15);
-            --shadow-hover: 0 12px 35px rgba(255, 107, 53, 0.25);
             --card-bg: rgba(255, 255, 255, 0.95);
             --success-green: #22c55e;
-            --info-blue: #3b82f6;
         }
-
-        [data-theme="dark"] {
-            --card-bg: rgba(45, 45, 45, 0.95);
-        }
-
+        [data-theme="dark"] { --card-bg: rgba(45, 45, 45, 0.95); }
         body {
             font-family: 'Poppins', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding-bottom: 50px;
-            position: relative;
-            overflow-x: hidden;
+            margin: 0;
         }
-
         body::before {
             content: '';
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0; width: 100%; height: 100%;
             background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><polygon fill="%23ffffff10" points="0,1000 1000,0 1000,1000"/></svg>');
-            pointer-events: none;
-            z-index: -1;
+            pointer-events: none; z-index: -1;
         }
-
         .header-image {
-            width: 100%;
-            height: auto;
-            max-height: 150px;
-            object-fit: cover;
-            display: block;
-            position: fixed;
-            top: 3mm;
-            left: 0;
-            z-index: 999;
+            width: 100%; height: auto; max-height: 150px; object-fit: cover;
+            position: fixed; top: 3mm; left: 0; z-index: 999;
         }
-
-        .page-container {
-            padding-top: 120px;
-            padding-bottom: 30px;
-        }
-
+        .page-container { padding-top: 130px; padding-bottom: 20px; }
+        /* Compact summary boxes - like home page wealth-info */
         .summary-card {
             background: var(--card-bg);
             backdrop-filter: blur(20px);
-            border-radius: 20px;
-            padding: 18px;
-            margin-bottom: 20px;
+            border-radius: 16px;
+            padding: 12px 10px;
+            margin-bottom: 16px;
             box-shadow: var(--shadow);
-            border: 1px solid rgba(255, 255, 255, 0.2);
         }
-
         .summary-stats {
             display: flex;
             flex-wrap: wrap;
-            gap: 15px;
+            gap: 8px;
             justify-content: space-between;
         }
-
         .stat-box {
             flex: 1;
             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            padding: 15px 12px;
-            border-radius: 16px;
+            padding: 6px 5px;
+            border-radius: 12px;
             text-align: center;
-            border-left: 4px solid var(--primary-orange);
-            transition: all 0.2s ease;
+            border-left: 3px solid var(--primary-orange);
+            font-size: 0.7rem;
         }
-
-        [data-theme="dark"] .stat-box {
-            background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
-            color: #fff;
-        }
-
-        .stat-label {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            font-weight: 600;
-            color: #64748b;
-        }
-
+        [data-theme="dark"] .stat-box { background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%); color: #fff; }
+        .stat-label { font-size: 0.65rem; font-weight: 500; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
         [data-theme="dark"] .stat-label { color: #94a3b8; }
-
-        .stat-value {
-            font-size: 1.6rem;
-            font-weight: 700;
-            color: #1e293b;
-        }
-
+        .stat-value { font-size: 1rem; font-weight: 700; color: #1e293b; line-height: 1.2; }
         [data-theme="dark"] .stat-value { color: #f1f5f9; }
 
-        .fd-list {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-top: 20px;
-        }
-
+        /* FD List - compact cards */
+        .fd-list { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
         .fd-card {
             background: var(--card-bg);
             backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 16px;
+            border-radius: 14px;
+            padding: 10px 12px;
             box-shadow: var(--shadow);
-            transition: all 0.2s;
             border: 1px solid rgba(255,255,255,0.2);
-            cursor: pointer;
+            transition: 0.2s;
         }
-
-        .fd-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
-
+        .fd-card:hover { transform: translateY(-1px); }
         .fd-amount {
-            font-size: 1.8rem;
+            font-size: 1.3rem;
             font-weight: 700;
             color: var(--primary-orange);
-            margin-bottom: 5px;
+            line-height: 1.2;
+            margin-bottom: 2px;
         }
-
-        .interest-earned {
-            font-size: 0.9rem;
-            font-weight: 600;
+        .interest-line {
+            font-size: 0.7rem;
+            font-weight: 500;
             color: var(--success-green);
-            margin-bottom: 12px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex-wrap: wrap;
         }
-
-        .interest-earned i { font-size: 0.8rem; }
-
+        .interest-line i { font-size: 0.65rem; }
         .fd-meta {
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
-            font-size: 0.7rem;
+            gap: 8px;
+            font-size: 0.6rem;
             color: #6c757d;
             border-top: 1px solid rgba(0,0,0,0.05);
-            padding-top: 10px;
-            margin-top: 5px;
+            padding-top: 6px;
+            margin-top: 4px;
         }
-
         [data-theme="dark"] .fd-meta { color: #adb7c4; border-top-color: rgba(255,255,255,0.1); }
-
-        .fd-meta span { margin-right: 12px; }
-
-        .admin-actions {
-            display: flex;
-            gap: 12px;
-            margin-top: 20px;
-            flex-wrap: wrap;
-        }
-
+        .fd-meta span { margin-right: 6px; }
+        .admin-actions { display: flex; gap: 10px; margin-top: 18px; justify-content: center; }
         .admin-btn-sm {
             background: var(--gradient);
             border: none;
-            border-radius: 40px;
-            padding: 8px 18px;
+            border-radius: 30px;
+            padding: 5px 14px;
             color: white;
             font-weight: 500;
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             transition: 0.2s;
         }
-
-        .admin-btn-sm:hover { transform: translateY(-2px); opacity: 0.9; }
-
         .btn-outline-close {
             background: transparent;
             border: 1px solid #ef4444;
             color: #ef4444;
+            padding: 2px 10px;
+            font-size: 0.65rem;
+            border-radius: 30px;
         }
-
         .btn-outline-close:hover { background: #ef4444; color: white; }
-
-        .modal-content-custom {
-            background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            border-radius: 24px;
-        }
-
+        .modal-content-custom { background: var(--card-bg); backdrop-filter: blur(20px); border-radius: 20px; }
         footer {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            background: rgba(248, 248, 248, 0.9);
-            backdrop-filter: blur(10px);
-            color: #666;
-            font-size: 0.7rem;
-            z-index: 1000;
-            border-top: 1px solid rgba(255, 107, 53, 0.2);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 3px 15px;
-            height: 30px;
+            position: fixed; bottom: 0; width: 100%;
+            background: rgba(248, 248, 248, 0.9); backdrop-filter: blur(10px);
+            color: #666; font-size: 0.65rem; z-index: 1000;
+            border-top: 1px solid rgba(255,107,53,0.2);
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 2px 12px; height: 28px;
         }
-
-        [data-theme="dark"] footer { background: rgba(45, 45, 45, 0.9); color: #ccc; }
-
-        .footer-text { flex: 1; text-align: center; }
+        [data-theme="dark"] footer { background: rgba(45,45,45,0.9); color: #ccc; }
         .theme-toggle-btn {
-            background: transparent;
-            border: 1px solid #ccc;
-            border-radius: 20px;
-            padding: 4px 8px;
-            color: #666;
-            font-size: 0.75rem;
-            cursor: pointer;
-            height: 24px;
-        }
-        .back-home {
-            background: transparent;
-            border: none;
-            color: var(--primary-orange);
-            font-weight: 600;
-            margin-bottom: 12px;
-            text-align: left;
+            background: transparent; border: 1px solid #ccc; border-radius: 20px;
+            padding: 2px 8px; font-size: 0.7rem; cursor: pointer;
         }
         @media (max-width: 576px) {
-            .page-container { padding-top: 100px; }
-            .stat-value { font-size: 1.2rem; }
-            .fd-amount { font-size: 1.4rem; }
+            .page-container { padding-top: 110px; }
+            .stat-value { font-size: 0.9rem; }
+            .fd-amount { font-size: 1.1rem; }
+            .interest-line { font-size: 0.65rem; }
         }
+        /* input styling */
+        .form-control-sm-custom { font-size: 0.8rem; padding: 4px 8px; }
+        .modal-body label { font-size: 0.75rem; font-weight: 500; }
     </style>
 </head>
 <body>
     <img src="assets/head.png" alt="Header" class="header-image">
-
     <div class="container page-container">
         <div class="row justify-content-center">
-            <div class="col-12 col-md-8 col-lg-7">
-                <button id="backHomeBtn" class="btn back-home"><i class="fas fa-arrow-left"></i> Back to Home</button>
-                
-                <!-- Summary Cards -->
+            <div class="col-12 col-md-8 col-lg-6">
+                <!-- Summary Cards - compact -->
                 <div class="summary-card">
                     <div class="summary-stats">
-                        <div class="stat-box"><div class="stat-label">Total FD Amount</div><div class="stat-value" id="totalFdAmount">₹0</div></div>
+                        <div class="stat-box"><div class="stat-label">Total FD</div><div class="stat-value" id="totalFdAmount">₹0</div></div>
                         <div class="stat-box"><div class="stat-label">Cash in Hand</div><div class="stat-value" id="cashInHand">₹0</div></div>
-                        <div class="stat-box"><div class="stat-label">Total Interest Earned</div><div class="stat-value" id="totalInterestEarned">₹0</div></div>
+                        <div class="stat-box"><div class="stat-label">Total Interest</div><div class="stat-value" id="totalInterestEarned">₹0</div></div>
                         <div class="stat-box"><div class="stat-label">No. of FDs</div><div class="stat-value" id="fdCount">0</div></div>
                     </div>
                 </div>
 
-                <!-- FD List Container -->
+                <!-- FD List -->
                 <div id="fdListContainer" class="fd-list">
-                    <div class="text-center text-white-50 p-4">Loading Fixed Deposits...</div>
+                    <div class="text-center text-white-50 p-3 small">Loading...</div>
                 </div>
 
-                <!-- Admin Action Buttons (hidden by default) -->
+                <!-- Admin Panel (hidden by default) -->
                 <div id="adminPanel" style="display: none;" class="admin-actions">
-                    <button id="addFdBtn" class="admin-btn-sm"><i class="fas fa-plus-circle"></i> Add New FD</button>
+                    <button id="addFdBtn" class="admin-btn-sm"><i class="fas fa-plus"></i> Add FD</button>
                 </div>
             </div>
         </div>
@@ -284,11 +188,11 @@
         <button id="themeToggle" class="theme-toggle-btn">🌞</button>
     </footer>
 
-    <!-- Modals -->
+    <!-- Modal -->
     <div class="modal fade" id="fdModal" tabindex="-1" data-bs-backdrop="static">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
             <div class="modal-content modal-content-custom">
-                <div class="modal-header"><h5 class="modal-title" id="modalTitle">Add Fixed Deposit</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-header py-2"><h6 class="modal-title" id="modalTitle">FD</h6><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
                 <div class="modal-body" id="modalBody"></div>
             </div>
         </div>
@@ -300,138 +204,110 @@
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 
     <script>
-        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyBWswawf9tpxNwVU0BaJ6FCwCvgcjUQXlA",
             authDomain: "shipyard-nagar.firebaseapp.com",
             projectId: "shipyard-nagar",
             storageBucket: "shipyard-nagar.firebasestorage.app",
             messagingSenderId: "552855824221",
-            appId: "1:552855824221:web:f709da953077475be9eab4",
-            measurementId: "G-V8CQ4YCCQ5"
+            appId: "1:552855824221:web:f709da953077475be9eab4"
         };
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
 
         let currentUserRole = null;
-        let allFDs = [];      // Store FD array
+        let allFDs = [];
         let modalInstance = null;
         let editingFdId = null;
 
-        // Helper: Calculate days difference between startDate and today
         function getDaysDifference(startDateStr) {
             const start = new Date(startDateStr);
             const today = new Date();
             today.setHours(0,0,0,0);
-            const diffTime = today - start;
-            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-            return diffDays >= 0 ? diffDays : 0;
+            const diff = Math.floor((today - start) / (1000 * 60 * 60 * 24));
+            return diff >= 0 ? diff : 0;
         }
 
-        // Calculate simple interest (principal * rate% * days/365)
         function calculateAccruedInterest(principal, ratePercent, startDateStr) {
             const days = getDaysDifference(startDateStr);
             if (days <= 0) return 0;
-            const rateDecimal = ratePercent / 100;
-            const interest = principal * rateDecimal * (days / 365);
-            return interest;
+            return principal * (ratePercent / 100) * (days / 365);
         }
 
-        // Render FD List + Summary
         async function renderFDs() {
             if (!allFDs.length) {
-                document.getElementById('fdListContainer').innerHTML = `<div class="text-center text-white-50 p-4"><i class="fas fa-inbox"></i> No Fixed Deposits found. Click Add FD.</div>`;
+                document.getElementById('fdListContainer').innerHTML = `<div class="text-center text-white-50 p-3 small"><i class="fas fa-inbox"></i> No FDs</div>`;
                 updateSummary();
                 return;
             }
-
-            // Sort by created date descending
             const sorted = [...allFDs].sort((a,b) => new Date(b.startDate) - new Date(a.startDate));
             let html = '';
             for (const fd of sorted) {
                 const isClosed = fd.status === 'closed';
-                const principal = fd.amount || 0;
+                const amount = fd.amount || 0;
                 const rate = fd.interestRate || 0;
-                const startDate = fd.startDate;
+                const start = fd.startDate;
                 const bank = fd.bankName || 'N/A';
                 const tenure = fd.tenure || 'N/A';
-                
-                let interestDisplay = '';
+                let interestHtml = '';
                 if (!isClosed) {
-                    const accrued = calculateAccruedInterest(principal, rate, startDate);
-                    interestDisplay = `<div class="interest-earned"><i class="fas fa-plus-circle"></i> + ₹${accrued.toFixed(2)} interest (${getDaysDifference(startDate)} days)</div>`;
+                    const accrued = calculateAccruedInterest(amount, rate, start);
+                    const days = getDaysDifference(start);
+                    interestHtml = `<div class="interest-line"><i class="fas fa-plus-circle"></i> + ₹${accrued.toFixed(2)} interest (${days} days)</div>`;
                 } else {
-                    interestDisplay = `<div class="interest-earned" style="color:#6c757d;"><i class="fas fa-check-circle"></i> Closed | Interest Earned: ₹${(fd.closedInterest || 0).toFixed(2)}</div>`;
+                    interestHtml = `<div class="interest-line" style="color:#6c757d;"><i class="fas fa-check-circle"></i> Closed | + ₹${(fd.closedInterest || 0).toFixed(2)} interest</div>`;
                 }
-
                 html += `
                     <div class="fd-card" data-fd-id="${fd.id}">
-                        <div class="fd-amount">₹${(principal).toLocaleString('en-IN')}</div>
-                        ${interestDisplay}
+                        <div class="fd-amount">₹${amount.toLocaleString('en-IN')}</div>
+                        ${interestHtml}
                         <div class="fd-meta">
                             <span><i class="fas fa-university"></i> ${bank}</span>
-                            <span><i class="far fa-calendar-alt"></i> ${startDate}</span>
+                            <span><i class="far fa-calendar-alt"></i> ${start}</span>
                             <span><i class="fas fa-percent"></i> ${rate}%</span>
                             <span><i class="far fa-clock"></i> ${tenure}</span>
                         </div>
-                        ${currentUserRole === 'admin' && !isClosed ? `<div class="text-end mt-2"><button class="btn btn-sm btn-outline-close close-fd-btn" data-id="${fd.id}" style="border-radius:30px; padding:2px 12px;">Close FD</button> <button class="btn btn-sm admin-btn-sm edit-fd-btn" data-id="${fd.id}" style="padding:2px 12px;">Edit</button></div>` : ''}
-                        ${currentUserRole === 'admin' && isClosed ? `<div class="text-end mt-2"><span class="badge bg-secondary">Closed on ${fd.closedDate || ''}</span></div>` : ''}
-                    </div>
                 `;
+                if (currentUserRole === 'admin' && !isClosed) {
+                    html += `<div class="text-end mt-1"><button class="btn btn-outline-close close-fd-btn" data-id="${fd.id}">Close</button> <button class="admin-btn-sm edit-fd-btn" data-id="${fd.id}" style="padding:2px 12px;">Edit</button></div>`;
+                } else if (currentUserRole === 'admin' && isClosed) {
+                    html += `<div class="text-end mt-1"><span class="badge bg-secondary" style="font-size:0.6rem;">Closed on ${fd.closedDate || ''}</span></div>`;
+                }
+                html += `</div>`;
             }
             document.getElementById('fdListContainer').innerHTML = html;
             updateSummary();
 
-            // Attach event listeners for close/edit buttons
             if (currentUserRole === 'admin') {
                 document.querySelectorAll('.close-fd-btn').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        const fdId = btn.getAttribute('data-id');
-                        openCloseModal(fdId);
-                    });
+                    btn.addEventListener('click', (e) => { e.stopPropagation(); openCloseModal(btn.dataset.id); });
                 });
                 document.querySelectorAll('.edit-fd-btn').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        const fdId = btn.getAttribute('data-id');
-                        openEditModal(fdId);
-                    });
+                    btn.addEventListener('click', (e) => { e.stopPropagation(); openEditModal(btn.dataset.id); });
                 });
             }
-            // Click on FD card (optional detail)
-            document.querySelectorAll('.fd-card').forEach(card => {
-                card.addEventListener('click', (e) => {
-                    if(e.target.classList.contains('close-fd-btn') || e.target.classList.contains('edit-fd-btn')) return;
-                    // just simple preview, can be extended
-                });
-            });
         }
 
-        function updateSummary() {
-            let totalAmount = 0;
+        async function updateSummary() {
+            let totalActiveAmount = 0;
             let totalClosedInterest = 0;
             let activeCount = 0;
             for (const fd of allFDs) {
                 if (fd.status !== 'closed') {
-                    totalAmount += fd.amount || 0;
+                    totalActiveAmount += fd.amount || 0;
                     activeCount++;
                 } else {
                     totalClosedInterest += fd.closedInterest || 0;
                 }
             }
-            // For active FDs, interest earned not added to totalInterestEarned until closed. But requirement: totalInterestEarned = sum of interests from closed FDs only (as per description)
-            const totalInterestEarned = totalClosedInterest;
-            document.getElementById('totalFdAmount').innerHTML = `₹${totalAmount.toLocaleString('en-IN')}`;
-            document.getElementById('fdCount').innerHTML = allFDs.filter(f => f.status !== 'closed').length;
-            document.getElementById('totalInterestEarned').innerHTML = `₹${totalInterestEarned.toLocaleString('en-IN')}`;
-            
-            // Fetch Wealth from global 'transactions' collection to calculate Cash in Hand = Total Wealth - Total FD Amount
-            calculateCashInHand(totalAmount);
+            document.getElementById('totalFdAmount').innerHTML = `₹${totalActiveAmount.toLocaleString('en-IN')}`;
+            document.getElementById('fdCount').innerHTML = activeCount;
+            document.getElementById('totalInterestEarned').innerHTML = `₹${totalClosedInterest.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+            await calculateCashInHand(totalActiveAmount);
         }
 
-        async function calculateCashInHand(fdTotalAmount) {
+        async function calculateCashInHand(fdTotal) {
             try {
                 let totalIncome = 0, totalExpense = 0;
                 const transSnap = await db.collection('transactions').get();
@@ -440,43 +316,31 @@
                     if (t.type === 'income') totalIncome += t.amount || 0;
                     if (t.type === 'expense') totalExpense += t.amount || 0;
                 });
-                const totalWealth = totalIncome - totalExpense;
-                const cashInHand = totalWealth - fdTotalAmount;
-                document.getElementById('cashInHand').innerHTML = `₹${cashInHand.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
-            } catch (err) {
-                console.error("Cash calc error", err);
-                document.getElementById('cashInHand').innerHTML = `₹0`;
-            }
+                const wealth = totalIncome - totalExpense;
+                const cash = wealth - fdTotal;
+                document.getElementById('cashInHand').innerHTML = `₹${cash.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+            } catch(e) { document.getElementById('cashInHand').innerHTML = `₹0.00`; }
         }
 
-        // Load FDs from Firestore
         async function loadFDs() {
             try {
-                const snapshot = await db.collection('fd').orderBy('createdAt', 'desc').get();
-                allFDs = [];
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    allFDs.push({ id: doc.id, ...data });
-                });
-                await renderFDs();
-            } catch (error) {
-                console.error("Load FD error", error);
-                document.getElementById('fdListContainer').innerHTML = `<div class="alert alert-danger">Error loading FDs</div>`;
-            }
+                const snap = await db.collection('fd').orderBy('createdAt', 'desc').get();
+                allFDs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderFDs();
+            } catch(e) { console.error(e); }
         }
 
-        // Add FD Form
         function showAddModal() {
             editingFdId = null;
-            document.getElementById('modalTitle').innerText = 'Add Fixed Deposit';
+            document.getElementById('modalTitle').innerHTML = 'Add FD';
             document.getElementById('modalBody').innerHTML = `
                 <form id="fdForm">
-                    <div class="mb-3"><label class="form-label">Bank Name *</label><input type="text" class="form-control" id="bankName" required></div>
-                    <div class="mb-3"><label class="form-label">Amount (₹) *</label><input type="number" class="form-control" id="amount" step="any" required></div>
-                    <div class="mb-3"><label class="form-label">Interest Rate (% p.a.) *</label><input type="number" class="form-control" id="interestRate" step="0.1" required></div>
-                    <div class="mb-3"><label class="form-label">Start Date *</label><input type="date" class="form-control" id="startDate" required></div>
-                    <div class="mb-3"><label class="form-label">Tenure (e.g., 12 months / 5 years)</label><input type="text" class="form-control" id="tenure" placeholder="12 months"></div>
-                    <button type="submit" class="btn btn-success w-100">Save FD</button>
+                    <div class="mb-2"><label>Bank Name</label><input type="text" class="form-control form-control-sm" id="bankName" required></div>
+                    <div class="mb-2"><label>Amount (₹)</label><input type="number" class="form-control form-control-sm" id="amount" step="any" required></div>
+                    <div class="mb-2"><label>Interest Rate (%)</label><input type="number" class="form-control form-control-sm" id="interestRate" step="0.01" required placeholder="e.g., 8.25"></div>
+                    <div class="mb-2"><label>Start Date</label><input type="date" class="form-control form-control-sm" id="startDate" required></div>
+                    <div class="mb-2"><label>Tenure</label><input type="text" class="form-control form-control-sm" id="tenure" placeholder="12 months"></div>
+                    <button type="submit" class="btn btn-sm btn-success w-100 mt-2">Save</button>
                 </form>
             `;
             modalInstance.show();
@@ -487,20 +351,16 @@
                 const interestRate = parseFloat(document.getElementById('interestRate').value);
                 const startDate = document.getElementById('startDate').value;
                 const tenure = document.getElementById('tenure').value.trim() || 'Not specified';
-                if (!bankName || isNaN(amount) || isNaN(interestRate) || !startDate) {
-                    alert("Please fill all required fields");
-                    return;
-                }
+                if (!bankName || isNaN(amount) || isNaN(interestRate) || !startDate) return alert("Fill all required");
                 try {
                     await db.collection('fd').add({
                         bankName, amount, interestRate, startDate, tenure,
-                        status: 'active',
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                        closedInterest: 0, closedDate: null
+                        status: 'active', closedInterest: 0, closedDate: null,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
                     modalInstance.hide();
                     loadFDs();
-                } catch (err) { alert("Error: "+err.message); }
+                } catch(err) { alert(err.message); }
             });
         }
 
@@ -508,15 +368,15 @@
             const fd = allFDs.find(f => f.id === fdId);
             if (!fd || fd.status === 'closed') { alert("Closed FD cannot be edited"); return; }
             editingFdId = fdId;
-            document.getElementById('modalTitle').innerText = 'Edit Fixed Deposit';
+            document.getElementById('modalTitle').innerHTML = 'Edit FD';
             document.getElementById('modalBody').innerHTML = `
                 <form id="editFdForm">
-                    <div class="mb-3"><label>Bank Name</label><input type="text" class="form-control" id="editBankName" value="${fd.bankName || ''}" required></div>
-                    <div class="mb-3"><label>Amount (₹)</label><input type="number" class="form-control" id="editAmount" step="any" value="${fd.amount}" required></div>
-                    <div class="mb-3"><label>Interest Rate (%)</label><input type="number" class="form-control" id="editInterestRate" step="0.1" value="${fd.interestRate}" required></div>
-                    <div class="mb-3"><label>Start Date</label><input type="date" class="form-control" id="editStartDate" value="${fd.startDate}" required></div>
-                    <div class="mb-3"><label>Tenure</label><input type="text" class="form-control" id="editTenure" value="${fd.tenure || ''}"></div>
-                    <button type="submit" class="btn btn-primary w-100">Update FD</button>
+                    <div class="mb-2"><label>Bank Name</label><input type="text" class="form-control form-control-sm" id="editBankName" value="${fd.bankName || ''}" required></div>
+                    <div class="mb-2"><label>Amount (₹)</label><input type="number" class="form-control form-control-sm" id="editAmount" step="any" value="${fd.amount}" required></div>
+                    <div class="mb-2"><label>Interest Rate (%)</label><input type="number" class="form-control form-control-sm" id="editInterestRate" step="0.01" value="${fd.interestRate}" required></div>
+                    <div class="mb-2"><label>Start Date</label><input type="date" class="form-control form-control-sm" id="editStartDate" value="${fd.startDate}" required></div>
+                    <div class="mb-2"><label>Tenure</label><input type="text" class="form-control form-control-sm" id="editTenure" value="${fd.tenure || ''}"></div>
+                    <button type="submit" class="btn btn-sm btn-primary w-100">Update</button>
                 </form>
             `;
             modalInstance.show();
@@ -529,80 +389,60 @@
                     startDate: document.getElementById('editStartDate').value,
                     tenure: document.getElementById('editTenure').value.trim()
                 };
-                if (isNaN(updateData.amount) || isNaN(updateData.interestRate) || !updateData.startDate) return alert("Invalid data");
-                try {
-                    await db.collection('fd').doc(fdId).update(updateData);
-                    modalInstance.hide();
-                    loadFDs();
-                } catch (err) { alert("Update failed: "+err.message); }
+                if (isNaN(updateData.amount) || isNaN(updateData.interestRate)) return alert("Invalid numbers");
+                await db.collection('fd').doc(fdId).update(updateData);
+                modalInstance.hide();
+                loadFDs();
             });
         }
 
         function openCloseModal(fdId) {
             const fd = allFDs.find(f => f.id === fdId);
             if (!fd) return;
-            editingFdId = fdId;
-            document.getElementById('modalTitle').innerText = 'Close Fixed Deposit';
+            document.getElementById('modalTitle').innerHTML = 'Close FD';
             document.getElementById('modalBody').innerHTML = `
                 <form id="closeFdForm">
-                    <div class="mb-3"><label>FD Amount (₹)</label><input type="text" class="form-control" value="${fd.amount}" disabled></div>
-                    <div class="mb-3"><label>Closing Date *</label><input type="date" class="form-control" id="closeDate" required></div>
-                    <div class="mb-3"><label>Interest Earned (₹) *</label><input type="number" class="form-control" id="closeInterest" step="any" required placeholder="Interest amount received"></div>
-                    <div class="mb-3"><label>Total Maturity Amount</label><input type="text" class="form-control" id="totalAmountPreview" readonly></div>
-                    <button type="submit" class="btn btn-danger w-100">Confirm Close FD</button>
+                    <div class="mb-2"><label>FD Amount</label><input type="text" class="form-control form-control-sm" value="₹${fd.amount}" disabled></div>
+                    <div class="mb-2"><label>Closing Date</label><input type="date" class="form-control form-control-sm" id="closeDate" required></div>
+                    <div class="mb-2"><label>Interest Earned (₹)</label><input type="number" class="form-control form-control-sm" id="closeInterest" step="0.01" required placeholder="0.00"></div>
+                    <div class="mb-2"><label>Maturity Amt</label><input type="text" class="form-control form-control-sm" id="totalPreview" readonly></div>
+                    <button type="submit" class="btn btn-sm btn-danger w-100">Confirm Close</button>
                 </form>
             `;
             modalInstance.show();
-            const interestInput = document.getElementById('closeInterest');
-            const closeDateInput = document.getElementById('closeDate');
-            const totalPreview = document.getElementById('totalAmountPreview');
+            const interestInp = document.getElementById('closeInterest');
+            const preview = document.getElementById('totalPreview');
             const updatePreview = () => {
-                const interest = parseFloat(interestInput.value) || 0;
-                totalPreview.value = `₹${(fd.amount + interest).toFixed(2)}`;
+                let int = parseFloat(interestInp.value) || 0;
+                preview.value = `₹${(fd.amount + int).toFixed(2)}`;
             };
-            interestInput.addEventListener('input', updatePreview);
-            closeDateInput.addEventListener('change', updatePreview);
+            interestInp.addEventListener('input', updatePreview);
+            document.getElementById('closeDate').addEventListener('change', updatePreview);
             document.getElementById('closeFdForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const closedDate = document.getElementById('closeDate').value;
                 const closedInterest = parseFloat(document.getElementById('closeInterest').value);
-                if (!closedDate || isNaN(closedInterest)) return alert("Please enter valid closing date and interest");
-                try {
-                    await db.collection('fd').doc(fdId).update({
-                        status: 'closed',
-                        closedDate: closedDate,
-                        closedInterest: closedInterest,
-                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                    modalInstance.hide();
-                    loadFDs();
-                } catch (err) { alert("Error closing FD: "+err.message); }
+                if (!closedDate || isNaN(closedInterest)) return alert("Enter valid details");
+                await db.collection('fd').doc(fdId).update({
+                    status: 'closed', closedDate, closedInterest,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                modalInstance.hide();
+                loadFDs();
             });
         }
 
-        // Auth & Admin Check
         auth.onAuthStateChanged((user) => {
-            if (!user) {
-                window.location.href = 'login.html';
-                return;
-            }
+            if (!user) { window.location.href = 'login.html'; return; }
             db.collection('users').doc(user.uid).get().then(doc => {
-                if (doc.exists) {
-                    currentUserRole = doc.data().role || 'member';
-                    if (currentUserRole === 'admin') {
-                        document.getElementById('adminPanel').style.display = 'flex';
-                    } else {
-                        document.getElementById('adminPanel').style.display = 'none';
-                    }
-                    loadFDs();
-                } else {
-                    currentUserRole = 'member';
-                    loadFDs();
-                }
-            }).catch(() => { loadFDs(); });
+                currentUserRole = doc.exists ? (doc.data().role || 'member') : 'member';
+                if (currentUserRole === 'admin') document.getElementById('adminPanel').style.display = 'flex';
+                else document.getElementById('adminPanel').style.display = 'none';
+                loadFDs();
+            }).catch(() => { currentUserRole = 'member'; loadFDs(); });
         });
 
-        // Theme & Back Button
+        // Theme toggle
         const savedTheme = localStorage.getItem('theme') || 'light';
         document.documentElement.setAttribute('data-theme', savedTheme);
         const themeBtn = document.getElementById('themeToggle');
@@ -615,13 +455,12 @@
             localStorage.setItem('theme', newTheme);
             themeBtn.textContent = newTheme === 'light' ? '🌞' : '🌙';
         });
-        document.getElementById('backHomeBtn').addEventListener('click', () => { window.location.href = 'index.html'; });
-        document.getElementById('addFdBtn').addEventListener('click', () => { showAddModal(); });
+
         modalInstance = new bootstrap.Modal(document.getElementById('fdModal'), { backdrop: true });
-        
-        // Service Worker
+        document.getElementById('addFdBtn').addEventListener('click', showAddModal);
+
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(e => console.log(e)); });
+            window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(e=>console.log(e)));
         }
     </script>
 </body>
