@@ -822,36 +822,40 @@
             }
 
             const handlePayment = (url) => {
-    const amount = document.getElementById('amount').value;
-    if (amount < 10) return alert('Please enter minimum ₹10!');
+                const amount = document.getElementById('amount').value;
+                if (amount < 10) return alert('Please enter minimum ₹10!');
 
-    let finalUrl = url;
+                let finalUrl = url;
 
-    // യൂസർ നിൽക്കുന്നത് APK-യിലാണോ എന്ന് പരിശോധിക്കുന്നു
-    const isWebView = /wv|WebView/i.test(navigator.userAgent);
-    
-    // APK-യിൽ അല്ലങ്കിൽ (അതായത് PWA-യിലോ ബ്രൗസറിലോ ആണെങ്കിൽ) 
-    // 'openchrome://' മാറ്റി സാധാരണ 'https://' ആക്കി മാറ്റുന്നു.
-    if (!isWebView) {
-        if (finalUrl.startsWith('openchrome://')) {
-            finalUrl = finalUrl.replace('openchrome://', 'https://');
-        }
-    }
+                // യൂസർ നിൽക്കുന്നത് APK-യിലാണോ എന്ന് പരിശോധിക്കുന്നു
+                const isWebView = /wv|WebView/i.test(navigator.userAgent);
+                
+                // APK-യിൽ അല്ലങ്കിൽ (അതായത് PWA-യിലോ ബ്രൗസറിലോ ആണെങ്കിൽ) 
+                // 'openchrome://' മാറ്റി സാധാരണ 'https://' ആക്കി മാറ്റുന്നു.
+                if (!isWebView) {
+                    if (finalUrl.startsWith('openchrome://')) {
+                        finalUrl = finalUrl.replace('openchrome://', 'https://');
+                    }
+                }
 
-    window.location.href = finalUrl;
-};
-
+                window.location.href = finalUrl;
+            };
 
             document.getElementById('gpayButton').addEventListener('click', () => {
                 const amt = document.getElementById('amount').value;
                 handlePayment(`openchrome://vishnuputhur.github.io/shipyardnagar/qrpay.html?amount=${amt}`);
             });
 
+            // ✅ CRED ബട്ടണിൽ പുതിയ ഭാരത് പേ ഒഫീഷ്യൽ മർച്ചന്റ് ഡീപ്പ് ലിങ്ക് ഘടിപ്പിച്ചു
             document.getElementById('credButton').addEventListener('click', () => {
                 const amt = document.getElementById('amount').value;
-                const upiId = 'vishnuputhur@sbi';
-                const note = `Member ${currentMemberNumber} - New Year Function Expense`;
-                handlePayment(`upi://pay?pa=${upiId}&pn=Shipyard%20Nagar&am=${amt}&cu=INR&tn=${encodeURIComponent(note)}`);
+                const upiId = 'BHARATPE2S0Q0N1O7M09731@unitype';
+                const upiURI = `upi://pay?pa=${upiId}&pn=VISHNU%20T&am=${amt}&cu=INR&tn=Pay%20To%20VISHNU%20T`;
+                
+                // കോപ്പി ബാക്ക് അപ്പ്
+                navigator.clipboard.writeText(upiId).catch(err => console.error('Copy failed:', err));
+                
+                handlePayment(upiURI);
             });
 
             document.getElementById('razorpayButton').addEventListener('click', () => {
