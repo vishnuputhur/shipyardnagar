@@ -181,7 +181,7 @@
         
         <div class="upi-details">
             <div>UPI ID:</div>
-            <div class="upi-id" id="upiIdDisplay">vishnuputhur@sbi</div>
+            <div class="upi-id" id="upiIdDisplay">BHARATPE2S0QON107M09731@unitype</div>
             <div style="font-size: 0.75rem; margin-top: 5px; color: #666;">
                 Scan QR code or click below to pay
             </div>
@@ -192,7 +192,7 @@
         </div>
         
         <button class="btn-primary" id="openGpayBtn" disabled>
-            Open GPay
+            <i class="fas fa-wallet"></i> Pay via UPI App
         </button>
         
         <div class="instruction">
@@ -205,15 +205,16 @@
         <button id="themeToggle" class="theme-toggle-btn">🌞</button>
     </footer>
 
-    <!-- നിങ്ങളുടെ പഴയ script (working) -->
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const amount = urlParams.get('amount') || '200';
         document.getElementById('amt').textContent = amount;
         document.getElementById('amt2').textContent = amount;
         
-        const upiId = 'vishnuputhur@sbi';
-        const upiURI = `upi://pay?pa=${upiId}&pn=ShipyardNagar&am=${amount}&cu=INR`;
+        // താങ്കളുടെ പുതിയ BharatPay Merchant UPI ID
+        const upiId = 'BHARATPE2S0QON107M09731@unitype';
+        // &pn= എന്നതിൽ ബാങ്ക് വെരിഫൈഡ് നാമം (VISHNU T) കൃത്യമായി നൽകിയിരിക്കുന്നു
+        const upiURI = `upi://pay?pa=${upiId}&pn=VISHNU%20T&am=${amount}&cu=INR`;
 
         const canvas = document.getElementById('qrCanvas');
         const openGpayBtn = document.getElementById('openGpayBtn');
@@ -226,44 +227,24 @@
                 return;
             }
             openGpayBtn.disabled = false;
-            openGpayBtn.innerHTML = '<i class="fab fa-google-pay"></i> Open GPay';
         });
 
-        // Open GPay - original share script
-        openGpayBtn.addEventListener('click', async () => {
-            canvas.toBlob(async blob => {
-                const file = new File([blob], `payment_${amount}.png`, { type: 'image/png' });
-                
-                if (navigator.share && navigator.canShare({ files: [file] })) {
-                    try {
-                        await navigator.share({
-                            files: [file],
-                            title: "UPI Payment - Shipyard Nagar",
-                            text: `Pay ₹${amount} to vishnuputhur@sbi`
-                        });
-                        // Close page after successful share
-                        setTimeout(() => {
-                            if (window.history.length > 1) {
-                                window.history.back();
-                            } else {
-                                window.close();
-                            }
-                        }, 1000);
-                    } catch (error) {
-                        // If share cancelled, don't close
-                        console.log('Share cancelled:', error);
-                    }
+        // പുതുക്കിയ ആപ്പ് ഓപ്പണിങ് രീതി (GPay ഇമേജ് ഷെയറിങ് തടയുന്നത് ഒഴിവാക്കാൻ)
+        openGpayBtn.addEventListener('click', () => {
+            // യുപിഐ ഐഡി ബാക്ക്-അപ്പ് ആയി ക്ലിപ്പ്ബോർഡിലേക്ക് കോപ്പി ചെയ്യുന്നു
+            navigator.clipboard.writeText(upiId).catch(err => console.error('Copy failed:', err));
+            
+            // ഫോണിലെ യുപിഐ ആപ്പുകൾ നേരിട്ട് തുറക്കുന്നു
+            window.location.href = upiURI;
+            
+            // പേയ്‌മെന്റിന് ശേഷം ആപ്പ് പേജ് ക്ലോസ് ചെയ്യാൻ
+            setTimeout(() => {
+                if (window.history.length > 1) {
+                    window.history.back();
                 } else {
-                    // Fallback for browsers that don't support sharing
-                    alert("Sharing not supported. Please save the QR code and share manually.");
-                    
-                    // Try to download the QR code
-                    const link = document.createElement('a');
-                    link.href = canvas.toDataURL();
-                    link.download = `payment_qr_${amount}.png`;
-                    link.click();
+                    window.close();
                 }
-            });
+            }, 1500);
         });
 
         // Theme Toggle
