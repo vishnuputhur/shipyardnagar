@@ -181,7 +181,7 @@
         
         <div class="upi-details">
             <div>UPI ID:</div>
-            <div class="upi-id" id="upiIdDisplay">BHARATPE2S0QON107M09731@unitype</div>
+            <div class="upi-id" id="upiIdDisplay">BHARATPE2S0Q0N1O7M09731@unitype</div>
             <div style="font-size: 0.75rem; margin-top: 5px; color: #666;">
                 Scan QR code or click below to pay
             </div>
@@ -211,10 +211,11 @@
         document.getElementById('amt').textContent = amount;
         document.getElementById('amt2').textContent = amount;
         
-        // താങ്കളുടെ പുതിയ BharatPay Merchant UPI ID
-        const upiId = 'BHARATPE2S0QON107M09731@unitype';
-        // &pn= എന്നതിൽ ബാങ്ക് വെരിഫൈഡ് നാമം (VISHNU T) കൃത്യമായി നൽകിയിരിക്കുന്നു
-        const upiURI = `upi://pay?pa=${upiId}&pn=VISHNU%20T&am=${amount}&cu=INR`;
+        // ബാർകോഡിൽ നിന്നും ലഭിച്ച ശരിയായ യുപിഐ ഐഡി
+        const upiId = 'BHARATPE2S0Q0N1O7M09731@unitype';
+        
+        // ബാർകോഡ് ടെക്സ്റ്റിൽ ഉള്ളതുപോലെ പേരും, നോട്ട്സും, എമൗണ്ടും കൃത്യമായി ഇവിടെ ചേർത്തിരിക്കുന്നു
+        const upiURI = `upi://pay?pa=${upiId}&pn=VISHNU%20T&am=${amount}&cu=INR&tn=Pay%20To%20VISHNU%20T`;
 
         const canvas = document.getElementById('qrCanvas');
         const openGpayBtn = document.getElementById('openGpayBtn');
@@ -229,7 +230,7 @@
             openGpayBtn.disabled = false;
         });
 
-        // പുതുക്കിയ ആപ്പ് ഓപ്പണിങ് രീതി (GPay ഇമേജ് ഷെയറിങ് തടയുന്നത് ഒഴിവാക്കാൻ)
+        // പുതുക്കിയ ആപ്പ് ഓപ്പണിങ് രീതി
         openGpayBtn.addEventListener('click', () => {
             // യുപിഐ ഐഡി ബാക്ക്-അപ്പ് ആയി ക്ലിപ്പ്ബോർഡിലേക്ക് കോപ്പി ചെയ്യുന്നു
             navigator.clipboard.writeText(upiId).catch(err => console.error('Copy failed:', err));
