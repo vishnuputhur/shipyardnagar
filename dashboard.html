@@ -332,7 +332,7 @@
     
     <footer>
         <div class="footer-text">
-            <p>Powered by VTSoft 2025</p>
+            <p>Powered by VTSoft 2026</p>
         </div>
         <button id="themeToggle" class="theme-toggle-btn">🌞</button>
     </footer>
@@ -568,7 +568,8 @@
                         if (t.type === 'expense') totalExpense += t.amount || 0;
                     });
                     const totalWealth = totalIncome - totalExpense;
-                    totalWealthDisplay.textContent = `Total Wealth: ₹${totalWealth}`;
+                    // ✅ FIXED: 999922 പോലുള്ള ഫ്ലോട്ടിങ് ഇഷ്യൂ .toFixed(2) വഴി പൂർണ്ണമായി റൗണ്ട് ചെയ്ത് മാറ്റി
+                    totalWealthDisplay.textContent = `Total Wealth: ₹${totalWealth.toFixed(2)}`;
                 }, error => {
                     console.error('Error listening to transactions:', error);
                     totalWealthDisplay.textContent = 'Total Wealth: ₹0 (Error)';
@@ -667,6 +668,7 @@
             }
         }
 
+        // Generate Report PDF (Optimized + Current date-based Last 6 Months)
         async function generateReport() {
             const loadingSpinner = document.getElementById('loadingSpinner');
             loadingSpinner.style.display = 'block';
@@ -692,11 +694,27 @@
                     });
                 }
 
-                const reportMonths = ['2025-10', '2025-11', '2025-12', '2026-01', '2026-02', '2026-03', '2026-04'];
+                // 🚀 FIXED: കറന്റ് തീയതി അടിസ്ഥാനമാക്കി കഴിഞ്ഞ 6 മാസങ്ങൾ ഡൈനാമിക് ആയി ജനറേറ്റ് ചെയ്യുന്നു
                 const today = new Date();
-                const currentMonth = today.toISOString().slice(0, 7);
-                const currentMonthIndex = reportMonths.indexOf(currentMonth);
+                const reportMonths = [];
+                const reportHeaders = ['No.', 'Name'];
 
+                const monthsArray = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                
+                for (let i = 5; i >= 0; i--) {
+                    const d = new Date();
+                    d.setMonth(d.getMonth() - i);
+                    const mStr = d.toISOString().slice(0, 7);
+                    reportMonths.push(mStr);
+                    
+                    const parts = mStr.split('-');
+                    const mName = monthsArray[parseInt(parts[1]) - 1] + ' ' + parts[0].slice(-2);
+                    reportHeaders.push(mName);
+                }
+
+                const currentMonthStr = today.toISOString().slice(0, 7);
+
+                // High Speed Optimized Query
                 const paymentMap = {};
                 for (const month of reportMonths) {
                     paymentMap[month] = {};
@@ -710,7 +728,8 @@
                 }
 
                 const { jsPDF } = window.jspdf;
-                const doc = new jsPDF('p', 'mm', 'letter');
+                // 🚀 6 മാസം മാത്രമുള്ളതിനാൽ കോളം വീതി കൂട്ടാൻ പവർഫുൾ 'landscape' മോഡിലേക്ക് മാറ്റി
+                const doc = new jsPDF('l', 'mm', 'letter'); 
                 const margin = 6;
                 const pageWidth = doc.internal.pageSize.getWidth();
                 const pageHeight = doc.internal.pageSize.getHeight();
@@ -735,50 +754,56 @@
                 doc.setFontSize(14);
                 doc.setTextColor(0, 0, 0);
                 doc.setFont(undefined, 'bold');
-                doc.text('Subscription Paid Report', pageWidth / 2, yPos, { align: 'center' });
+                doc.text('Subscription Paid Report (Last 6 Months)', pageWidth / 2, yPos, { align: 'center' });
                 yPos += 6;
                 
                 const availableWidth = pageWidth - (2 * margin) - 20;
-                const columnCount = 9;
+                const columnCount = 8; // No, Name + 6 Months
                 const columnWidth = availableWidth / columnCount;
                 
                 const columnWidths = [
-                    columnWidth * 0.6,
-                    columnWidth * 1.4,
-                    columnWidth, columnWidth, columnWidth, columnWidth, columnWidth, columnWidth, columnWidth
+                    columnWidth * 0.5, // No
+                    columnWidth * 1.5, // Name
+                    columnWidth, columnWidth, columnWidth, columnWidth, columnWidth, columnWidth
                 ];
                 
                 const totalTableWidth = columnWidths.reduce((sum, width) => sum + width, 0);
                 const tableStartX = (pageWidth - totalTableWidth) / 2;
                 
                 const tableData = currentMembers.map((member, index) => {
-                    return [
-                        (index + 1).toString(),
-                        member.memberName,
-                        paymentMap['2025-10'][member.id] || (currentMonthIndex >= 0 ? 'Pending' : ''),
-                        paymentMap['2025-11'][member.id] || (currentMonthIndex >= 1 ? 'Pending' : ''),
-                        paymentMap['2025-12'][member.id] || (currentMonthIndex >= 2 ? 'Pending' : ''),
-                        paymentMap['2026-01'][member.id] || (currentMonthIndex >= 3 ? 'Pending' : ''),
-                        paymentMap['2026-02'][member.id] || (currentMonthIndex >= 4 ? 'Pending' : ''),
-                        paymentMap['2026-03'][member.id] || (currentMonthIndex >= 5 ? 'Pending' : ''),
-                        paymentMap['2026-04'][member.id] || (currentMonthIndex >= 6 ? 'Pending' : '')
-                    ];
+                    const row = [(index + 1).toString(), member.memberName];
+                    
+                    reportMonths.forEach(month => {
+                        const paidStatus = paymentMap[month][member.id];
+                        if (paidStatus) {
+                            row.push(paidStatus);
+                        } else {
+                            // 🚀 FIXED: നിലവിലെ മാസമോ കഴിഞ്ഞ മാസമോ ആണെങ്കിൽ മാത്രം 'Pending' ആക്കുന്നു, വരാനിരിക്കുന്ന മാസങ്ങൾ ബ്ലാങ്ക് ഇടുന്നു
+                            if (month <= currentMonthStr) {
+                                row.push('Pending');
+                            } else {
+                                row.push('');
+                            }
+                        }
+                    });
+                    return row;
                 });
                 
                 doc.autoTable({
-                    head: [['No.', 'Name', 'Oct 25', 'Nov 25', 'Dec 25', 'Jan 26', 'Feb 26', 'Mar 26', 'Apr 26']],
+                    head: [reportHeaders],
                     body: tableData,
                     startY: yPos,
                     margin: { left: tableStartX, right: tableStartX },
                     tableWidth: totalTableWidth,
                     styles: {
                         font: 'times',
-                        fontSize: 8,
-                        cellPadding: 1.5,
+                        fontSize: 9,
+                        cellPadding: 2,
                         lineColor: [100, 100, 100],
                         lineWidth: 0.1
                     },
                     headStyles: {
+                        fillColor: [173, 2 light blue, 230],
                         fillColor: [173, 216, 230],
                         textColor: 0,
                         fontStyle: 'bold',
@@ -803,8 +828,7 @@
                         4: { cellWidth: columnWidths[4], halign: 'center' },
                         5: { cellWidth: columnWidths[5], halign: 'center' },
                         6: { cellWidth: columnWidths[6], halign: 'center' },
-                        7: { cellWidth: columnWidths[7], halign: 'center' },
-                        8: { cellWidth: columnWidths[8], halign: 'center' }
+                        7: { cellWidth: columnWidths[7], halign: 'center' }
                     },
                     didParseCell: function(data) {
                         if (data.section === 'body' || data.section === 'head') {
@@ -814,6 +838,7 @@
                         
                         if (data.section === 'body' && data.column.index >= 2) {
                             const val = data.cell.text[0];
+                            // 🚀 FIXED: പേയ്‌മെന്റ് ഇല്ലാത്ത കറന്റ്/കഴിഞ്ഞ മാസങ്ങൾ മാത്രം റെഡ് ആയി കാണിക്കും
                             if (val === 'Pending') {
                                 data.cell.styles.fillColor = [255, 200, 200];
                                 data.cell.styles.textColor = [139, 0, 0];
@@ -826,7 +851,7 @@
                 
                 const finalY = Math.min(doc.lastAutoTable.finalY + 12, pageHeight - margin - 15);
                 
-                doc.setFontSize(9);
+                doc.setFontSize(10);
                 doc.setTextColor(0, 0, 0);
                 doc.setFont('times', 'bold');
                 doc.text('President', tableStartX, finalY);
