@@ -421,7 +421,6 @@
             // Subscriptions Functionality (Optimized)
             const loadSubscriptions = async () => {
                 if (currentMembers.length > 0) {
-                    // Already loaded once, directly render to save time
                     updateMonthSelection(selectedMonth);
                     renderSubscriptionTableForMonth(selectedMonth);
                     return;
@@ -430,7 +429,6 @@
                 loadingSpinner.style.display = 'block';
 
                 try {
-                    // Fetch all members once
                     const membersSnapshot = await db.collection('users').get();
                     currentMembers = [];
                     
@@ -445,7 +443,6 @@
                         }
                     });
                     
-                    // Sort members by SN number
                     currentMembers.sort((a, b) => {
                         const numA = parseInt(a.memberNumber.replace('SN', '')) || 0;
                         const numB = parseInt(b.memberNumber.replace('SN', '')) || 0;
@@ -470,7 +467,6 @@
                 }
             };
 
-            // Generate months array
             const generateMonths = (start, end) => {
                 const months = [];
                 const startDate = new Date(start + '-01');
@@ -484,7 +480,6 @@
                 return months;
             };
 
-            // Create mobile-friendly month buttons
             const createMonthButtons = (months) => {
                 monthButtons.innerHTML = '';
                 months.forEach(month => {
@@ -508,7 +503,6 @@
                 });
             };
 
-            // Update month selection
             const updateMonthSelection = (month) => {
                 document.querySelectorAll('.month-btn').forEach(btn => {
                     if (btn.dataset.month === month) {
@@ -522,17 +516,14 @@
                     `<th>Member Name</th><th>${getMonthName(month)} ${month.split('-')[0]}</th>`;
             };
 
-            // Render table using a high-speed Batch/Group query method
             const renderSubscriptionTableForMonth = async (month) => {
                 if (!subscriptionTableBody) return;
                 subscriptionTableBody.innerHTML = '<tr><td colspan="2">Loading subscription data...</td></tr>';
 
                 try {
-                    // High Speed Strategy: Query all paid entries for this month across all members in one single run
                     const paymentSnapshot = await db.collectionGroup('months').where('month', '==', month).where('paid', '==', true).get();
                     const paidMemberIds = new Set();
                     paymentSnapshot.forEach(doc => {
-                        // Using parent document ID or memberId fields
                         const data = doc.data();
                         if (data.memberId) paidMemberIds.add(data.memberId);
                     });
@@ -560,14 +551,12 @@
                 }
             };
 
-            // Helper function to get month name
             const getMonthName = (monthString) => {
                 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                 const monthIndex = parseInt(monthString.split('-')[1]) - 1;
                 return months[monthIndex] || 'Unknown';
             };
 
-            // Real-time snapshot listener to calculate total wealth instantly without page lagging
             const listenToTotalWealth = () => {
                 if (unsubscribeTransactions) unsubscribeTransactions();
 
@@ -586,7 +575,6 @@
                 });
             };
 
-            // Theme Toggle
             const themeToggle = document.getElementById('themeToggle');
             if (themeToggle) {
                 themeToggle.addEventListener('click', () => {
@@ -604,7 +592,6 @@
             }
         });
 
-        // Handle single checkbox click - Global function
         window.handleSingleCheckbox = async function(checkbox) {
             const loadingSpinner = document.getElementById('loadingSpinner');
             const memberId = checkbox.dataset.member;
@@ -667,7 +654,6 @@
             }
         };
 
-        // Format date to dd-mm-yy
         function formatDate(dateString) {
             if (!dateString) return '';
             try {
@@ -681,7 +667,6 @@
             }
         }
 
-        // Generate Report PDF (High-Speed Optimized)
         async function generateReport() {
             const loadingSpinner = document.getElementById('loadingSpinner');
             loadingSpinner.style.display = 'block';
@@ -712,7 +697,6 @@
                 const currentMonth = today.toISOString().slice(0, 7);
                 const currentMonthIndex = reportMonths.indexOf(currentMonth);
 
-                // High Speed Optimized Query Strategy for entire report
                 const paymentMap = {};
                 for (const month of reportMonths) {
                     paymentMap[month] = {};
@@ -875,6 +859,5 @@
             }
         }
     </script>
-
 </body>
 </html>
