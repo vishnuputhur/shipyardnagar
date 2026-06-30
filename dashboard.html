@@ -308,7 +308,8 @@
                         
                         <div class="month-selection-section">
                             <label class="form-label"><strong>Select Month to View:</strong></label>
-                            <div class="month-buttons" id="monthButtons"></div>
+                            <div class="month-buttons" id="monthButtons">
+                                </div>
                         </div>
 
                         <div class="table-container mt-4">
@@ -316,9 +317,10 @@
                                 <thead>
                                     <tr id="monthHeaders">
                                         <th>Member Name</th>
-                                    </table>
+                                    </tr>
                                 </thead>
-                                <tbody id="subscriptionTableBody"></tbody>
+                                <tbody id="subscriptionTableBody">
+                                    </tbody>
                             </table>
                         </div>
                         <p id="totalWealthDisplay" class="fw-bold fs-5 mt-3">Total Wealth: ₹0</p>
@@ -342,6 +344,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 
     <script>
+        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyBWswawf9tpxNwVU0BaJ6FCwCvgcjUQXlA",
             authDomain: "shipyard-nagar.firebaseapp.com",
@@ -352,6 +355,7 @@
             measurementId: "G-V8CQ4YCCQ5"
         };
 
+        // Initialize Firebase
         if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
         }
@@ -359,12 +363,17 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
+        // Global variables cached to speed up rendering
         let currentMembers = [];
         let allMonths = [];
         let selectedMonth = '';
+        let unsubscribeTransactions = null;
 
+        // DOM Content Loaded
         document.addEventListener('DOMContentLoaded', () => {
             const loadingSpinner = document.getElementById('loadingSpinner');
+            
+            // UI Elements
             const subscriptionSection = document.getElementById('subscriptionSection');
             const totalWealthDisplay = document.getElementById('totalWealthDisplay');
             const subscriptionBtn = document.getElementById('subscriptionBtn');
@@ -372,6 +381,7 @@
             const subscriptionTableBody = document.getElementById('subscriptionTableBody');
             const monthButtons = document.getElementById('monthButtons');
 
+            // Auth State Check
             auth.onAuthStateChanged(async (user) => {
                 if (!user) {
                     alert('No user logged in. Redirecting to login...');
@@ -393,9 +403,12 @@
                 }
 
                 loadingSpinner.style.display = 'none';
-                refreshTotal();
+
+                // Real-time optimized single query for Total Wealth
+                listenToTotalWealth();
             });
 
+            // Button Event Listeners
             subscriptionBtn.addEventListener('click', () => {
                 subscriptionSection.style.display = 'block';
                 loadSubscriptions();
@@ -405,10 +418,19 @@
                 generateReport();
             });
 
+            // Subscriptions Functionality (Optimized)
             const loadSubscriptions = async () => {
+                if (currentMembers.length > 0) {
+                    // Already loaded once, directly render to save time
+                    updateMonthSelection(selectedMonth);
+                    renderSubscriptionTableForMonth(selectedMonth);
+                    return;
+                }
+
                 loadingSpinner.style.display = 'block';
 
                 try {
+                    // Fetch all members once
                     const membersSnapshot = await db.collection('users').get();
                     currentMembers = [];
                     
@@ -423,6 +445,7 @@
                         }
                     });
                     
+                    // Sort members by SN number
                     currentMembers.sort((a, b) => {
                         const numA = parseInt(a.memberNumber.replace('SN', '')) || 0;
                         const numB = parseInt(b.memberNumber.replace('SN', '')) || 0;
@@ -441,12 +464,13 @@
 
                 } catch (error) {
                     console.error('Error in loadSubscriptions:', error);
-                    subscriptionTableBody.innerHTML = '<tr><td colspan="2">Error loading data. Please check console.}</td></tr>';
+                    subscriptionTableBody.innerHTML = '<tr><td colspan="2">Error loading data. Please check console.</td></tr>';
                 } finally {
                     loadingSpinner.style.display = 'none';
                 }
             };
 
+            // Generate months array
             const generateMonths = (start, end) => {
                 const months = [];
                 const startDate = new Date(start + '-01');
@@ -460,6 +484,7 @@
                 return months;
             };
 
+            // Create mobile-friendly month buttons
             const createMonthButtons = (months) => {
                 monthButtons.innerHTML = '';
                 months.forEach(month => {
@@ -483,6 +508,7 @@
                 });
             };
 
+            // Update month selection
             const updateMonthSelection = (month) => {
                 document.querySelectorAll('.month-btn').forEach(btn => {
                     if (btn.dataset.month === month) {
@@ -496,81 +522,71 @@
                     `<th>Member Name</th><th>${getMonthName(month)} ${month.split('-')[0]}</th>`;
             };
 
+            // Render table using a high-speed Batch/Group query method
             const renderSubscriptionTableForMonth = async (month) => {
                 if (!subscriptionTableBody) return;
-
                 subscriptionTableBody.innerHTML = '<tr><td colspan="2">Loading subscription data...</td></tr>';
 
                 try {
-                    const rows = [];
+                    // High Speed Strategy: Query all paid entries for this month across all members in one single run
+                    const paymentSnapshot = await db.collectionGroup('months').where('month', '==', month).where('paid', '==', true).get();
+                    const paidMemberIds = new Set();
+                    paymentSnapshot.forEach(doc => {
+                        // Using parent document ID or memberId fields
+                        const data = doc.data();
+                        if (data.memberId) paidMemberIds.add(data.memberId);
+                    });
+
+                    const rows = currentMembers.map(member => {
+                        const paid = paidMemberIds.has(member.id);
+                        return `
+                            <tr>
+                                <td>${member.memberName}<br><small class="text-muted">${member.memberNumber}</small></td>
+                                <td>
+                                    <input type="checkbox" class="contribution-check" 
+                                           data-member="${member.id}" 
+                                           data-month="${month}" 
+                                           ${paid ? 'checked' : ''}
+                                           onchange="handleSingleCheckbox(this)">
+                                </td>
+                            </tr>
+                        `;
+                    });
                     
-                    for (const member of currentMembers) {
-                        try {
-                            const contributionDoc = await db.collection('contributions')
-                                .doc(member.id)
-                                .collection('months')
-                                .doc(month)
-                                .get();
-                                
-                            const paid = contributionDoc.exists ? contributionDoc.data().paid : false;
-                            
-                            rows.push(`
-                                <tr>
-                                    <td>${member.memberName}<br><small class="text-muted">${member.memberNumber}</small></td>
-                                    <td>
-                                        <input type="checkbox" class="contribution-check" 
-                                               data-member="${member.id}" 
-                                               data-month="${month}" 
-                                               ${paid ? 'checked' : ''}
-                                               onchange="handleSingleCheckbox(this)">
-                                    </td>
-                                </tr>
-                            `);
-                        } catch (error) {
-                            console.error(`Error loading data for ${member.memberName}:`, error);
-                            rows.push(`
-                                <tr>
-                                    <td>${member.memberName}<br><small class="text-muted">${member.memberNumber}</small></td>
-                                    <td>Error loading data</td>
-                                </tr>
-                            `);
-                        }
-                    }
-                    
-                    if (rows.length === 0) {
-                        subscriptionTableBody.innerHTML = '<tr><td colspan="2">No members found</td></tr>';
-                    } else {
-                        subscriptionTableBody.innerHTML = rows.join('');
-                    }
+                    subscriptionTableBody.innerHTML = rows.length === 0 ? '<tr><td colspan="2">No members found</td></tr>' : rows.join('');
                 } catch (error) {
                     console.error('Error rendering table:', error);
                     subscriptionTableBody.innerHTML = '<tr><td colspan="2">Error loading subscription data</td></tr>';
                 }
             };
 
+            // Helper function to get month name
             const getMonthName = (monthString) => {
                 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                 const monthIndex = parseInt(monthString.split('-')[1]) - 1;
                 return months[monthIndex] || 'Unknown';
             };
 
-            const refreshTotal = async () => {
-                let totalIncome = 0, totalExpense = 0;
-                try {
-                    const transactions = await db.collection('transactions').get();
-                    transactions.forEach(doc => {
+            // Real-time snapshot listener to calculate total wealth instantly without page lagging
+            const listenToTotalWealth = () => {
+                if (unsubscribeTransactions) unsubscribeTransactions();
+
+                unsubscribeTransactions = db.collection('transactions').onSnapshot(snapshot => {
+                    let totalIncome = 0, totalExpense = 0;
+                    snapshot.forEach(doc => {
                         const t = doc.data();
                         if (t.type === 'income') totalIncome += t.amount || 0;
                         if (t.type === 'expense') totalExpense += t.amount || 0;
                     });
                     const totalWealth = totalIncome - totalExpense;
                     totalWealthDisplay.textContent = `Total Wealth: ₹${totalWealth}`;
-                } catch (error) {
-                    console.error('Error refreshing total:', error);
+                }, error => {
+                    console.error('Error listening to transactions:', error);
                     totalWealthDisplay.textContent = 'Total Wealth: ₹0 (Error)';
-                }
+                });
             };
 
+            // Theme Toggle
             const themeToggle = document.getElementById('themeToggle');
             if (themeToggle) {
                 themeToggle.addEventListener('click', () => {
@@ -588,6 +604,7 @@
             }
         });
 
+        // Handle single checkbox click - Global function
         window.handleSingleCheckbox = async function(checkbox) {
             const loadingSpinner = document.getElementById('loadingSpinner');
             const memberId = checkbox.dataset.member;
@@ -641,16 +658,6 @@
                     
                     alert('Payment removed! ₹200 deducted from total.');
                 }
-                
-                let totalIncome = 0, totalExpense = 0;
-                const transactions = await firebase.firestore().collection('transactions').get();
-                transactions.forEach(doc => {
-                    const t = doc.data();
-                    if (t.type === 'income') totalIncome += t.amount || 0;
-                    if (t.type === 'expense') totalExpense += t.amount || 0;
-                });
-                const totalWealth = totalIncome - totalExpense;
-                document.getElementById('totalWealthDisplay').textContent = `Total Wealth: ₹${totalWealth}`;
             } catch (error) {
                 console.error('Error updating subscription:', error);
                 alert('Error: ' + error.message);
@@ -660,6 +667,7 @@
             }
         };
 
+        // Format date to dd-mm-yy
         function formatDate(dateString) {
             if (!dateString) return '';
             try {
@@ -673,100 +681,52 @@
             }
         }
 
-        function getLatest7Months() {
-            const today = new Date();
-            const currentYear = today.getFullYear();
-            const currentMonth = today.getMonth();
-            
-            const monthsArray = [];
-            for (let i = 6; i >= 0; i--) {
-                let monthDate = new Date(currentYear, currentMonth - i, 1);
-                const year = monthDate.getFullYear();
-                const month = String(monthDate.getMonth() + 1).padStart(2, '0');
-                monthsArray.push(`${year}-${month}`);
-            }
-            return monthsArray;
-        }
-
-        function formatMonthHeader(monthStr) {
-            const [year, month] = monthStr.split('-');
-            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            const shortYear = year.slice(-2);
-            return `${months[parseInt(month)-1]} ${shortYear}`;
-        }
-
+        // Generate Report PDF (High-Speed Optimized)
         async function generateReport() {
             const loadingSpinner = document.getElementById('loadingSpinner');
             loadingSpinner.style.display = 'block';
             
             try {
-                console.log("Report generation started...");
-                
-                const membersSnapshot = await firebase.firestore().collection('users').get();
-                let members = [];
-                
-                membersSnapshot.forEach(doc => {
-                    const data = doc.data();
-                    if (data.memberNumber) {
-                        members.push({
-                            id: doc.id,
-                            memberName: data.memberName || 'Unknown',
-                            memberNumber: data.memberNumber
-                        });
-                    }
-                });
-
-                members.sort((a, b) => {
-                    const numA = parseInt(a.memberNumber.replace('SN', '')) || 0;
-                    const numB = parseInt(b.memberNumber.replace('SN', '')) || 0;
-                    return numA - numB;
-                });
-
-                const reportMonths = getLatest7Months();
-                const currentMonthYear = new Date().toISOString().slice(0, 7);
-                
-                console.log("Report months:", reportMonths);
-                
-                const paymentData = [];
-                
-                for (const member of members) {
-                    const memberPayments = [];
-                    
-                    for (const month of reportMonths) {
-                        try {
-                            const contributionDoc = await firebase.firestore()
-                                .collection('contributions')
-                                .doc(member.id)
-                                .collection('months')
-                                .doc(month)
-                                .get();
-                            
-                            if (contributionDoc.exists && contributionDoc.data().paid) {
-                                memberPayments.push({
-                                    paid: true,
-                                    date: formatDate(contributionDoc.data().date) || 'Paid'
-                                });
-                            } else {
-                                memberPayments.push({
-                                    paid: false,
-                                    date: ''
-                                });
-                            }
-                        } catch (error) {
-                            console.error(`Error loading payment data for ${member.memberName}, ${month}:`, error);
-                            memberPayments.push({
-                                paid: false,
-                                date: ''
+                if (currentMembers.length === 0) {
+                    const membersSnapshot = await firebase.firestore().collection('users').get();
+                    currentMembers = [];
+                    membersSnapshot.forEach(doc => {
+                        const data = doc.data();
+                        if (data.memberNumber) {
+                            currentMembers.push({
+                                id: doc.id,
+                                memberName: data.memberName || 'Unknown',
+                                memberNumber: data.memberNumber
                             });
                         }
-                    }
-                    
-                    paymentData.push(memberPayments);
+                    });
+                    currentMembers.sort((a, b) => {
+                        const numA = parseInt(a.memberNumber.replace('SN', '')) || 0;
+                        const numB = parseInt(b.memberNumber.replace('SN', '')) || 0;
+                        return numA - numB;
+                    });
+                }
+
+                const reportMonths = ['2025-10', '2025-11', '2025-12', '2026-01', '2026-02', '2026-03', '2026-04'];
+                const today = new Date();
+                const currentMonth = today.toISOString().slice(0, 7);
+                const currentMonthIndex = reportMonths.indexOf(currentMonth);
+
+                // High Speed Optimized Query Strategy for entire report
+                const paymentMap = {};
+                for (const month of reportMonths) {
+                    paymentMap[month] = {};
+                    const snapshot = await firebase.firestore().collectionGroup('months').where('month', '==', month).where('paid', '==', true).get();
+                    snapshot.forEach(doc => {
+                        const d = doc.data();
+                        if (d.memberId) {
+                            paymentMap[month][d.memberId] = d.date ? formatDate(d.date) : 'Paid';
+                        }
+                    });
                 }
 
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF('p', 'mm', 'letter');
-                
                 const margin = 6;
                 const pageWidth = doc.internal.pageSize.getWidth();
                 const pageHeight = doc.internal.pageSize.getHeight();
@@ -776,11 +736,10 @@
                 doc.rect(margin, margin, pageWidth - 2 * margin, pageHeight - 2 * margin);
                 
                 let yPos = margin + 8;
-                
                 doc.setFontSize(24);
                 doc.setTextColor(0, 0, 128);
                 doc.setFont(undefined, 'bold');
-                doc.text('Shipyard Nagar Residence Association', pageWidth / 2, yPos, { align: 'center' });
+                doc.text('Shipyard Nagar Residence Association ', pageWidth / 2, yPos, { align: 'center' });
                 yPos += 5;
                 
                 doc.setFontSize(12);
@@ -795,59 +754,36 @@
                 doc.text('Subscription Paid Report', pageWidth / 2, yPos, { align: 'center' });
                 yPos += 6;
                 
-                const headers = ['No.', 'Name'];
-                const monthHeadersFormatted = reportMonths.map(m => formatMonthHeader(m));
-                headers.push(...monthHeadersFormatted);
-                
-                const columnCount = headers.length;
                 const availableWidth = pageWidth - (2 * margin) - 20;
-                const baseColumnWidth = availableWidth / columnCount;
+                const columnCount = 9;
+                const columnWidth = availableWidth / columnCount;
                 
                 const columnWidths = [
-                    baseColumnWidth * 0.6,
-                    baseColumnWidth * 1.4,
-                    ...Array(reportMonths.length).fill(baseColumnWidth)
+                    columnWidth * 0.6,
+                    columnWidth * 1.4,
+                    columnWidth, columnWidth, columnWidth, columnWidth, columnWidth, columnWidth, columnWidth
                 ];
                 
-                const totalTableWidth = columnWidths.reduce((sum, w) => sum + w, 0);
+                const totalTableWidth = columnWidths.reduce((sum, width) => sum + width, 0);
                 const tableStartX = (pageWidth - totalTableWidth) / 2;
                 
-                const tableData = [];
-                for (let i = 0; i < members.length; i++) {
-                    const member = members[i];
-                    const payments = paymentData[i] || [];
-                    const row = {
-                        number: (i + 1).toString(),
-                        name: member.memberName,
-                    };
-                    for (let mIdx = 0; mIdx < reportMonths.length; mIdx++) {
-                        const month = reportMonths[mIdx];
-                        const payment = payments[mIdx];
-                        const isPaid = payment?.paid;
-                        const displayDate = isPaid ? payment.date : '';
-                        
-                        let cellValue = displayDate;
-                        if (!isPaid && month <= currentMonthYear) {
-                            cellValue = 'Pending';
-                        } else if (!isPaid && month > currentMonthYear) {
-                            cellValue = '';
-                        }
-                        row[`month_${mIdx}`] = cellValue;
-                    }
-                    tableData.push(row);
-                }
-                
-                const bodyRows = tableData.map(row => {
-                    const rowCells = [row.number, row.name];
-                    for (let mIdx = 0; mIdx < reportMonths.length; mIdx++) {
-                        rowCells.push(row[`month_${mIdx}`]);
-                    }
-                    return rowCells;
+                const tableData = currentMembers.map((member, index) => {
+                    return [
+                        (index + 1).toString(),
+                        member.memberName,
+                        paymentMap['2025-10'][member.id] || (currentMonthIndex >= 0 ? 'Pending' : ''),
+                        paymentMap['2025-11'][member.id] || (currentMonthIndex >= 1 ? 'Pending' : ''),
+                        paymentMap['2025-12'][member.id] || (currentMonthIndex >= 2 ? 'Pending' : ''),
+                        paymentMap['2026-01'][member.id] || (currentMonthIndex >= 3 ? 'Pending' : ''),
+                        paymentMap['2026-02'][member.id] || (currentMonthIndex >= 4 ? 'Pending' : ''),
+                        paymentMap['2026-03'][member.id] || (currentMonthIndex >= 5 ? 'Pending' : ''),
+                        paymentMap['2026-04'][member.id] || (currentMonthIndex >= 6 ? 'Pending' : '')
+                    ];
                 });
                 
                 doc.autoTable({
-                    head: [headers],
-                    body: bodyRows,
+                    head: [['No.', 'Name', 'Oct 25', 'Nov 25', 'Dec 25', 'Jan 26', 'Feb 26', 'Mar 26', 'Apr 26']],
+                    body: tableData,
                     startY: yPos,
                     margin: { left: tableStartX, right: tableStartX },
                     tableWidth: totalTableWidth,
@@ -875,16 +811,17 @@
                     alternateRowStyles: {
                         fillColor: [245, 245, 245]
                     },
-                    columnStyles: (() => {
-                        const styles = {
-                            0: { cellWidth: columnWidths[0], halign: 'center' },
-                            1: { cellWidth: columnWidths[1], halign: 'left' }
-                        };
-                        for (let i = 0; i < reportMonths.length; i++) {
-                            styles[2 + i] = { cellWidth: columnWidths[2 + i], halign: 'center' };
-                        }
-                        return styles;
-                    })(),
+                    columnStyles: {
+                        0: { cellWidth: columnWidths[0], halign: 'center' },
+                        1: { cellWidth: columnWidths[1], halign: 'left' },
+                        2: { cellWidth: columnWidths[2], halign: 'center' },
+                        3: { cellWidth: columnWidths[3], halign: 'center' },
+                        4: { cellWidth: columnWidths[4], halign: 'center' },
+                        5: { cellWidth: columnWidths[5], halign: 'center' },
+                        6: { cellWidth: columnWidths[6], halign: 'center' },
+                        7: { cellWidth: columnWidths[7], halign: 'center' },
+                        8: { cellWidth: columnWidths[8], halign: 'center' }
+                    },
                     didParseCell: function(data) {
                         if (data.section === 'body' || data.section === 'head') {
                             data.cell.styles.lineWidth = 0.2;
@@ -892,18 +829,12 @@
                         }
                         
                         if (data.section === 'body' && data.column.index >= 2) {
-                            const monthIdx = data.column.index - 2;
-                            const memberIndex = data.row.index;
-                            const payment = paymentData[memberIndex] && paymentData[memberIndex][monthIdx];
-                            const month = reportMonths[monthIdx];
-                            
-                            if (!payment?.paid && month <= currentMonthYear) {
+                            const val = data.cell.text[0];
+                            if (val === 'Pending') {
                                 data.cell.styles.fillColor = [255, 200, 200];
                                 data.cell.styles.textColor = [139, 0, 0];
-                            } else if (payment?.paid) {
+                            } else if (val !== '') {
                                 data.cell.styles.textColor = [0, 100, 0];
-                            } else if (month > currentMonthYear) {
-                                data.cell.styles.fillColor = [255, 255, 255];
                             }
                         }
                     }
@@ -931,11 +862,10 @@
                 doc.text('Manojkumar', rightX, finalY + 4, { align: 'right' });
                 
                 const currentDate = new Date();
-                const dateStr = `${currentDate.getDate()}-${currentDate.getMonth()+1}-${currentDate.getFullYear().toString().slice(-2)}`;
+                const dateStr = formatDate(currentDate.toISOString()).replace(/-/g, '');
                 const fileName = `Shipyard_Nagar_Report_${dateStr}.pdf`;
-                doc.save(fileName);
                 
-                console.log("PDF saved successfully");
+                doc.save(fileName);
                 
             } catch (error) {
                 console.error('Error generating report:', error);
