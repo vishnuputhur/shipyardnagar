@@ -169,10 +169,10 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 2rem;
+            font-size: 1.5rem;
             color: #0288d1;
             z-index: 9999;
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.95);
             padding: 20px 40px;
             border-radius: 10px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.2);
@@ -396,19 +396,6 @@
             return months[monthIndex] || 'Unknown';
         }
 
-        function generateMonths(start, end) {
-            const months = [];
-            const startDate = new Date(start + '-01');
-            const endDate = new Date(end + '-01');
-            
-            let current = new Date(startDate);
-            while (current <= endDate) {
-                months.push(current.toISOString().slice(0, 7));
-                current.setMonth(current.getMonth() + 1);
-            }
-            return months;
-        }
-
         // Handle Single Checkbox
         window.handleSingleCheckbox = async function(checkbox) {
             const loadingSpinner = document.getElementById('loadingSpinner');
@@ -452,13 +439,13 @@
                         month: month
                     }, { merge: true });
                     
-                    const transactions = await db.collection('transactions')
+                    const transactionsSnapshot = await db.collection('transactions')
                         .where('memberId', '==', memberId)
                         .where('head', '==', `Monthly Subscription - ${month}`)
                         .get();
                     
                     const batch = db.batch();
-                    transactions.forEach(doc => batch.delete(doc.ref));
+                    transactionsSnapshot.forEach(doc => batch.delete(doc.ref));
                     await batch.commit();
                     
                     alert('✅ Payment removed! ₹200 deducted from total.');
@@ -472,7 +459,7 @@
             }
         };
 
-        // Generate Report PDF
+        // ✅ Generate Report PDF - Dynamic Last 6 Months (Portrait)
         window.generateReport = async function() {
             const loadingSpinner = document.getElementById('loadingSpinner');
             loadingSpinner.style.display = 'block';
@@ -498,6 +485,7 @@
                     });
                 }
 
+                // ✅ DYNAMIC: ഇന്നത്തെ തീയതി വെച്ച് കഴിഞ്ഞ 6 മാസങ്ങൾ ജനറേറ്റ് ചെയ്യുന്നു
                 const today = new Date();
                 const reportMonths = [];
                 const reportHeaders = ['No.', 'Name'];
@@ -516,6 +504,7 @@
 
                 const currentMonthStr = today.toISOString().slice(0, 7);
 
+                // ഹൈ-സ്പീഡ് ഒപ്റ്റിമൈസ്ഡ് മാപ്പിംഗ്
                 const paymentMap = {};
                 for (const month of reportMonths) {
                     paymentMap[month] = {};
@@ -529,43 +518,55 @@
                 }
 
                 const { jsPDF } = window.jspdf;
-                const doc = new jsPDF('l', 'mm', 'letter'); 
+                const doc = new jsPDF('p', 'mm', 'letter'); // ✅ Portrait മോഡ്
                 const margin = 6;
                 const pageWidth = doc.internal.pageSize.getWidth();
                 const pageHeight = doc.internal.pageSize.getHeight();
                 
+                // SkyBlue Border
                 doc.setDrawColor(135, 206, 235);
                 doc.setLineWidth(0.5);
                 doc.rect(margin, margin, pageWidth - 2 * margin, pageHeight - 2 * margin);
                 
                 let yPos = margin + 8;
+                
+                // Main Heading
                 doc.setFontSize(24);
                 doc.setTextColor(0, 0, 128);
                 doc.setFont(undefined, 'bold');
                 doc.text('Shipyard Nagar Residence Association', pageWidth / 2, yPos, { align: 'center' });
                 yPos += 5;
                 
+                // Address
                 doc.setFontSize(12);
                 doc.setTextColor(0, 0, 0);
                 doc.setFont(undefined, 'normal');
                 doc.text('Nettoor, 682040', pageWidth / 2, yPos, { align: 'center' });
                 yPos += 10;
                 
+                // Subheading - Dynamic Month Range
                 doc.setFontSize(14);
                 doc.setTextColor(0, 0, 0);
                 doc.setFont(undefined, 'bold');
-                doc.text('Subscription Paid Report (Last 6 Months)', pageWidth / 2, yPos, { align: 'center' });
+                const firstMonth = reportMonths[0];
+                const lastMonth = reportMonths[reportMonths.length - 1];
+                const firstMonthName = monthsArray[parseInt(firstMonth.split('-')[1]) - 1] + ' ' + firstMonth.split('-')[0];
+                const lastMonthName = monthsArray[parseInt(lastMonth.split('-')[1]) - 1] + ' ' + lastMonth.split('-')[0];
+                doc.text(`Subscription Paid Report (${firstMonthName} - ${lastMonthName})`, pageWidth / 2, yPos, { align: 'center' });
                 yPos += 6;
                 
                 const availableWidth = pageWidth - (2 * margin) - 20;
-                const columnCount = 8; 
+                const columnCount = reportMonths.length + 2; 
                 const columnWidth = availableWidth / columnCount;
                 
                 const columnWidths = [
-                    columnWidth * 0.5, 
-                    columnWidth * 1.5, 
-                    columnWidth, columnWidth, columnWidth, columnWidth, columnWidth, columnWidth
+                    columnWidth * 0.6,  // No.
+                    columnWidth * 1.4,  // Name
                 ];
+                
+                for (let i = 0; i < reportMonths.length; i++) {
+                    columnWidths.push(columnWidth);
+                }
                 
                 const totalTableWidth = columnWidths.reduce((sum, width) => sum + width, 0);
                 const tableStartX = (pageWidth - totalTableWidth) / 2;
@@ -596,8 +597,8 @@
                     tableWidth: totalTableWidth,
                     styles: {
                         font: 'times',
-                        fontSize: 9,
-                        cellPadding: 2,
+                        fontSize: 8,
+                        cellPadding: 1.5,
                         lineColor: [100, 100, 100],
                         lineWidth: 0.1
                     },
@@ -618,16 +619,16 @@
                     alternateRowStyles: {
                         fillColor: [245, 245, 245]
                     },
-                    columnStyles: {
-                        0: { cellWidth: columnWidths[0], halign: 'center' },
-                        1: { cellWidth: columnWidths[1], halign: 'left' },
-                        2: { cellWidth: columnWidths[2], halign: 'center' },
-                        3: { cellWidth: columnWidths[3], halign: 'center' },
-                        4: { cellWidth: columnWidths[4], halign: 'center' },
-                        5: { cellWidth: columnWidths[5], halign: 'center' },
-                        6: { cellWidth: columnWidths[6], halign: 'center' },
-                        7: { cellWidth: columnWidths[7], halign: 'center' }
-                    },
+                    columnStyles: (() => {
+                        const styles = {
+                            0: { cellWidth: columnWidths[0], halign: 'center' },
+                            1: { cellWidth: columnWidths[1], halign: 'left' }
+                        };
+                        for (let i = 2; i < columnWidths.length; i++) {
+                            styles[i] = { cellWidth: columnWidths[i], halign: 'center' };
+                        }
+                        return styles;
+                    })(),
                     didParseCell: function(data) {
                         if (data.section === 'body' || data.section === 'head') {
                             data.cell.styles.lineWidth = 0.2;
@@ -646,9 +647,10 @@
                     }
                 });
                 
+                // Signatures - Same Page
                 const finalY = Math.min(doc.lastAutoTable.finalY + 12, pageHeight - margin - 15);
                 
-                doc.setFontSize(10);
+                doc.setFontSize(9);
                 doc.setTextColor(0, 0, 0);
                 doc.setFont('times', 'bold');
                 doc.text('President', tableStartX, finalY);
@@ -677,6 +679,7 @@
                 console.error('Error generating report:', error);
                 alert('❌ Error generating report: ' + error.message);
             } finally {
+                doc.internal.pageSize.getWidth(); // To prevent context bug
                 loadingSpinner.style.display = 'none';
             }
         };
@@ -691,14 +694,14 @@
             const monthButtons = document.getElementById('monthButtons');
             const totalWealthDisplay = document.getElementById('totalWealthDisplay');
 
-            // ✅ Event Listeners - auth.onAuthStateChanged-ന് പുറത്ത്
+            // Event Listeners
             subscriptionBtn.addEventListener('click', () => {
                 subscriptionSection.style.display = 'block';
                 loadSubscriptions();
             });
 
             reportBtn.addEventListener('click', () => {
-                generateReport();
+                window.generateReport(); 
             });
 
             // Auth State Check
@@ -726,7 +729,7 @@
                 listenToTotalWealth();
             });
 
-            // ✅ loadSubscriptions function
+            // loadSubscriptions function
             const loadSubscriptions = async () => {
                 if (currentMembers.length > 0) {
                     updateMonthSelection(selectedMonth);
@@ -757,7 +760,20 @@
                         return numA - numB;
                     });
                     
-                    allMonths = generateMonths('2025-10', '2026-10');
+                    // Generate months loop from Oct 2025 onwards for subscription switcher view
+                    const startYearMonth = '2025-10';
+                    const targetDate = new Date();
+                    targetDate.setMonth(targetDate.getMonth() + 4); // look ahead logic
+                    const endYearMonth = targetDate.toISOString().slice(0, 7);
+                    
+                    allMonths = [];
+                    let checkDate = new Date(startYearMonth + '-01');
+                    const endDate = new Date(endYearMonth + '-01');
+                    while (checkDate <= endDate) {
+                        allMonths.push(checkDate.toISOString().slice(0, 7));
+                        checkDate.setMonth(checkDate.getMonth() + 1);
+                    }
+
                     createMonthButtons(allMonths);
                     
                     const today = new Date();
@@ -775,7 +791,7 @@
                 }
             };
 
-            // ✅ createMonthButtons
+            // createMonthButtons
             const createMonthButtons = (months) => {
                 monthButtons.innerHTML = '';
                 months.forEach(month => {
@@ -799,7 +815,7 @@
                 });
             };
 
-            // ✅ updateMonthSelection
+            // updateMonthSelection
             const updateMonthSelection = (month) => {
                 document.querySelectorAll('.month-btn').forEach(btn => {
                     if (btn.dataset.month === month) {
@@ -816,7 +832,7 @@
                 }
             };
 
-            // ✅ renderSubscriptionTableForMonth
+            // renderSubscriptionTableForMonth
             const renderSubscriptionTableForMonth = async (month) => {
                 if (!subscriptionTableBody) return;
                 subscriptionTableBody.innerHTML = '<tr><td colspan="2">⏳ Loading subscription data...</td></tr>';
@@ -854,7 +870,7 @@
                 }
             };
 
-            // ✅ listenToTotalWealth
+            // listenToTotalWealth
             const listenToTotalWealth = () => {
                 if (unsubscribeTransactions) {
                     unsubscribeTransactions();
@@ -880,7 +896,7 @@
                 });
             };
 
-            // ✅ Theme Toggle
+            // Theme Toggle
             const themeToggle = document.getElementById('themeToggle');
             if (themeToggle) {
                 themeToggle.addEventListener('click', () => {
