@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shipyard Nagar - FIFA World Cup 2026 Prediction</title>
+    <title>Shipyard Nagar - Admin Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -376,7 +376,7 @@
                     <div class="countdown-box">
                         <div class="countdown-text">
                             <i class="fas fa-clock me-1"></i>
-                            Closes: <span id="lastDateDisplay" class="fw-bold">08-Jul-2026, 11:59 PM</span>
+                            Closes: <span id="lastDateDisplay" class="fw-bold">09-Jul-2026, 11:59 PM</span>
                         </div>
                         <div class="countdown-timer" id="countdownDisplay">
                             ⏳ Loading...
@@ -460,7 +460,7 @@
                                     <i class="fas fa-calendar-times me-1"></i> Close Date
                                 </label>
                                 <input type="datetime-local" class="form-control" id="configLastDate" 
-                                       value="2026-07-08T23:59" style="font-size: 0.7rem; padding: 4px 8px; min-height: 28px;">
+                                       value="2026-07-09T23:59" style="font-size: 0.7rem; padding: 4px 8px; min-height: 28px;">
                             </div>
                             <div class="col-12 col-sm-6">
                                 <label class="form-label mt-0" style="font-size: 0.7rem;">
@@ -559,11 +559,11 @@
 
         let currentLoggedUser = null;
         let contestSettings = { 
-            lastDate: "2026-07-08T23:59", 
+            lastDate: "2026-07-09T23:59", 
             message: "" 
         };
         let adminTableRowsData = [];
-        let existingPredictionData = null;
+        window.existingData = null; // Scope fix
 
         function showSpinner(show, text = 'Loading...') {
             const spinner = document.getElementById('loadingSpinner');
@@ -577,17 +577,15 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            // Set last date display
-            document.getElementById('lastDateDisplay').textContent = '08-Jul-2026, 11:59 PM';
+            // Updated to July 9
+            document.getElementById('lastDateDisplay').textContent = '09-Jul-2026, 11:59 PM';
             
-            // Populate Dropdowns
             document.querySelectorAll('.team-dropdown').forEach(dropdown => {
                 dropdown.innerHTML = '<option value="">Select Team</option>' + 
                     activeTeams.map(t => `<option value="${t}">${t}</option>`).join('');
             });
 
-            // Start countdown with fixed date
-            startCountdownTimer('2026-07-08T23:59');
+            startCountdownTimer('2026-07-09T23:59');
 
             auth.onAuthStateChanged(async (user) => {
                 if (!user) {
@@ -599,11 +597,10 @@
                 showSpinner(true, 'Loading contest data...');
 
                 try {
-                    // Load Config from Firebase
                     const configDoc = await firestoreDb.collection('prediction_config').doc('settings').get();
                     if (configDoc.exists) {
                         contestSettings = configDoc.data();
-                        document.getElementById('configLastDate').value = contestSettings.lastDate || "2026-07-08T23:59";
+                        document.getElementById('configLastDate').value = contestSettings.lastDate || "2026-07-09T23:59";
                         document.getElementById('configMessage').value = contestSettings.message || "";
                         if (contestSettings.lastDate) {
                             startCountdownTimer(contestSettings.lastDate);
@@ -617,10 +614,10 @@
                         if (userData.role === 'admin') {
                             document.getElementById('adminPanelSection').style.display = 'block';
                             document.getElementById('memberPredictionSection').style.display = 'block';
+                            
+                            // ✅ FIX: അഡ്മിന് ഫോമും ഡാറ്റയും ഒരേസമയം കാണാൻ സ്കോപ്പ് തിരുത്തി
+                            await checkExistingPrediction(user.uid, userData.memberNumber);
                             await loadAdminPredictionsData();
-                            document.getElementById('predictionForm').style.display = 'none';
-                            document.getElementById('predictionStatusBadge').style.display = 'none';
-                            document.getElementById('thanksMessage').style.display = 'none';
                         } else {
                             document.getElementById('memberPredictionSection').style.display = 'block';
                             await checkExistingPrediction(user.uid, userData.memberNumber);
@@ -674,11 +671,11 @@
             document.getElementById('editTriggerBtn').addEventListener('click', () => {
                 document.getElementById('thanksMessage').style.display = 'none';
                 document.getElementById('predictionForm').style.display = 'block';
+                document.getElementById('predictionStatusBadge').style.display = 'block';
                 document.getElementById('predictionStatusBadge').textContent = '✏️ Edit Mode - Update your prediction';
                 document.getElementById('predictionStatusBadge').className = 'badge-info-custom bg-warning text-dark';
                 document.getElementById('submitPredictionBtn').textContent = '✏️ Update Prediction';
                 
-                // Prefill existing data
                 if (window.existingData) {
                     document.getElementById('winnerTeam').value = window.existingData.winner || "";
                     document.getElementById('runnerUpTeam').value = window.existingData.runnerUp || "";
@@ -738,6 +735,7 @@
                 } else {
                     document.getElementById('thanksMessage').style.display = 'none';
                     document.getElementById('predictionForm').style.display = 'block';
+                    document.getElementById('predictionStatusBadge').style.display = 'block';
                     document.getElementById('predictionStatusBadge').textContent = '📝 Submit your prediction now!';
                     document.getElementById('predictionStatusBadge').className = 'badge-info-custom';
                     
@@ -823,10 +821,11 @@
             const doc = new jsPDF('l', 'mm', 'letter');
             const margin = 6;
             const pageWidth = doc.internal.pageSize.getWidth();
+            const pageHeight = doc.internal.pageSize.getHeight();
             
             doc.setDrawColor(135, 206, 235);
             doc.setLineWidth(0.5);
-            doc.rect(margin, margin, pageWidth - 2 * margin, doc.internal.pageSize.getHeight() - 2 * margin);
+            doc.rect(margin, margin, pageWidth - 2 * margin, pageHeight - 2 * margin);
             
             doc.setFontSize(20);
             doc.setTextColor(0, 0, 128);
@@ -838,10 +837,10 @@
             doc.text('FIFA World Cup 2026 - Prediction Contest Log', pageWidth / 2, 20, { align: 'center' });
             
             const now = new Date();
-            const dateStr = now.toLocaleString('en-IN', {
-                day: '2-digit', month: 'short', year: 'numeric',
-                hour: '2-digit', minute: '2-digit', second: '2-digit'
-            });
+            const day = String(now.getDate()).padStart(2, '0');
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const dateStr = `${day}-${months[now.getMonth()]}-${now.getFullYear()}`;
+            
             doc.setFontSize(9);
             doc.setTextColor(100, 100, 100);
             doc.text(`Report Generated: ${dateStr}`, pageWidth / 2, 26, { align: 'center' });
