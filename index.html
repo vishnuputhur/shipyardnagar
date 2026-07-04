@@ -6,7 +6,7 @@
     <title>Shipyard Nagar - Home</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#667eea">
-    <link rel="apple-touch-icon" href="icon-192.png">
+    <link class="apple-touch-icon" href="icon-192.png">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -138,7 +138,88 @@
         .due-status-good { color: #22c55e; font-weight: 600; }
         .due-status-pending { color: #ef4444; font-weight: 600; }
 
-        /* ===== MODIFIED BUTTON LAYOUT: 2 COLUMNS, EACH BUTTON EXACTLY 35mm WIDTH ===== */
+        /* ⚽ === FIFA 2026 PROMOTION CARD STYLES === */
+        .fifa-promo-card {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            border-radius: 16px;
+            padding: 15px;
+            margin-top: 15px;
+            color: white;
+            box-shadow: 0 8px 20px rgba(30, 58, 138, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        [data-theme="dark"] .fifa-promo-card {
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .fifa-promo-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(30, 58, 138, 0.4);
+        }
+
+        .fifa-left {
+            flex: 1;
+        }
+
+        .fifa-title {
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            color: #ffd700;
+        }
+
+        .fifa-subtitle {
+            font-size: 0.72rem;
+            opacity: 0.9;
+            margin-bottom: 6px;
+            font-weight: 500;
+            line-height: 1.2;
+        }
+
+        .fifa-deadline {
+            font-size: 0.65rem;
+            color: #ff9d00;
+            font-weight: 600;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 2px 8px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        .fifa-right {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Football Rotation Animation */
+        .fifa-ball-anim {
+            font-size: 2.2rem;
+            animation: ballRotate 3s linear infinite;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+            display: inline-block;
+            user-select: none;
+        }
+
+        @keyframes ballRotate {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.1); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+
+        /* ===== BUTTON LAYOUT: 2 COLUMNS, EACH BUTTON EXACTLY 35mm WIDTH ===== */
         .button-grid {
             display: grid;
             grid-template-columns: repeat(2, 35mm);  /* each column exactly 35mm */
@@ -172,7 +253,6 @@
             box-sizing: border-box;
         }
 
-        /* Ensure buttons never stretch or shrink */
         .app-btn::before {
             content: '';
             position: absolute;
@@ -192,13 +272,10 @@
         .app-btn:hover::before { left: 100%; }
         .app-btn i { font-size: 1.1rem; margin-bottom: 4px; }
         
-        /* Admin button uses same styling, no full-width override */
         .admin-btn {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
 
-        /* Removed all full-width / grid-column span classes */
-        /* No media query to change columns — always 2 columns, 35mm each */
         footer {
             position: fixed;
             bottom: 0;
@@ -243,7 +320,6 @@
             border-color: var(--primary-orange);
         }
 
-        /* Small screens: maintain same 35mm buttons, allow horizontal scroll if needed */
         @media (max-width: 576px) {
             .header-image { max-height: 120px; }
             .logo-container { margin: 90px 0 15px 0; }
@@ -252,7 +328,6 @@
             .button-grid {
                 gap: 10px;
                 justify-content: center;
-                /* keep 2 columns 35mm each, no change */
             }
             .app-btn {
                 height: 60px;
@@ -262,6 +337,9 @@
             }
             .app-btn i { font-size: 1rem; }
             footer { padding: 3px 10px; height: 28px; }
+            .fifa-title { font-size: 0.9rem; }
+            .fifa-subtitle { font-size: 0.68rem; }
+            .fifa-ball-anim { font-size: 1.8rem; }
         }
     </style>
 </head>
@@ -287,6 +365,18 @@
                         <div class="due-info" id="dueInfo">
                             <i class="fas fa-calendar-alt me-2"></i>
                             <span id="monthlyDue">Your Monthly Due: Checking...</span>
+                        </div>
+                    </div>
+                    
+                    <!-- ⚽ NEW: FIFA 2026 PREDICTION CONTEST ADVERTISEMENT BOX -->
+                    <div class="fifa-promo-card" id="fifaPromoCard">
+                        <div class="fifa-left">
+                            <div class="fifa-title">⚽ FIFA 2026 Prediction Contest</div>
+                            <div class="fifa-subtitle">പ്രവചിക്കൂ, ആകർഷകമായ സമ്മാനങ്ങൾ സ്വന്തമാക്കൂ!</div>
+                            <div class="fifa-deadline"><i class="fas fa-hourglass-half me-1"></i> Closes: 09-Jul-2026, 11:59 PM</div>
+                        </div>
+                        <div class="fifa-right">
+                            <div class="fifa-ball-anim">⚽</div>
                         </div>
                     </div>
                     
@@ -332,12 +422,12 @@
                             <i class="fas fa-university"></i> Loan
                         </button>
                         
-                        <!-- 9. Change Password – normal button, no full-width class -->
+                        <!-- 9. Change Password -->
                         <button id="passwordBtn" class="app-btn">
                             <i class="fas fa-key"></i> Change Password
                         </button>
                         
-                        <!-- 10. Admin Dashboard – hidden by default, shown via JS if user is admin -->
+                        <!-- 10. Admin Dashboard -->
                         <button id="adminBtn" class="app-btn admin-btn" style="display: none;">
                             <i class="fas fa-cog"></i> Admin Dashboard
                         </button>
@@ -357,7 +447,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js" defer></script>
 
     <script>
-        // ========== FULL ORIGINAL FUNCTIONALITY (caching, wealth, due) – LAYOUT ONLY CHANGED: 35mm BUTTONS, 2 PER ROW ==========
         document.addEventListener('DOMContentLoaded', () => {
             const cachedName = localStorage.getItem('cached_userName');
             const cachedWealth = localStorage.getItem('cached_totalWealth');
@@ -372,7 +461,6 @@
             if(cachedWealth) document.getElementById('totalWealth').textContent = cachedWealth;
             if(cachedDue) document.getElementById('monthlyDue').innerHTML = cachedDue;
             
-            // Admin button visibility based on cached role (will be overridden by real-time later)
             const adminBtn = document.getElementById('adminBtn');
             if(cachedRole === 'admin' && adminBtn) {
                 adminBtn.style.display = 'flex';
@@ -390,6 +478,11 @@
             });
             document.getElementById('dueInfo').addEventListener('click', () => {
                 window.location.href = 'subscription.html';
+            });
+
+            // ✅ Redirect to FIFA contest on card click
+            document.getElementById('fifaPromoCard').addEventListener('click', () => {
+                window.location.href = 'fifa.html';
             });
         });
 
@@ -515,7 +608,6 @@
                 }
             }
 
-            // Button navigation mapping (all IDs exactly as in HTML)
             const buttonsConfig = {
                 'subscriptionBtn': 'subscription.html',
                 'expensesBtn': 'wealth-user.html',
@@ -539,7 +631,6 @@
                 }
             }
 
-            // Theme toggle
             const themeToggle = document.getElementById('themeToggle');
             if (themeToggle) {
                 themeToggle.addEventListener('click', () => {
@@ -553,7 +644,6 @@
             }
         });
 
-        // Service Worker registration (original preserved)
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js')
