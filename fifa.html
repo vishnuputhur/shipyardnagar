@@ -418,7 +418,7 @@
 
                        <div class="form-group">
     <label class="form-label">
-        <i class="fas fa-users me-1 text-info"></i> Semi-Finalist 3
+        <i class="fas fa-users me-1 text-info"></i> Semi-Finalist (Loosers final Winner)
     </label>
     <select class="form-select team-dropdown" id="semi3Team" required>
         <option value="">Select Team</option>
@@ -427,7 +427,7 @@
 
 <div class="form-group">
     <label class="form-label">
-        <i class="fas fa-users me-1 text-info"></i> Semi-Finalist 4
+        <i class="fas fa-users me-1 text-info"></i> Semi-Finalist (Loosers Final Lost) 
     </label>
     <select class="form-select team-dropdown" id="semi4Team" required>
         <option value="">Select Team</option>
@@ -858,7 +858,7 @@ const activeTeams = [
             ]);
 
             doc.autoTable({
-                head: [['No.', 'Name', 'Winner (1st)', 'Runner Up (2nd)', 'Semi 3', 'Semi 4', 'Golden Boot']],
+                head: [['No.', 'Name', 'Winner (1st)', 'Runner Up (2nd)', 'Semi 4', 'Golden Boot']],
                 body: mappedBody,
                 startY: 30,
                 styles: { font: 'times', fontSize: 9, halign: 'center' },
