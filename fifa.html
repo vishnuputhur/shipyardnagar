@@ -548,11 +548,14 @@
             console.error("❌ Firebase init error:", error);
         }
 
-        const activeTeams = [
-            "Argentina", "Brazil", "France", "England", 
-            "Portugal", "Spain", "Germany", "Netherlands",
-            "Morocco", "Croatia", "Italy", "Uruguay"
-        ];
+        // ✅ ചിത്രത്തിലുള്ള കൃത്യമായ Round of 16 (RO16) ടീമുകളുടെ ലിസ്റ്റ്
+const activeTeams = [
+    "Argentina", "France", "Brazil", "England", 
+    "Portugal", "Spain", "Morocco", "Belgium",
+    "USA", "Canada", "Norway", "Mexico",
+    "Egypt", "Switzerland", "Colombia", "Paraguay"
+];
+
 
         const auth = firebase.auth();
         const firestoreDb = firebase.firestore();
