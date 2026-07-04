@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shipyard Nagar - FIFA Prediction</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>Shipyard Nagar - FIFA World Cup 2026 Prediction</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- jsPDF for Admin PDF Download -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <style>
@@ -16,8 +15,8 @@
             --orange-light: #FF8C42;
             --orange-dark: #E55A2B;
             --gradient: linear-gradient(135deg, #FF6B35 0%, #FF8C42 50%, #FFA726 100%);
-            --shadow: 0 8px 25px rgba(255, 107, 53, 0.15);
-            --shadow-hover: 0 12px 35px rgba(255, 107, 53, 0.25);
+            --shadow: 0 4px 15px rgba(255, 107, 53, 0.15);
+            --shadow-hover: 0 8px 25px rgba(255, 107, 53, 0.25);
             --card-bg: rgba(255, 255, 255, 0.95);
         }
 
@@ -25,15 +24,19 @@
             --card-bg: rgba(45, 45, 45, 0.95);
         }
 
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             font-family: 'Poppins', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding-bottom: 60px;
+            padding-bottom: 50px;
             position: relative;
             overflow-x: hidden;
-            margin: 0;
-            padding: 0;
         }
 
         body::before {
@@ -63,54 +66,77 @@
         .main-card {
             background: var(--card-bg);
             backdrop-filter: blur(20px);
-            border-radius: 20px;
-            padding: 20px;
+            border-radius: 16px;
+            padding: 15px;
             box-shadow: var(--shadow);
             border: 1px solid rgba(255, 255, 255, 0.2);
-            margin-bottom: 50px;
+            margin-bottom: 40px;
             position: relative;
             margin-top: 120px;
         }
 
         .page-title {
-            font-size: 1.5rem;
+            font-size: 1.2rem;
             font-weight: 700;
             color: #1e3a8a;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
             text-align: center;
         }
 
-        [data-theme="dark"] .page-title { color: #60a5fa; }
+        .page-subtitle {
+            text-align: center;
+            color: #666;
+            font-size: 0.75rem;
+            margin-bottom: 10px;
+        }
 
-        .admin-msg-box {
-            background: linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%);
-            padding: 12px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            border-left: 4px solid #ffc107;
-            font-size: 0.9rem;
-            color: #856404;
+        [data-theme="dark"] .page-title { color: #60a5fa; }
+        [data-theme="dark"] .page-subtitle { color: #aaa; }
+
+        .countdown-box {
+            background: linear-gradient(135deg, #ff6b35, #ff8c42);
+            padding: 8px 12px;
+            border-radius: 10px;
+            color: white;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .countdown-text {
+            font-size: 0.75rem;
             font-weight: 500;
         }
-        [data-theme="dark"] .admin-msg-box {
-            background: linear-gradient(135deg, #2c2512 0%, #443612 100%);
-            border-left-color: #ffc107;
-            color: #ffe0b2;
+
+        .countdown-timer {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
 
         .form-label {
             font-weight: 600;
-            margin-top: 12px;
+            margin-top: 8px;
             color: #333;
-            font-size: 0.9rem;
+            font-size: 0.78rem;
         }
         [data-theme="dark"] .form-label { color: #fff; }
 
         .form-select, .form-control {
-            border-radius: 10px;
-            padding: 10px;
-            font-size: 0.9rem;
+            border-radius: 8px;
+            padding: 6px 10px;
+            font-size: 0.78rem;
+            border: 2px solid #e0e0e0;
+            transition: all 0.3s ease;
+            height: auto;
+            min-height: 35px;
         }
+
+        .form-select:focus, .form-control:focus {
+            border-color: var(--primary-orange);
+            box-shadow: 0 0 0 0.2rem rgba(255, 107, 53, 0.25);
+        }
+
         [data-theme="dark"] .form-select, [data-theme="dark"] .form-control {
             background: #444; color: #fff; border-color: #555;
         }
@@ -118,114 +144,286 @@
         .action-btn {
             background: var(--gradient);
             border: none;
-            border-radius: 12px;
-            padding: 12px;
+            border-radius: 10px;
+            padding: 10px;
             color: white;
             font-weight: 600;
             width: 100%;
-            margin-top: 20px;
+            margin-top: 12px;
             box-shadow: var(--shadow);
             cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
         }
-        .action-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-hover); }
-        .action-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .action-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+        .action-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+        .edit-trigger-btn {
+            background: transparent;
+            border: 2px dashed var(--primary-orange);
+            border-radius: 10px;
+            padding: 12px;
+            color: var(--primary-orange);
+            font-weight: 600;
+            width: 100%;
+            margin-top: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+        }
+        .edit-trigger-btn:hover {
+            background: var(--primary-orange);
+            color: white;
+            border-style: solid;
+        }
 
         .badge-info-custom {
             background: #e0f2fe; color: #0369a1;
             padding: 8px 12px; border-radius: 8px;
-            font-weight: 500; font-size: 0.85rem;
-            display: block; text-align: center; margin-bottom: 15px;
+            font-weight: 500; font-size: 0.8rem;
+            display: block; text-align: center; margin-bottom: 10px;
         }
         [data-theme="dark"] .badge-info-custom { background: #0c4a6e; color: #38bdf8; }
 
         .admin-section {
             border-top: 2px dashed var(--primary-orange);
-            margin-top: 30px;
-            padding-top: 20px;
+            margin-top: 20px;
+            padding-top: 15px;
         }
 
-        .table-container { overflow-x: auto; border-radius: 12px; }
+        .table-container { overflow-x: auto; border-radius: 10px; }
+        .table { font-size: 0.7rem; margin-bottom: 0; }
+        .table th, .table td { padding: 5px 8px; }
 
         footer {
             position: fixed;
             bottom: 0; width: 100%;
-            background: rgba(248, 248, 248, 0.9);
+            background: rgba(248, 248, 248, 0.95);
             backdrop-filter: blur(10px);
-            color: #666; font-size: 0.7rem; z-index: 1000;
+            color: #666; font-size: 0.65rem; z-index: 1000;
             border-top: 1px solid rgba(255, 107, 53, 0.2);
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 3px 15px; height: 30px;
+            display: flex; justify-content: center; align-items: center;
+            padding: 4px 15px; height: 32px;
         }
-        [data-theme="dark"] footer { background: rgba(45, 45, 45, 0.9); color: #ccc; }
+        [data-theme="dark"] footer { background: rgba(45, 45, 45, 0.95); color: #ccc; }
+
+        .footer-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
 
         .theme-toggle-btn {
             background: transparent; border: 1px solid #ccc; border-radius: 20px;
-            padding: 4px 8px; color: #666; font-size: 0.75rem; cursor: pointer;
+            padding: 2px 10px; color: #666; font-size: 0.65rem; cursor: pointer;
+            transition: all 0.3s ease;
+            height: 22px;
+        }
+        .theme-toggle-btn:hover {
+            background: var(--gradient);
+            color: white;
+            border-color: var(--primary-orange);
         }
 
         #loadingSpinner {
-            display: none; position: fixed; top: 50%; left: 50%;
-            transform: translate(-50%, -50%); font-size: 1.5rem;
-            color: #0288d1; z-index: 9999; background: rgba(255, 255, 255, 0.95);
-            padding: 20px 40px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
         }
 
-        /* Mobile Responsive */
+        #loadingSpinner.active {
+            display: flex;
+        }
+
+        .football-spinner {
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle at 35% 35%, #ffffff, #2d2d2d);
+            border-radius: 50%;
+            animation: spin 1.5s linear infinite;
+            box-shadow: 0 0 30px rgba(255, 107, 53, 0.5);
+            position: relative;
+        }
+
+        .football-spinner::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60%;
+            height: 60%;
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 35%, #ffffff, #1a1a1a);
+            border: 3px solid #333;
+        }
+
+        .football-spinner::after {
+            content: '⚽';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 30px;
+            opacity: 0.3;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.1); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+
+        .spinner-text {
+            color: white;
+            font-size: 1rem;
+            margin-top: 20px;
+            font-weight: 500;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+
+        .thanks-message {
+            text-align: center;
+            padding: 20px 10px;
+        }
+
+        .thanks-message .icon {
+            font-size: 3rem;
+            color: #28a745;
+            margin-bottom: 10px;
+        }
+
+        .thanks-message h3 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #1e3a8a;
+            margin-bottom: 5px;
+        }
+
+        .thanks-message p {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        [data-theme="dark"] .thanks-message h3 { color: #60a5fa; }
+        [data-theme="dark"] .thanks-message p { color: #aaa; }
+
         @media (max-width: 768px) {
-            .main-card { margin-top: 80px; padding: 15px; }
-            .page-title { font-size: 1.2rem; }
+            .main-card { margin-top: 100px; padding: 12px; }
+            .page-title { font-size: 1rem; }
+            .header-image { max-height: 100px; }
+            .countdown-timer { font-size: 0.85rem; }
+            .form-select, .form-control { font-size: 0.7rem; padding: 5px 8px; min-height: 30px; }
+            .form-label { font-size: 0.7rem; margin-top: 6px; }
+            .action-btn { padding: 8px; font-size: 0.75rem; }
+            .edit-trigger-btn { padding: 10px; font-size: 0.75rem; }
+            .table { font-size: 0.6rem; }
+            .table th, .table td { padding: 4px 6px; }
+            .football-spinner { width: 60px; height: 60px; }
+            .football-spinner::after { font-size: 22px; }
+        }
+
+        @media (max-width: 576px) {
+            .main-card { margin-top: 80px; padding: 10px; }
             .header-image { max-height: 80px; }
+            .page-title { font-size: 0.9rem; }
+            .countdown-box { padding: 6px 10px; }
+            .countdown-text { font-size: 0.65rem; }
+            .countdown-timer { font-size: 0.75rem; }
+            .footer-content { gap: 8px; font-size: 0.6rem; }
         }
     </style>
 </head>
 <body>
-    <!-- Header Image - Removed to avoid 404 error -->
-    <!-- <img src="assets/head.png" alt="Header" class="header-image" style="display:none;"> -->
+    <img src="assets/head.png" alt="Header" class="header-image" onerror="this.style.display='none'">
     
     <main class="container">
         <div class="row justify-content-center">
             <div class="col-12 col-md-10 col-lg-8">
                 <div class="main-card">
-                    <div class="page-title">
-                        🏆 World Cup Prediction Contest
-                    </div>
-                    
-                    <!-- Announcement / Notice Board -->
-                    <div class="no-payment-message mb-3" id="announcementBox" style="display: block; padding: 12px; border-radius: 12px; background: rgba(255, 107, 53, 0.1); border: 1px solid var(--primary-orange); text-align: center; font-size: 0.9rem; font-weight: 500;">
-                        <i class="fas fa-bullhorn me-2 text-warning"></i> <span id="announcementText">Welcome to Predict & Win!</span>
+                    <h2 class="page-title">🏆 World Cup Prediction Contest</h2>
+                    <p class="page-subtitle">
+                        <i class="fas fa-calendar-alt me-1"></i>
+                        Make your predictions & win exciting prizes!
+                    </p>
+
+                    <div class="countdown-box">
+                        <div class="countdown-text">
+                            <i class="fas fa-clock me-1"></i>
+                            Closes: <span id="lastDateDisplay" class="fw-bold">09-Jul-2026, 11:59 PM</span>
+                        </div>
+                        <div class="countdown-timer" id="countdownDisplay">
+                            ⏳ Loading...
+                        </div>
                     </div>
 
-                    <div id="countdownDisplay" class="text-center fw-bold text-danger mb-3 small"></div>
-
-                    <!-- MEMBER VIEW: SUBMIT PREDICTION -->
                     <div id="memberPredictionSection" style="display: none;">
-                        <span class="badge-info-custom" id="predictionStatusBadge">Loading status...</span>
-                        
-                        <form id="predictionForm">
+                        <div class="badge-info-custom" id="predictionStatusBadge">
+                            <i class="fas fa-spinner fa-spin me-1"></i> Loading...
+                        </div>
+
+                        <div id="thanksMessage" class="thanks-message" style="display: none;">
+                            <div class="icon">🎉</div>
+                            <h3>Thank You for Participating!</h3>
+                            <p>Your prediction has been recorded successfully.</p>
+                            <button class="edit-trigger-btn" id="editTriggerBtn">
+                                <i class="fas fa-edit me-2"></i> Click here to edit your prediction
+                            </button>
+                        </div>
+
+                        <form id="predictionForm" style="display: none;">
                             <div class="form-group">
-                                <label class="form-label">World Cup Champions (1st Place)</label>
-                                <select class="form-select team-dropdown" id="winnerTeam" required></select>
+                                <label class="form-label">
+                                    <i class="fas fa-trophy me-1 text-warning"></i> Champions (1st)
+                                </label>
+                                <select class="form-select team-dropdown" id="winnerTeam" required>
+                                    <option value="">Select Team</option>
+                                </select>
                             </div>
                             
                             <div class="form-group">
-                                <label class="form-label">Runners Up (2nd Place)</label>
-                                <select class="form-select team-dropdown" id="runnerUpTeam" required></select>
+                                <label class="form-label">
+                                    <i class="fas fa-medal me-1 text-secondary"></i> Runners Up (2nd)
+                                </label>
+                                <select class="form-select team-dropdown" id="runnerUpTeam" required>
+                                    <option value="">Select Team</option>
+                                </select>
                             </div>
 
-                            <div class="row">
+                            <div class="row g-2">
                                 <div class="col-6 form-group">
-                                    <label class="form-label">Semi-Finalist 3</label>
-                                    <select class="form-select team-dropdown" id="semi3Team" required></select>
+                                    <label class="form-label">
+                                        <i class="fas fa-users me-1 text-info"></i> Semi 3
+                                    </label>
+                                    <select class="form-select team-dropdown" id="semi3Team" required>
+                                        <option value="">Select</option>
+                                    </select>
                                 </div>
                                 <div class="col-6 form-group">
-                                    <label class="form-label">Semi-Finalist 4</label>
-                                    <select class="form-select team-dropdown" id="semi4Team" required></select>
+                                    <label class="form-label">
+                                        <i class="fas fa-users me-1 text-info"></i> Semi 4
+                                    </label>
+                                    <select class="form-select team-dropdown" id="semi4Team" required>
+                                        <option value="">Select</option>
+                                    </select>
                                 </div>
                             </div>
 
                             <div class="form-group">
-                                <label class="form-label">Golden Boot Winner (Top Scorer Name)</label>
-                                <input type="text" class="form-control" id="goldenBootPlayer" placeholder="Enter Player Name" required>
+                                <label class="form-label">
+                                    <i class="fas fa-futbol me-1 text-success"></i> Golden Boot Winner
+                                </label>
+                                <input type="text" class="form-control" id="goldenBootPlayer" 
+                                       placeholder="Enter Player Name" required>
                             </div>
 
                             <button type="submit" class="action-btn" id="submitPredictionBtn">
@@ -234,72 +432,65 @@
                         </form>
                     </div>
 
-                    <!-- ADMIN VIEW: MANAGE CONTEST & VIEW ALL -->
                     <div id="adminPanelSection" class="admin-section" style="display: none;">
-                        <h3 class="mb-3 text-primary fw-bold">⚙️ Admin Control Panel</h3>
+                        <h3 class="mb-2 text-primary fw-bold" style="font-size: 1.1rem;">
+                            <i class="fas fa-cog me-2"></i> Admin Control
+                        </h3>
                         
-                        <!-- Configuration Controls -->
-                        <div class="row g-2 mb-4 p-3 border rounded bg-light text-dark">
-                            <div class="col-12 col-sm-6">
-                                <label class="form-label mt-0">Contest Close Last Date & Time</label>
-                                <input type="datetime-local" class="form-control" id="configLastDate">
-                            </div>
-                            <div class="col-12 col-sm-6">
-                                <label class="form-label mt-0">Dashboard Message</label>
-                                <input type="text" class="form-control" id="configMessage" placeholder="Enter flash message">
-                            </div>
-                            <div class="col-12 mt-3">
-                                <button class="btn btn-success btn-sm w-100" id="saveConfigBtn">Update Settings</button>
-                            </div>
-                        </div>
-
-                        <!-- Predictions Data Table -->
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h4 class="fw-bold m-0" style="font-size: 1.1rem;">All Members Predictions</h4>
-                            <button class="btn btn-outline-danger btn-sm" id="downloadPdfBtn">
-                                <i class="fas fa-file-pdf me-1"></i> Download PDF
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h4 class="fw-bold m-0" style="font-size: 0.95rem;">
+                                <i class="fas fa-list me-2"></i> All Predictions
+                            </h4>
+                            <button class="btn btn-outline-danger btn-sm" id="downloadPdfBtn" style="font-size: 0.7rem; padding: 4px 10px;">
+                                <i class="fas fa-file-pdf me-1"></i> PDF
                             </button>
                         </div>
 
-                        <div class="table-container bg-white text-dark p-2 border">
-                            <table class="table table-striped table-sm text-center" id="predictionsAdminTable" style="font-size: 0.85rem;">
+                        <div class="table-container bg-white text-dark p-1 border">
+                            <table class="table table-striped table-sm text-center" id="predictionsAdminTable">
                                 <thead>
                                     <tr>
                                         <th>M.No</th>
                                         <th>Name</th>
                                         <th>Winner</th>
-                                        <th>Runner Up</th>
+                                        <th>Runner</th>
                                         <th>Semi 3</th>
                                         <th>Semi 4</th>
                                         <th>Golden Boot</th>
+                                        <th>Submitted</th>
                                     </tr>
                                 </thead>
                                 <tbody id="predictionsAdminTableBody">
-                                    <tr><td colspan="7">Loading records...</td></tr>
+                                    <tr><td colspan="8"><i class="fas fa-spinner fa-spin me-1"></i> Loading...</td></tr>
                                 </tbody>
                             </table>
                         </div>
                     </div>
-
                 </div>
             </div>
         </div>
     </main>
 
     <footer>
-        <div><p>Powered by VTSoft 2026</p></div>
-        <button id="themeToggle" class="theme-toggle-btn">🌞</button>
+        <div class="footer-content">
+            <span>Shipyard Nagar</span>
+            <span>|</span>
+            <span>VTSoft 2026</span>
+            <span>|</span>
+            <button id="themeToggle" class="theme-toggle-btn">🌞</button>
+        </div>
     </footer>
 
-    <div id="loadingSpinner">⏳ Loading Contest...</div>
+    <div id="loadingSpinner">
+        <div class="football-spinner"></div>
+        <div class="spinner-text">Loading...</div>
+    </div>
 
-    <!-- Firebase Core SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 
     <script>
-        // ✅ Firebase Configuration - From Admin Dashboard
         const firebaseConfig = {
             apiKey: "AIzaSyBWswawf9tpxNwVU0BaJ6FCwCvgcjUQXlA",
             authDomain: "shipyard-nagar.firebaseapp.com",
@@ -310,42 +501,70 @@
             measurementId: "G-V8CQ4YCCQ5"
         };
 
-        // Initialize Firebase with error handling
         try {
             if (!firebase.apps.length) {
                 firebase.initializeApp(firebaseConfig);
-                console.log("✅ Firebase initialized successfully");
+                console.log("✅ Firebase initialized");
             }
         } catch (error) {
-            console.error("❌ Firebase initialization error:", error);
-            alert("Firebase connection failed. Please check your configuration.");
+            console.error("❌ Firebase init error:", error);
         }
 
-        // ✅ ACTIVE TEAMS IN KNOCKOUT STAGE
         const activeTeams = [
             "Argentina", "Brazil", "France", "England", 
             "Portugal", "Spain", "Germany", "Netherlands",
             "Morocco", "Croatia", "Italy", "Uruguay"
         ];
 
-        // Firebase references
         const auth = firebase.auth();
         const firestoreDb = firebase.firestore();
 
         let currentLoggedUser = null;
-        let contestSettings = { lastDate: "", message: "Contest Live!" };
         let adminTableRowsData = [];
+        let existingPredictionData = null;
+        let isAdmin = false;
+
+        function showSpinner(show, text = 'Loading...') {
+            const spinner = document.getElementById('loadingSpinner');
+            const textEl = spinner.querySelector('.spinner-text');
+            if (show) {
+                textEl.textContent = text;
+                spinner.classList.add('active');
+            } else {
+                spinner.classList.remove('active');
+            }
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            try {
+                const date = new Date(dateString);
+                return date.toLocaleString('en-IN', {
+                    day: '2-digit', 
+                    month: 'short', 
+                    year: 'numeric',
+                    hour: '2-digit', 
+                    minute: '2-digit',
+                    hour12: true
+                });
+            } catch {
+                return dateString;
+            }
+        }
 
         document.addEventListener('DOMContentLoaded', () => {
-            const loadingSpinner = document.getElementById('loadingSpinner');
+            // Set last date display
+            document.getElementById('lastDateDisplay').textContent = '09-Jul-2026, 11:59 PM';
             
-            // Populate Dropdowns with Active Teams
+            // Populate Dropdowns
             document.querySelectorAll('.team-dropdown').forEach(dropdown => {
                 dropdown.innerHTML = '<option value="">Select Team</option>' + 
                     activeTeams.map(t => `<option value="${t}">${t}</option>`).join('');
             });
 
-            // Auth Control
+            // Start countdown with fixed date
+            startCountdownTimer('2026-07-09T23:59');
+
             auth.onAuthStateChanged(async (user) => {
                 if (!user) {
                     alert('Session expired. Redirecting to login...');
@@ -353,63 +572,47 @@
                     return;
                 }
                 currentLoggedUser = user;
-                loadingSpinner.style.display = 'block';
+                showSpinner(true, 'Loading contest data...');
 
                 try {
-                    console.log("User logged in:", user.uid);
-                    
-                    // 1. Load Contest Config
-                    const configDoc = await firestoreDb.collection('prediction_config').doc('settings').get();
-                    if (configDoc.exists) {
-                        contestSettings = configDoc.data();
-                        document.getElementById('announcementText').textContent = contestSettings.message || "Welcome to Predict & Win!";
-                        document.getElementById('configLastDate').value = contestSettings.lastDate || "";
-                        document.getElementById('configMessage').value = contestSettings.message || "";
-                    } else {
-                        console.log("No config found, using defaults");
-                    }
-                    startCountdownTimer(contestSettings.lastDate);
-
-                    // 2. Get user data
                     const userDoc = await firestoreDb.collection('users').doc(user.uid).get();
-                    console.log("User doc exists:", userDoc.exists);
-                    
                     if (userDoc.exists) {
                         const userData = userDoc.data();
-                        console.log("User role:", userData.role);
+                        isAdmin = userData.role === 'admin';
                         
-                        if (userData.role === 'admin') {
-                            // Display Admin Console
+                        // Show member section for all users
+                        document.getElementById('memberPredictionSection').style.display = 'block';
+                        
+                        if (isAdmin) {
+                            // Admin: Show admin panel and hide form
                             document.getElementById('adminPanelSection').style.display = 'block';
-                            document.getElementById('memberPredictionSection').style.display = 'block';
+                            document.getElementById('predictionForm').style.display = 'none';
+                            document.getElementById('thanksMessage').style.display = 'none';
+                            document.getElementById('predictionStatusBadge').style.display = 'none';
                             await loadAdminPredictionsData();
                         } else {
-                            // Member view logic
-                            document.getElementById('memberPredictionSection').style.display = 'block';
+                            // Member: Check existing prediction
+                            document.getElementById('adminPanelSection').style.display = 'none';
                             await checkExistingPrediction(user.uid, userData.memberNumber);
                         }
-                    } else {
-                        console.error("User document not found!");
-                        alert("User data not found. Please contact admin.");
                     }
                 } catch (e) {
-                    console.error("Error loading data:", e);
-                    alert("Error loading data: " + e.message);
+                    console.error("Error:", e);
+                    document.getElementById('predictionStatusBadge').textContent = '❌ Error loading data';
                 } finally {
-                    loadingSpinner.style.display = 'none';
+                    showSpinner(false);
                 }
             });
 
-            // Form Submit - Save Entry
             document.getElementById('predictionForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 
-                const isExpired = new Date() > new Date(contestSettings.lastDate);
-                if (isExpired && contestSettings.lastDate) {
+                const isExpired = new Date() > new Date('2026-07-09T23:59');
+                if (isExpired) {
                     return alert('❌ Sorry! Prediction entry time has closed.');
                 }
 
-                loadingSpinner.style.display = 'block';
+                showSpinner(true, 'Saving your prediction...');
                 try {
                     const uDoc = await firestoreDb.collection('users').doc(currentLoggedUser.uid).get();
                     const mNo = uDoc.data().memberNumber || "Unknown";
@@ -424,46 +627,44 @@
                         semi3: document.getElementById('semi3Team').value,
                         semi4: document.getElementById('semi4Team').value,
                         goldenBoot: document.getElementById('goldenBootPlayer').value.trim(),
-                        timestamp: new Date().toISOString()
+                        timestamp: new Date().toISOString(),
+                        lastUpdated: new Date().toISOString()
                     };
 
-                    // Save directly targeting unique memberNumber
                     await firestoreDb.collection('prediction_entries').doc(mNo).set(payload);
                     alert('🎉 Success! Your prediction has been registered.');
                     window.location.reload();
                 } catch (err) {
                     alert('Error: ' + err.message);
                 } finally {
-                    loadingSpinner.style.display = 'none';
+                    showSpinner(false);
                 }
             });
 
-            // Admin Save Settings
-            document.getElementById('saveConfigBtn').addEventListener('click', async () => {
-                const lDate = document.getElementById('configLastDate').value;
-                const msgText = document.getElementById('configMessage').value;
+            // Edit Trigger Button
+            document.getElementById('editTriggerBtn').addEventListener('click', () => {
+                document.getElementById('thanksMessage').style.display = 'none';
+                document.getElementById('predictionForm').style.display = 'block';
+                document.getElementById('predictionStatusBadge').textContent = '✏️ Edit Mode - Update your prediction';
+                document.getElementById('predictionStatusBadge').className = 'badge-info-custom bg-warning text-dark';
+                document.getElementById('submitPredictionBtn').textContent = '✏️ Update Prediction';
                 
-                loadingSpinner.style.display = 'block';
-                try {
-                    await firestoreDb.collection('prediction_config').doc('settings').set({
-                        lastDate: lDate,
-                        message: msgText
-                    });
-                    alert('Settings updated successfully!');
-                    window.location.reload();
-                } catch (err) {
-                    alert('Failed to save settings: ' + err.message);
-                } finally {
-                    loadingSpinner.style.display = 'none';
+                // Prefill existing data
+                if (existingPredictionData) {
+                    document.getElementById('winnerTeam').value = existingPredictionData.winner || "";
+                    document.getElementById('runnerUpTeam').value = existingPredictionData.runnerUp || "";
+                    document.getElementById('semi3Team').value = existingPredictionData.semi3 || "";
+                    document.getElementById('semi4Team').value = existingPredictionData.semi4 || "";
+                    document.getElementById('goldenBootPlayer').value = existingPredictionData.goldenBoot || "";
                 }
+                
+                document.querySelectorAll('#predictionForm .form-select, #predictionForm .form-control').forEach(el => {
+                    el.disabled = false;
+                });
             });
 
-            // Print PDF Layout
-            document.getElementById('downloadPdfBtn').addEventListener('click', () => {
-                downloadPredictionsPDF();
-            });
+            document.getElementById('downloadPdfBtn').addEventListener('click', downloadPredictionsPDF);
 
-            // Theme Management
             const themeToggle = document.getElementById('themeToggle');
             themeToggle.addEventListener('click', () => {
                 const currentTheme = document.documentElement.getAttribute('data-theme');
@@ -477,43 +678,38 @@
             themeToggle.textContent = savedTheme === 'light' ? '🌞' : '🌙';
         });
 
-        // Check if member already predicted
         async function checkExistingPrediction(uid, mNo) {
-            if(!mNo) {
-                console.warn("No member number found");
-                return;
-            }
+            if(!mNo) return;
             try {
                 const entryDoc = await firestoreDb.collection('prediction_entries').doc(mNo).get();
                 if (entryDoc.exists) {
-                    const data = entryDoc.data();
-                    document.getElementById('predictionStatusBadge').textContent = "✅ You have already submitted your prediction!";
-                    document.getElementById('predictionStatusBadge').className = "badge-info-custom bg-success text-white";
-                    
-                    // Prefill fields
-                    document.getElementById('winnerTeam').value = data.winner || "";
-                    document.getElementById('runnerUpTeam').value = data.runnerUp || "";
-                    document.getElementById('semi3Team').value = data.semi3 || "";
-                    document.getElementById('semi4Team').value = data.semi4 || "";
-                    document.getElementById('goldenBootPlayer').value = data.goldenBoot || "";
-                    
-                    // Disable submit
-                    document.getElementById('submitPredictionBtn').disabled = true;
-                    document.getElementById('submitPredictionBtn').textContent = "Submission Locked";
+                    existingPredictionData = entryDoc.data();
+                    document.getElementById('thanksMessage').style.display = 'block';
+                    document.getElementById('predictionForm').style.display = 'none';
+                    document.getElementById('predictionStatusBadge').style.display = 'none';
                 } else {
-                    document.getElementById('predictionStatusBadge').textContent = "📝 You haven't submitted your prediction yet.";
+                    existingPredictionData = null;
+                    document.getElementById('thanksMessage').style.display = 'none';
+                    document.getElementById('predictionForm').style.display = 'block';
+                    document.getElementById('predictionStatusBadge').textContent = '📝 Submit your prediction now!';
+                    document.getElementById('predictionStatusBadge').className = 'badge-info-custom';
+                    
+                    document.querySelectorAll('#predictionForm .form-select, #predictionForm .form-control').forEach(el => {
+                        el.disabled = false;
+                    });
                 }
             } catch (error) {
                 console.error("Error checking prediction:", error);
+                document.getElementById('predictionStatusBadge').textContent = '❌ Error loading your status';
             }
         }
 
-        // Live Countdown Timer
         function startCountdownTimer(dateString) {
             if(!dateString) {
-                console.log("No date set for countdown");
+                document.getElementById('countdownDisplay').textContent = "⏳ No deadline set";
                 return;
             }
+            
             const target = new Date(dateString).getTime();
             
             const timer = setInterval(() => {
@@ -522,20 +718,21 @@
                 
                 if (diff <= 0) {
                     clearInterval(timer);
-                    document.getElementById('countdownDisplay').textContent = "⚠️ Entries are officially Closed!";
-                    document.getElementById('submitPredictionBtn').disabled = true;
+                    document.getElementById('countdownDisplay').innerHTML = 
+                        '⚠️ <span style="color:#ffd700;">Entries Closed!</span>';
                     return;
                 }
                 
                 const days = Math.floor(diff / (1000 * 60 * 60 * 24));
                 const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                 const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const secs = Math.floor((diff % (1000 * 60)) / 1000);
                 
-                document.getElementById('countdownDisplay').textContent = `⏳ Time Remaining: ${days}d ${hours}h ${mins}m`;
+                document.getElementById('countdownDisplay').innerHTML = 
+                    `⏳ <span style="color:#ffd700;">${days}d ${hours}h ${mins}m ${secs}s</span>`;
             }, 1000);
         }
 
-        // Fetch All Predictions into Admin Row Grid
         async function loadAdminPredictionsData() {
             const tableBody = document.getElementById('predictionsAdminTableBody');
             try {
@@ -544,7 +741,7 @@
                 adminTableRowsData = [];
 
                 if(snap.empty) {
-                    tableBody.innerHTML = '<tr><td colspan="7">No entries found yet.</td></tr>';
+                    tableBody.innerHTML = '<tr><td colspan="8">No entries found</td></tr>';
                     return;
                 }
 
@@ -560,19 +757,19 @@
                             <td>${d.semi3 || '-'}</td>
                             <td>${d.semi4 || '-'}</td>
                             <td class="text-primary">${d.goldenBoot || '-'}</td>
+                            <td style="font-size: 0.6rem;">${formatDate(d.timestamp)}</td>
                         </tr>
                     `;
                 });
             } catch (err) {
                 console.error("Error loading predictions:", err);
-                tableBody.innerHTML = '<tr><td colspan="7">Error loading records: ' + err.message + '</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="8">Error loading</td></tr>';
             }
         }
 
-        // Download PDF Function
         function downloadPredictionsPDF() {
             if(adminTableRowsData.length === 0) {
-                alert('No data available to print!');
+                alert('No data available!');
                 return;
             }
             
@@ -585,35 +782,52 @@
             doc.setLineWidth(0.5);
             doc.rect(margin, margin, pageWidth - 2 * margin, doc.internal.pageSize.getHeight() - 2 * margin);
             
-            doc.setFontSize(22);
+            doc.setFontSize(20);
             doc.setTextColor(0, 0, 128);
             doc.setFont(undefined, 'bold');
-            doc.text('Shipyard Nagar Residence Association', pageWidth / 2, 15, { align: 'center' });
+            doc.text('Shipyard Nagar Residence Association', pageWidth / 2, 14, { align: 'center' });
             
-            doc.setFontSize(13);
+            doc.setFontSize(12);
             doc.setTextColor(0, 0, 0);
-            doc.text('World Cup Prediction Contest Log', pageWidth / 2, 23, { align: 'center' });
+            doc.text('FIFA World Cup 2026 - Prediction Contest Log', pageWidth / 2, 20, { align: 'center' });
+            
+            const now = new Date();
+            const dateStr = now.toLocaleString('en-IN', {
+                day: '2-digit', month: 'short', year: 'numeric',
+                hour: '2-digit', minute: '2-digit', second: '2-digit'
+            });
+            doc.setFontSize(9);
+            doc.setTextColor(100, 100, 100);
+            doc.text(`Report Generated: ${dateStr}`, pageWidth / 2, 26, { align: 'center' });
 
             const mappedBody = adminTableRowsData.map((d, i) => [
                 (i+1).toString(), 
-                d.memberNumber || 'N/A', 
                 d.memberName || 'Unknown', 
                 d.winner || '-', 
                 d.runnerUp || '-', 
                 d.semi3 || '-', 
                 d.semi4 || '-', 
-                d.goldenBoot || '-'
+                d.goldenBoot || '-',
+                formatDate(d.timestamp)
             ]);
 
             doc.autoTable({
-                head: [['No.', 'M.No', 'Name', 'Winner (1st)', 'Runner Up (2nd)', 'Semi 3', 'Semi 4', 'Golden Boot']],
+                head: [['No.', 'Name', 'Winner (1st)', 'Runner Up (2nd)', 'Semi 3', 'Semi 4', 'Golden Boot', 'Submitted']],
                 body: mappedBody,
                 startY: 30,
-                styles: { font: 'times', fontSize: 9, halign: 'center' },
-                headStyles: { fillColor: [173, 216, 230], textColor: 0, fontStyle: 'bold' }
+                styles: { font: 'times', fontSize: 8, halign: 'center' },
+                headStyles: { fillColor: [173, 216, 230], textColor: 0, fontStyle: 'bold' },
+                columnStyles: {
+                    7: { fontSize: 7 }
+                }
             });
 
-            doc.save(`FIFA_Predictions_Report.pdf`);
+            const finalY = doc.lastAutoTable.finalY + 8;
+            doc.setFontSize(8);
+            doc.setTextColor(100, 100, 100);
+            doc.text(`First Prize: First Entry | Generated: ${dateStr}`, pageWidth / 2, finalY, { align: 'center' });
+
+            doc.save(`FIFA_2026_Predictions_${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}.pdf`);
         }
     </script>
 </body>
