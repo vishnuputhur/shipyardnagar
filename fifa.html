@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
@@ -128,6 +128,7 @@
             cursor: pointer;
         }
         .action-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-hover); }
+        .action-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
         .badge-info-custom {
             background: #e0f2fe; color: #0369a1;
@@ -168,10 +169,18 @@
             color: #0288d1; z-index: 9999; background: rgba(255, 255, 255, 0.95);
             padding: 20px 40px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.2);
         }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .main-card { margin-top: 80px; padding: 15px; }
+            .page-title { font-size: 1.2rem; }
+            .header-image { max-height: 80px; }
+        }
     </style>
 </head>
 <body>
-    <img src="assets/head.png" alt="Header" class="header-image" onerror="this.style.display='none'">
+    <!-- Header Image - Removed to avoid 404 error -->
+    <!-- <img src="assets/head.png" alt="Header" class="header-image" style="display:none;"> -->
     
     <main class="container">
         <div class="row justify-content-center">
@@ -284,21 +293,40 @@
 
     <div id="loadingSpinner">⏳ Loading Contest...</div>
 
-    <!-- Firebase Core SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+    <!-- Firebase Core SDKs - Updated CDN -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
     <script>
-        // ✅ ACTIVE TEAMS IN NOKOUT STAGE (തീയതി പ്രകാരം മാറ്റി നൽകാം)
+        // ✅ Firebase Configuration - നിങ്ങളുടെ details ഇവിടെ ചേർക്കുക
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Initialize Firebase with error handling
+        try {
+            firebase.initializeApp(firebaseConfig);
+            console.log("✅ Firebase initialized successfully");
+        } catch (error) {
+            console.error("❌ Firebase initialization error:", error);
+            alert("Firebase connection failed. Please check your configuration.");
+        }
+
+        // ✅ ACTIVE TEAMS IN KNOCKOUT STAGE
         const activeTeams = [
             "Argentina", "Brazil", "France", "England", 
             "Portugal", "Spain", "Germany", "Netherlands",
             "Morocco", "Croatia", "Italy", "Uruguay"
         ];
 
-        // Firebase Sync
-        auth = firebase.auth();
+        // Firebase references
+        const auth = firebase.auth();
         const firestoreDb = firebase.firestore();
 
         let currentLoggedUser = null;
@@ -343,7 +371,7 @@
                         if (userData.role === 'admin') {
                             // Display Admin Console + Live data
                             document.getElementById('adminPanelSection').style.display = 'block';
-                            document.getElementById('memberPredictionSection').style.display = 'block'; // Admin can also check layout
+                            document.getElementById('memberPredictionSection').style.display = 'block';
                             await loadAdminPredictionsData();
                         } else {
                             // Member view logic
@@ -352,13 +380,14 @@
                         }
                     }
                 } catch (e) {
-                    console.error(e);
+                    console.error("Error loading data:", e);
+                    alert("Error loading data. Please check console for details.");
                 } finally {
                     loadingSpinner.style.display = 'none';
                 }
             });
 
-            // Form Submit - Save Entry (One submission per Family Head restriction based on unique memberNumber)
+            // Form Submit - Save Entry
             document.getElementById('predictionForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 
@@ -385,7 +414,7 @@
                         timestamp: new Date().toISOString()
                     };
 
-                    // Save directly targeting unique memberNumber to block family multiple entries
+                    // Save directly targeting unique memberNumber
                     await firestoreDb.collection('prediction_entries').doc(mNo).set(payload);
                     alert('🎉 Success! Your prediction has been registered.');
                     window.location.reload();
@@ -410,7 +439,7 @@
                     alert('Settings updated successfully!');
                     window.location.reload();
                 } catch (err) {
-                    alert('Failed to save settings');
+                    alert('Failed to save settings: ' + err.message);
                 } finally {
                     loadingSpinner.style.display = 'none';
                 }
@@ -418,7 +447,7 @@
 
             // Print PDF Layout
             document.getElementById('downloadPdfBtn').addEventListener('click', () => {
-                window.downloadPredictionsPDF();
+                downloadPredictionsPDF();
             });
 
             // Theme Management
@@ -438,24 +467,28 @@
         // Check if member already predicted
         async function checkExistingPrediction(uid, mNo) {
             if(!mNo) return;
-            const entryDoc = await firestoreDb.collection('prediction_entries').doc(mNo).get();
-            if (entryDoc.exists) {
-                const data = entryDoc.data();
-                document.getElementById('predictionStatusBadge').textContent = "✅ You have already submitted your prediction!";
-                document.getElementById('predictionStatusBadge').className = "badge-info-custom bg-success text-white";
-                
-                // Prefill fields
-                document.getElementById('winnerTeam').value = data.winner || "";
-                document.getElementById('runnerUpTeam').value = data.runnerUp || "";
-                document.getElementById('semi3Team').value = data.semi3 || "";
-                document.getElementById('semi4Team').value = data.semi4 || "";
-                document.getElementById('goldenBootPlayer').value = data.goldenBoot || "";
-                
-                // Disable submit if entry date expired or already submitted
-                document.getElementById('submitPredictionBtn').disabled = true;
-                document.getElementById('submitPredictionBtn').textContent = "Submission Locked";
-            } else {
-                document.getElementById('predictionStatusBadge').textContent = "📝 You haven't submitted your prediction yet.";
+            try {
+                const entryDoc = await firestoreDb.collection('prediction_entries').doc(mNo).get();
+                if (entryDoc.exists) {
+                    const data = entryDoc.data();
+                    document.getElementById('predictionStatusBadge').textContent = "✅ You have already submitted your prediction!";
+                    document.getElementById('predictionStatusBadge').className = "badge-info-custom bg-success text-white";
+                    
+                    // Prefill fields
+                    document.getElementById('winnerTeam').value = data.winner || "";
+                    document.getElementById('runnerUpTeam').value = data.runnerUp || "";
+                    document.getElementById('semi3Team').value = data.semi3 || "";
+                    document.getElementById('semi4Team').value = data.semi4 || "";
+                    document.getElementById('goldenBootPlayer').value = data.goldenBoot || "";
+                    
+                    // Disable submit if entry date expired or already submitted
+                    document.getElementById('submitPredictionBtn').disabled = true;
+                    document.getElementById('submitPredictionBtn').textContent = "Submission Locked";
+                } else {
+                    document.getElementById('predictionStatusBadge').textContent = "📝 You haven't submitted your prediction yet.";
+                }
+            } catch (error) {
+                console.error("Error checking prediction:", error);
             }
         }
 
@@ -483,7 +516,7 @@
             }, 1000);
         }
 
-        // Fetch All Predictions into Admin Row Grid (Optimized Run)
+        // Fetch All Predictions into Admin Row Grid
         let adminTableRowsData = [];
         async function loadAdminPredictionsData() {
             const tableBody = document.getElementById('predictionsAdminTableBody');
@@ -513,16 +546,20 @@
                     `;
                 });
             } catch (err) {
-                tableBody.innerHTML = '<tr><td colspan="7">Error matching records.</td></tr>';
+                console.error("Error loading predictions:", err);
+                tableBody.innerHTML = '<tr><td colspan="7">Error loading records.</td></tr>';
             }
         }
 
-        // Action Print PDF Output
-        window.downloadPredictionsPDF = function() {
-            if(adminTableRowsData.length === 0) return alert('No data available to print!');
+        // Download PDF Function
+        function downloadPredictionsPDF() {
+            if(adminTableRowsData.length === 0) {
+                alert('No data available to print!');
+                return;
+            }
             
             const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('l', 'mm', 'letter'); // Landscape layout fits better
+            const doc = new jsPDF('l', 'mm', 'letter');
             const margin = 6;
             const pageWidth = doc.internal.pageSize.getWidth();
             
@@ -556,4 +593,3 @@
     </script>
 </body>
 </html>
-
