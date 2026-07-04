@@ -51,7 +51,6 @@
             z-index: -1;
         }
 
-        /* Header - Same as Admin Dashboard */
         .header-image {
             width: 100%;
             height: auto;
@@ -94,7 +93,6 @@
         [data-theme="dark"] .page-title { color: #60a5fa; }
         [data-theme="dark"] .page-subtitle { color: #aaa; }
 
-        /* Compact Announcement */
         .announcement-box {
             padding: 8px 12px;
             border-radius: 10px;
@@ -104,9 +102,9 @@
             font-size: 0.78rem;
             font-weight: 500;
             margin-bottom: 10px;
+            display: none;
         }
 
-        /* Compact Countdown */
         .countdown-box {
             background: linear-gradient(135deg, #ff6b35, #ff8c42);
             padding: 8px 12px;
@@ -128,7 +126,6 @@
             text-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
 
-        /* Compact Form */
         .form-label {
             font-weight: 600;
             margin-top: 8px;
@@ -156,7 +153,6 @@
             background: #444; color: #fff; border-color: #555;
         }
 
-        /* Compact Buttons */
         .action-btn {
             background: var(--gradient);
             border: none;
@@ -211,7 +207,6 @@
         .table { font-size: 0.7rem; margin-bottom: 0; }
         .table th, .table td { padding: 5px 8px; }
 
-        /* Footer - Centered */
         footer {
             position: fixed;
             bottom: 0; width: 100%;
@@ -242,7 +237,6 @@
             border-color: var(--primary-orange);
         }
 
-        /* Football Spinner */
         #loadingSpinner {
             display: none;
             position: fixed;
@@ -308,7 +302,6 @@
             text-shadow: 0 2px 10px rgba(0,0,0,0.5);
         }
 
-        /* Thanks Message */
         .thanks-message {
             text-align: center;
             padding: 20px 10px;
@@ -336,7 +329,6 @@
         [data-theme="dark"] .thanks-message h3 { color: #60a5fa; }
         [data-theme="dark"] .thanks-message p { color: #aaa; }
 
-        /* Mobile Responsive */
         @media (max-width: 768px) {
             .main-card { margin-top: 100px; padding: 12px; }
             .page-title { font-size: 1rem; }
@@ -364,7 +356,6 @@
     </style>
 </head>
 <body>
-    <!-- Header Image - Same as Admin Dashboard -->
     <img src="assets/head.png" alt="Header" class="header-image" onerror="this.style.display='none'">
     
     <main class="container">
@@ -377,31 +368,26 @@
                         Make your predictions & win exciting prizes!
                     </p>
                     
-                    <!-- Announcement -->
                     <div class="announcement-box" id="announcementBox">
                         <i class="fas fa-bullhorn me-1 text-warning"></i> 
-                        <span id="announcementText">Welcome to Predict & Win!</span>
+                        <span id="announcementText"></span>
                     </div>
 
-                    <!-- Countdown -->
                     <div class="countdown-box">
                         <div class="countdown-text">
                             <i class="fas fa-clock me-1"></i>
-                            Closes: <span id="lastDateDisplay" class="fw-bold">Loading...</span>
+                            Closes: <span id="lastDateDisplay" class="fw-bold">08-Jul-2026, 11:59 PM</span>
                         </div>
                         <div class="countdown-timer" id="countdownDisplay">
                             ⏳ Loading...
                         </div>
                     </div>
 
-                    <!-- MEMBER VIEW -->
                     <div id="memberPredictionSection" style="display: none;">
-                        <!-- Status Badge -->
                         <div class="badge-info-custom" id="predictionStatusBadge">
                             <i class="fas fa-spinner fa-spin me-1"></i> Loading...
                         </div>
 
-                        <!-- Thank You Message (After Submission) -->
                         <div id="thanksMessage" class="thanks-message" style="display: none;">
                             <div class="icon">🎉</div>
                             <h3>Thank You for Participating!</h3>
@@ -411,7 +397,6 @@
                             </button>
                         </div>
 
-                        <!-- Prediction Form -->
                         <form id="predictionForm" style="display: none;">
                             <div class="form-group">
                                 <label class="form-label">
@@ -464,7 +449,6 @@
                         </form>
                     </div>
 
-                    <!-- ADMIN VIEW -->
                     <div id="adminPanelSection" class="admin-section" style="display: none;">
                         <h3 class="mb-2 text-primary fw-bold" style="font-size: 1.1rem;">
                             <i class="fas fa-cog me-2"></i> Admin Control
@@ -475,7 +459,8 @@
                                 <label class="form-label mt-0" style="font-size: 0.7rem;">
                                     <i class="fas fa-calendar-times me-1"></i> Close Date
                                 </label>
-                                <input type="datetime-local" class="form-control" id="configLastDate" style="font-size: 0.7rem; padding: 4px 8px; min-height: 28px;">
+                                <input type="datetime-local" class="form-control" id="configLastDate" 
+                                       value="2026-07-08T23:59" style="font-size: 0.7rem; padding: 4px 8px; min-height: 28px;">
                             </div>
                             <div class="col-12 col-sm-6">
                                 <label class="form-label mt-0" style="font-size: 0.7rem;">
@@ -534,19 +519,16 @@
         </div>
     </footer>
 
-    <!-- Football Spinner -->
     <div id="loadingSpinner">
         <div class="football-spinner"></div>
         <div class="spinner-text">Loading...</div>
     </div>
 
-    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 
     <script>
-        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyBWswawf9tpxNwVU0BaJ6FCwCvgcjUQXlA",
             authDomain: "shipyard-nagar.firebaseapp.com",
@@ -566,7 +548,6 @@
             console.error("❌ Firebase init error:", error);
         }
 
-        // Active Teams
         const activeTeams = [
             "Argentina", "Brazil", "France", "England", 
             "Portugal", "Spain", "Germany", "Netherlands",
@@ -577,12 +558,13 @@
         const firestoreDb = firebase.firestore();
 
         let currentLoggedUser = null;
-        let contestSettings = { lastDate: "", message: "Welcome to Predict & Win!" };
+        let contestSettings = { 
+            lastDate: "2026-07-08T23:59", 
+            message: "" 
+        };
         let adminTableRowsData = [];
         let existingPredictionData = null;
-        let isEditMode = false;
 
-        // Show/Hide Spinner
         function showSpinner(show, text = 'Loading...') {
             const spinner = document.getElementById('loadingSpinner');
             const textEl = spinner.querySelector('.spinner-text');
@@ -595,13 +577,18 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            // Set last date display
+            document.getElementById('lastDateDisplay').textContent = '08-Jul-2026, 11:59 PM';
+            
             // Populate Dropdowns
             document.querySelectorAll('.team-dropdown').forEach(dropdown => {
                 dropdown.innerHTML = '<option value="">Select Team</option>' + 
                     activeTeams.map(t => `<option value="${t}">${t}</option>`).join('');
             });
 
-            // Auth State
+            // Start countdown with fixed date
+            startCountdownTimer('2026-07-08T23:59');
+
             auth.onAuthStateChanged(async (user) => {
                 if (!user) {
                     alert('Session expired. Redirecting to login...');
@@ -612,25 +599,17 @@
                 showSpinner(true, 'Loading contest data...');
 
                 try {
-                    // Load Config
+                    // Load Config from Firebase
                     const configDoc = await firestoreDb.collection('prediction_config').doc('settings').get();
                     if (configDoc.exists) {
                         contestSettings = configDoc.data();
-                        document.getElementById('announcementText').textContent = contestSettings.message || "Welcome to Predict & Win!";
-                        document.getElementById('configLastDate').value = contestSettings.lastDate || "";
+                        document.getElementById('configLastDate').value = contestSettings.lastDate || "2026-07-08T23:59";
                         document.getElementById('configMessage').value = contestSettings.message || "";
-                        
                         if (contestSettings.lastDate) {
-                            const dateObj = new Date(contestSettings.lastDate);
-                            document.getElementById('lastDateDisplay').textContent = dateObj.toLocaleString('en-IN', {
-                                day: '2-digit', month: 'short', year: 'numeric',
-                                hour: '2-digit', minute: '2-digit'
-                            });
+                            startCountdownTimer(contestSettings.lastDate);
                         }
                     }
-                    startCountdownTimer(contestSettings.lastDate);
 
-                    // Get User Data
                     const userDoc = await firestoreDb.collection('users').doc(user.uid).get();
                     if (userDoc.exists) {
                         const userData = userDoc.data();
@@ -639,9 +618,9 @@
                             document.getElementById('adminPanelSection').style.display = 'block';
                             document.getElementById('memberPredictionSection').style.display = 'block';
                             await loadAdminPredictionsData();
-                            // Hide form for admin (they don't need to predict)
                             document.getElementById('predictionForm').style.display = 'none';
                             document.getElementById('predictionStatusBadge').style.display = 'none';
+                            document.getElementById('thanksMessage').style.display = 'none';
                         } else {
                             document.getElementById('memberPredictionSection').style.display = 'block';
                             await checkExistingPrediction(user.uid, userData.memberNumber);
@@ -655,7 +634,6 @@
                 }
             });
 
-            // Form Submit
             document.getElementById('predictionForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 
@@ -693,22 +671,27 @@
                 }
             });
 
-            // Edit Trigger Button
             document.getElementById('editTriggerBtn').addEventListener('click', () => {
-                isEditMode = true;
                 document.getElementById('thanksMessage').style.display = 'none';
                 document.getElementById('predictionForm').style.display = 'block';
                 document.getElementById('predictionStatusBadge').textContent = '✏️ Edit Mode - Update your prediction';
                 document.getElementById('predictionStatusBadge').className = 'badge-info-custom bg-warning text-dark';
                 document.getElementById('submitPredictionBtn').textContent = '✏️ Update Prediction';
                 
-                // Enable all form fields
+                // Prefill existing data
+                if (window.existingData) {
+                    document.getElementById('winnerTeam').value = window.existingData.winner || "";
+                    document.getElementById('runnerUpTeam').value = window.existingData.runnerUp || "";
+                    document.getElementById('semi3Team').value = window.existingData.semi3 || "";
+                    document.getElementById('semi4Team').value = window.existingData.semi4 || "";
+                    document.getElementById('goldenBootPlayer').value = window.existingData.goldenBoot || "";
+                }
+                
                 document.querySelectorAll('#predictionForm .form-select, #predictionForm .form-control').forEach(el => {
                     el.disabled = false;
                 });
             });
 
-            // Admin Save Settings
             document.getElementById('saveConfigBtn').addEventListener('click', async () => {
                 const lDate = document.getElementById('configLastDate').value;
                 const msgText = document.getElementById('configMessage').value;
@@ -728,10 +711,8 @@
                 }
             });
 
-            // PDF Download
             document.getElementById('downloadPdfBtn').addEventListener('click', downloadPredictionsPDF);
 
-            // Theme Toggle
             const themeToggle = document.getElementById('themeToggle');
             themeToggle.addEventListener('click', () => {
                 const currentTheme = document.documentElement.getAttribute('data-theme');
@@ -745,30 +726,21 @@
             themeToggle.textContent = savedTheme === 'light' ? '🌞' : '🌙';
         });
 
-        // Check existing prediction
         async function checkExistingPrediction(uid, mNo) {
             if(!mNo) return;
             try {
                 const entryDoc = await firestoreDb.collection('prediction_entries').doc(mNo).get();
                 if (entryDoc.exists) {
-                    existingPredictionData = entryDoc.data();
-                    
-                    // Show Thanks Message
+                    window.existingData = entryDoc.data();
                     document.getElementById('thanksMessage').style.display = 'block';
                     document.getElementById('predictionForm').style.display = 'none';
                     document.getElementById('predictionStatusBadge').style.display = 'none';
-                    
-                    // Store data for edit
-                    window.existingData = existingPredictionData;
-                    
                 } else {
-                    // Show form for new prediction
                     document.getElementById('thanksMessage').style.display = 'none';
                     document.getElementById('predictionForm').style.display = 'block';
                     document.getElementById('predictionStatusBadge').textContent = '📝 Submit your prediction now!';
                     document.getElementById('predictionStatusBadge').className = 'badge-info-custom';
                     
-                    // Enable form
                     document.querySelectorAll('#predictionForm .form-select, #predictionForm .form-control').forEach(el => {
                         el.disabled = false;
                     });
@@ -779,7 +751,6 @@
             }
         }
 
-        // Countdown Timer
         function startCountdownTimer(dateString) {
             if(!dateString) {
                 document.getElementById('countdownDisplay').textContent = "⏳ No deadline set";
@@ -809,7 +780,6 @@
             }, 1000);
         }
 
-        // Load Admin Predictions
         async function loadAdminPredictionsData() {
             const tableBody = document.getElementById('predictionsAdminTableBody');
             try {
@@ -843,7 +813,6 @@
             }
         }
 
-        // Download PDF with Date & Time
         function downloadPredictionsPDF() {
             if(adminTableRowsData.length === 0) {
                 alert('No data available!');
@@ -855,12 +824,10 @@
             const margin = 6;
             const pageWidth = doc.internal.pageSize.getWidth();
             
-            // Border
             doc.setDrawColor(135, 206, 235);
             doc.setLineWidth(0.5);
             doc.rect(margin, margin, pageWidth - 2 * margin, doc.internal.pageSize.getHeight() - 2 * margin);
             
-            // Header
             doc.setFontSize(20);
             doc.setTextColor(0, 0, 128);
             doc.setFont(undefined, 'bold');
@@ -870,7 +837,6 @@
             doc.setTextColor(0, 0, 0);
             doc.text('FIFA World Cup 2026 - Prediction Contest Log', pageWidth / 2, 20, { align: 'center' });
             
-            // Date & Time
             const now = new Date();
             const dateStr = now.toLocaleString('en-IN', {
                 day: '2-digit', month: 'short', year: 'numeric',
@@ -880,7 +846,6 @@
             doc.setTextColor(100, 100, 100);
             doc.text(`Report Generated: ${dateStr}`, pageWidth / 2, 26, { align: 'center' });
 
-            // Table Data - Remove Member Number column
             const mappedBody = adminTableRowsData.map((d, i) => [
                 (i+1).toString(), 
                 d.memberName || 'Unknown', 
@@ -899,7 +864,6 @@
                 headStyles: { fillColor: [173, 216, 230], textColor: 0, fontStyle: 'bold' }
             });
 
-            // Footer
             const finalY = doc.lastAutoTable.finalY + 8;
             doc.setFontSize(8);
             doc.setTextColor(100, 100, 100);
