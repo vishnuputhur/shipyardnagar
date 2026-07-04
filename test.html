@@ -128,6 +128,7 @@
             cursor: pointer;
         }
         .action-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-hover); }
+        .action-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
         .badge-info-custom {
             background: #e0f2fe; color: #0369a1;
@@ -168,10 +169,18 @@
             color: #0288d1; z-index: 9999; background: rgba(255, 255, 255, 0.95);
             padding: 20px 40px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.2);
         }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .main-card { margin-top: 80px; padding: 15px; }
+            .page-title { font-size: 1.2rem; }
+            .header-image { max-height: 80px; }
+        }
     </style>
 </head>
 <body>
-    <img src="assets/head.png" alt="Header" class="header-image" onerror="this.style.display='none'">
+    <!-- Header Image - Removed to avoid 404 error -->
+    <!-- <img src="assets/head.png" alt="Header" class="header-image" style="display:none;"> -->
     
     <main class="container">
         <div class="row justify-content-center">
@@ -290,20 +299,42 @@
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 
     <script>
-        // ✅ ACTIVE TEAMS IN NOKOUT STAGE (തീയതി പ്രകാരം മാറ്റി നൽകാം)
+        // ✅ Firebase Configuration - From Admin Dashboard
+        const firebaseConfig = {
+            apiKey: "AIzaSyBWswawf9tpxNwVU0BaJ6FCwCvgcjUQXlA",
+            authDomain: "shipyard-nagar.firebaseapp.com",
+            projectId: "shipyard-nagar",
+            storageBucket: "shipyard-nagar.firebasestorage.app",
+            messagingSenderId: "552855824221",
+            appId: "1:552855824221:web:f709da953077475be9eab4",
+            measurementId: "G-V8CQ4YCCQ5"
+        };
+
+        // Initialize Firebase with error handling
+        try {
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
+                console.log("✅ Firebase initialized successfully");
+            }
+        } catch (error) {
+            console.error("❌ Firebase initialization error:", error);
+            alert("Firebase connection failed. Please check your configuration.");
+        }
+
+        // ✅ ACTIVE TEAMS IN KNOCKOUT STAGE
         const activeTeams = [
             "Argentina", "Brazil", "France", "England", 
             "Portugal", "Spain", "Germany", "Netherlands",
             "Morocco", "Croatia", "Italy", "Uruguay"
         ];
 
-        // Firebase Sync
-        auth = firebase.auth();
+        // Firebase references
+        const auth = firebase.auth();
         const firestoreDb = firebase.firestore();
 
         let currentLoggedUser = null;
         let contestSettings = { lastDate: "", message: "Contest Live!" };
-        let allUsersCachedMap = {};
+        let adminTableRowsData = [];
 
         document.addEventListener('DOMContentLoaded', () => {
             const loadingSpinner = document.getElementById('loadingSpinner');
@@ -325,40 +356,51 @@
                 loadingSpinner.style.display = 'block';
 
                 try {
+                    console.log("User logged in:", user.uid);
+                    
                     // 1. Load Contest Config
                     const configDoc = await firestoreDb.collection('prediction_config').doc('settings').get();
                     if (configDoc.exists) {
                         contestSettings = configDoc.data();
-                        document.getElementById('announcementText').textContent = contestSettings.message || "";
+                        document.getElementById('announcementText').textContent = contestSettings.message || "Welcome to Predict & Win!";
                         document.getElementById('configLastDate').value = contestSettings.lastDate || "";
                         document.getElementById('configMessage').value = contestSettings.message || "";
+                    } else {
+                        console.log("No config found, using defaults");
                     }
                     startCountdownTimer(contestSettings.lastDate);
 
-                    // 2. Access control check
+                    // 2. Get user data
                     const userDoc = await firestoreDb.collection('users').doc(user.uid).get();
+                    console.log("User doc exists:", userDoc.exists);
+                    
                     if (userDoc.exists) {
                         const userData = userDoc.data();
+                        console.log("User role:", userData.role);
                         
                         if (userData.role === 'admin') {
-                            // Display Admin Console + Live data
+                            // Display Admin Console
                             document.getElementById('adminPanelSection').style.display = 'block';
-                            document.getElementById('memberPredictionSection').style.display = 'block'; // Admin can also check layout
+                            document.getElementById('memberPredictionSection').style.display = 'block';
                             await loadAdminPredictionsData();
                         } else {
                             // Member view logic
                             document.getElementById('memberPredictionSection').style.display = 'block';
-                            checkExistingPrediction(user.uid, userData.memberNumber);
+                            await checkExistingPrediction(user.uid, userData.memberNumber);
                         }
+                    } else {
+                        console.error("User document not found!");
+                        alert("User data not found. Please contact admin.");
                     }
                 } catch (e) {
-                    console.error(e);
+                    console.error("Error loading data:", e);
+                    alert("Error loading data: " + e.message);
                 } finally {
                     loadingSpinner.style.display = 'none';
                 }
             });
 
-            // Form Submit - Save Entry (One submission per Family Head restriction based on unique memberNumber)
+            // Form Submit - Save Entry
             document.getElementById('predictionForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 
@@ -385,7 +427,7 @@
                         timestamp: new Date().toISOString()
                     };
 
-                    // Save directly targeting unique memberNumber to block family multiple entries
+                    // Save directly targeting unique memberNumber
                     await firestoreDb.collection('prediction_entries').doc(mNo).set(payload);
                     alert('🎉 Success! Your prediction has been registered.');
                     window.location.reload();
@@ -410,7 +452,7 @@
                     alert('Settings updated successfully!');
                     window.location.reload();
                 } catch (err) {
-                    alert('Failed to save settings');
+                    alert('Failed to save settings: ' + err.message);
                 } finally {
                     loadingSpinner.style.display = 'none';
                 }
@@ -418,7 +460,7 @@
 
             // Print PDF Layout
             document.getElementById('downloadPdfBtn').addEventListener('click', () => {
-                window.downloadPredictionsPDF();
+                downloadPredictionsPDF();
             });
 
             // Theme Management
@@ -437,31 +479,41 @@
 
         // Check if member already predicted
         async function checkExistingPrediction(uid, mNo) {
-            if(!mNo) return;
-            const entryDoc = await firestoreDb.collection('prediction_entries').doc(mNo).get();
-            if (entryDoc.exists) {
-                const data = entryDoc.data();
-                document.getElementById('predictionStatusBadge').textContent = "✅ You have already submitted your prediction!";
-                document.getElementById('predictionStatusBadge').className = "badge-info-custom bg-success text-white";
-                
-                // Prefill fields
-                document.getElementById('winnerTeam').value = data.winner || "";
-                document.getElementById('runnerUpTeam').value = data.runnerUp || "";
-                document.getElementById('semi3Team').value = data.semi3 || "";
-                document.getElementById('semi4Team').value = data.semi4 || "";
-                document.getElementById('goldenBootPlayer').value = data.goldenBoot || "";
-                
-                // Disable submit if entry date expired or already submitted
-                document.getElementById('submitPredictionBtn').disabled = true;
-                document.getElementById('submitPredictionBtn').textContent = "Submission Locked";
-            } else {
-                document.getElementById('predictionStatusBadge').textContent = "📝 You haven't submitted your prediction yet.";
+            if(!mNo) {
+                console.warn("No member number found");
+                return;
+            }
+            try {
+                const entryDoc = await firestoreDb.collection('prediction_entries').doc(mNo).get();
+                if (entryDoc.exists) {
+                    const data = entryDoc.data();
+                    document.getElementById('predictionStatusBadge').textContent = "✅ You have already submitted your prediction!";
+                    document.getElementById('predictionStatusBadge').className = "badge-info-custom bg-success text-white";
+                    
+                    // Prefill fields
+                    document.getElementById('winnerTeam').value = data.winner || "";
+                    document.getElementById('runnerUpTeam').value = data.runnerUp || "";
+                    document.getElementById('semi3Team').value = data.semi3 || "";
+                    document.getElementById('semi4Team').value = data.semi4 || "";
+                    document.getElementById('goldenBootPlayer').value = data.goldenBoot || "";
+                    
+                    // Disable submit
+                    document.getElementById('submitPredictionBtn').disabled = true;
+                    document.getElementById('submitPredictionBtn').textContent = "Submission Locked";
+                } else {
+                    document.getElementById('predictionStatusBadge').textContent = "📝 You haven't submitted your prediction yet.";
+                }
+            } catch (error) {
+                console.error("Error checking prediction:", error);
             }
         }
 
         // Live Countdown Timer
         function startCountdownTimer(dateString) {
-            if(!dateString) return;
+            if(!dateString) {
+                console.log("No date set for countdown");
+                return;
+            }
             const target = new Date(dateString).getTime();
             
             const timer = setInterval(() => {
@@ -483,8 +535,7 @@
             }, 1000);
         }
 
-        // Fetch All Predictions into Admin Row Grid (Optimized Run)
-        let adminTableRowsData = [];
+        // Fetch All Predictions into Admin Row Grid
         async function loadAdminPredictionsData() {
             const tableBody = document.getElementById('predictionsAdminTableBody');
             try {
@@ -502,27 +553,31 @@
                     adminTableRowsData.push(d);
                     tableBody.innerHTML += `
                         <tr>
-                            <td><strong>${d.memberNumber}</strong></td>
-                            <td>${d.memberName}</td>
-                            <td class="text-success fw-bold">${d.winner}</td>
-                            <td>${d.runnerUp}</td>
-                            <td>${d.semi3}</td>
-                            <td>${d.semi4}</td>
-                            <td class="text-primary">${d.goldenBoot}</td>
+                            <td><strong>${d.memberNumber || 'N/A'}</strong></td>
+                            <td>${d.memberName || 'Unknown'}</td>
+                            <td class="text-success fw-bold">${d.winner || '-'}</td>
+                            <td>${d.runnerUp || '-'}</td>
+                            <td>${d.semi3 || '-'}</td>
+                            <td>${d.semi4 || '-'}</td>
+                            <td class="text-primary">${d.goldenBoot || '-'}</td>
                         </tr>
                     `;
                 });
             } catch (err) {
-                tableBody.innerHTML = '<tr><td colspan="7">Error matching records.</td></tr>';
+                console.error("Error loading predictions:", err);
+                tableBody.innerHTML = '<tr><td colspan="7">Error loading records: ' + err.message + '</td></tr>';
             }
         }
 
-        // Action Print PDF Output
-        window.downloadPredictionsPDF = function() {
-            if(adminTableRowsData.length === 0) return alert('No data available to print!');
+        // Download PDF Function
+        function downloadPredictionsPDF() {
+            if(adminTableRowsData.length === 0) {
+                alert('No data available to print!');
+                return;
+            }
             
             const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('l', 'mm', 'letter'); // Landscape layout fits better
+            const doc = new jsPDF('l', 'mm', 'letter');
             const margin = 6;
             const pageWidth = doc.internal.pageSize.getWidth();
             
@@ -540,7 +595,14 @@
             doc.text('World Cup Prediction Contest Log', pageWidth / 2, 23, { align: 'center' });
 
             const mappedBody = adminTableRowsData.map((d, i) => [
-                (i+1).toString(), d.memberNumber, d.memberName, d.winner, d.runnerUp, d.semi3, d.semi4, d.goldenBoot
+                (i+1).toString(), 
+                d.memberNumber || 'N/A', 
+                d.memberName || 'Unknown', 
+                d.winner || '-', 
+                d.runnerUp || '-', 
+                d.semi3 || '-', 
+                d.semi4 || '-', 
+                d.goldenBoot || '-'
             ]);
 
             doc.autoTable({
