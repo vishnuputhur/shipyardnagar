@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shipyard Nagar - Admin Dashboard</title>
+    <title>Shipyard Nagar - FIFA World Cup 2026 Prediction</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <style>
+        /* same as before, keep compact design */
         :root {
             --primary-orange: #FF6B35;
             --orange-light: #FF8C42;
@@ -92,18 +93,6 @@
 
         [data-theme="dark"] .page-title { color: #60a5fa; }
         [data-theme="dark"] .page-subtitle { color: #aaa; }
-
-        .announcement-box {
-            padding: 8px 12px;
-            border-radius: 10px;
-            background: rgba(255, 107, 53, 0.1);
-            border: 1px solid var(--primary-orange);
-            text-align: center;
-            font-size: 0.78rem;
-            font-weight: 500;
-            margin-bottom: 10px;
-            display: none;
-        }
 
         .countdown-box {
             background: linear-gradient(135deg, #ff6b35, #ff8c42);
@@ -206,6 +195,25 @@
         .table-container { overflow-x: auto; border-radius: 10px; }
         .table { font-size: 0.7rem; margin-bottom: 0; }
         .table th, .table td { padding: 5px 8px; }
+
+        .readonly-prediction {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        .readonly-prediction .row-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 0.8rem;
+        }
+        .readonly-prediction .row-item:last-child { border-bottom: none; }
+        .readonly-prediction .label { font-weight: 600; color: #555; }
+        [data-theme="dark"] .readonly-prediction { background: #2a2a2a; }
+        [data-theme="dark"] .readonly-prediction .row-item { border-color: #444; }
+        [data-theme="dark"] .readonly-prediction .label { color: #aaa; }
 
         footer {
             position: fixed;
@@ -367,11 +375,6 @@
                         <i class="fas fa-calendar-alt me-1"></i>
                         Make your predictions & win exciting prizes!
                     </p>
-                    
-                    <div class="announcement-box" id="announcementBox">
-                        <i class="fas fa-bullhorn me-1 text-warning"></i> 
-                        <span id="announcementText"></span>
-                    </div>
 
                     <div class="countdown-box">
                         <div class="countdown-text">
@@ -384,10 +387,12 @@
                     </div>
 
                     <div id="memberPredictionSection" style="display: none;">
+                        <!-- Status badge -->
                         <div class="badge-info-custom" id="predictionStatusBadge">
                             <i class="fas fa-spinner fa-spin me-1"></i> Loading...
                         </div>
 
+                        <!-- Thanks message (only when open and user has prediction) -->
                         <div id="thanksMessage" class="thanks-message" style="display: none;">
                             <div class="icon">🎉</div>
                             <h3>Thank You for Participating!</h3>
@@ -397,6 +402,7 @@
                             </button>
                         </div>
 
+                        <!-- Prediction Form (editable) -->
                         <form id="predictionForm" style="display: none;">
                             <div class="form-group">
                                 <label class="form-label">
@@ -416,23 +422,23 @@
                                 </select>
                             </div>
 
-                       <div class="form-group">
-    <label class="form-label">
-        <i class="fas fa-users me-1 text-info"></i> Loosers final Winner (3rd)
-    </label>
-    <select class="form-select team-dropdown" id="semi3Team" required>
-        <option value="">Select Team</option>
-    </select>
-</div>
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="fas fa-users me-1 text-info"></i> Losers final Winner (3rd)
+                                </label>
+                                <select class="form-select team-dropdown" id="semi3Team" required>
+                                    <option value="">Select Team</option>
+                                </select>
+                            </div>
 
-<div class="form-group">
-    <label class="form-label">
-        <i class="fas fa-users me-1 text-info"></i> Loosers Final Lost(4th) 
-    </label>
-    <select class="form-select team-dropdown" id="semi4Team" required>
-        <option value="">Select Team</option>
-    </select>
-</div>
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="fas fa-users me-1 text-info"></i> Losers Final Lost (4th)
+                                </label>
+                                <select class="form-select team-dropdown" id="semi4Team" required>
+                                    <option value="">Select Team</option>
+                                </select>
+                            </div>
 
                             <div class="form-group">
                                 <label class="form-label">
@@ -446,8 +452,49 @@
                                 <i class="fas fa-paper-plane me-2"></i> Submit Prediction
                             </button>
                         </form>
+
+                        <!-- Read-only view when contest closed -->
+                        <div id="readonlyPrediction" style="display: none;">
+                            <div class="badge-info-custom bg-secondary text-white" style="background:#6c757d !important;">
+                                <i class="fas fa-lock me-1"></i> Contest Closed - Your prediction is locked
+                            </div>
+                            <div class="readonly-prediction">
+                                <div class="row-item"><span class="label">Champions:</span> <span id="roWinner">-</span></div>
+                                <div class="row-item"><span class="label">Runners Up:</span> <span id="roRunner">-</span></div>
+                                <div class="row-item"><span class="label">3rd Place:</span> <span id="roSemi3">-</span></div>
+                                <div class="row-item"><span class="label">4th Place:</span> <span id="roSemi4">-</span></div>
+                                <div class="row-item"><span class="label">Golden Boot:</span> <span id="roGoldenBoot">-</span></div>
+                            </div>
+                        </div>
                     </div>
 
+                    <!-- All Predictions (for members when closed, and always for admin) -->
+                    <div id="allPredictionsSection" style="display: none; margin-top: 20px;">
+                        <h5 class="fw-bold" style="font-size: 0.95rem;">
+                            <i class="fas fa-list me-2"></i> All Predictions
+                        </h5>
+                        <div class="table-container bg-white text-dark p-1 border">
+                            <table class="table table-striped table-sm text-center" id="allPredictionsTable">
+                                <thead>
+                                    <tr>
+                                        <th>M.No</th>
+                                        <th>Name</th>
+                                        <th>Winner</th>
+                                        <th>Runner</th>
+                                        <th>3rd</th>
+                                        <th>4th</th>
+                                        <th>Golden Boot</th>
+                                        <th>Submitted</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="allPredictionsTableBody">
+                                    <tr><td colspan="8"><i class="fas fa-spinner fa-spin me-1"></i> Loading...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Admin Panel -->
                     <div id="adminPanelSection" class="admin-section" style="display: none;">
                         <h3 class="mb-2 text-primary fw-bold" style="font-size: 1.1rem;">
                             <i class="fas fa-cog me-2"></i> Admin Control
@@ -492,13 +539,14 @@
                                         <th>Name</th>
                                         <th>Winner</th>
                                         <th>Runner</th>
-                                        <th>Semi 3</th>
-                                        <th>Semi 4</th>
+                                        <th>3rd</th>
+                                        <th>4th</th>
                                         <th>Golden Boot</th>
+                                        <th>Submitted</th>
                                     </tr>
                                 </thead>
                                 <tbody id="predictionsAdminTableBody">
-                                    <tr><td colspan="7"><i class="fas fa-spinner fa-spin me-1"></i> Loading...</td></tr>
+                                    <tr><td colspan="8"><i class="fas fa-spinner fa-spin me-1"></i> Loading...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -547,14 +595,12 @@
             console.error("❌ Firebase init error:", error);
         }
 
-        // ✅ ചിത്രത്തിലുള്ള കൃത്യമായ Round of 16 (RO16) ടീമുകളുടെ ലിസ്റ്റ്
-const activeTeams = [
-    "Argentina", "France", "Brazil", "England", 
-    "Portugal", "Spain", "Morocco", "Belgium",
-    "USA", "Canada", "Norway", "Mexico",
-    "Egypt", "Switzerland", "Colombia", "Paraguay"
-];
-
+        const activeTeams = [
+            "Argentina", "France", "Brazil", "England", 
+            "Portugal", "Spain", "Morocco", "Belgium",
+            "USA", "Canada", "Norway", "Mexico",
+            "Egypt", "Switzerland", "Colombia", "Paraguay"
+        ];
 
         const auth = firebase.auth();
         const firestoreDb = firebase.firestore();
@@ -565,7 +611,8 @@ const activeTeams = [
             message: "" 
         };
         let adminTableRowsData = [];
-        window.existingData = null; // Scope fix
+        let existingData = null;
+        let isAdmin = false;
 
         function showSpinner(show, text = 'Loading...') {
             const spinner = document.getElementById('loadingSpinner');
@@ -578,8 +625,31 @@ const activeTeams = [
             }
         }
 
+        function formatDateTime(dateString) {
+            if (!dateString) return 'N/A';
+            try {
+                const date = new Date(dateString);
+                return date.toLocaleString('en-IN', {
+                    day: '2-digit', 
+                    month: 'short', 
+                    year: 'numeric',
+                    hour: '2-digit', 
+                    minute: '2-digit',
+                    hour12: true
+                });
+            } catch {
+                return dateString;
+            }
+        }
+
+        function isContestClosed() {
+            if (!contestSettings.lastDate) return false;
+            const now = new Date();
+            const close = new Date(contestSettings.lastDate);
+            return now > close;
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
-            // Updated to July 9
             document.getElementById('lastDateDisplay').textContent = '09-Jul-2026, 11:59 PM';
             
             document.querySelectorAll('.team-dropdown').forEach(dropdown => {
@@ -612,17 +682,25 @@ const activeTeams = [
                     const userDoc = await firestoreDb.collection('users').doc(user.uid).get();
                     if (userDoc.exists) {
                         const userData = userDoc.data();
+                        isAdmin = userData.role === 'admin';
                         
-                        if (userData.role === 'admin') {
+                        // Show member section for all
+                        document.getElementById('memberPredictionSection').style.display = 'block';
+                        
+                        // Check prediction
+                        await checkExistingPrediction(user.uid, userData.memberNumber);
+                        
+                        // If admin, show admin panel and load data
+                        if (isAdmin) {
                             document.getElementById('adminPanelSection').style.display = 'block';
-                            document.getElementById('memberPredictionSection').style.display = 'block';
-                            
-                            // ✅ FIX: അഡ്മിന് ഫോമും ഡാറ്റയും ഒരേസമയം കാണാൻ സ്കോപ്പ് തിരുത്തി
-                            await checkExistingPrediction(user.uid, userData.memberNumber);
                             await loadAdminPredictionsData();
                         } else {
-                            document.getElementById('memberPredictionSection').style.display = 'block';
-                            await checkExistingPrediction(user.uid, userData.memberNumber);
+                            document.getElementById('adminPanelSection').style.display = 'none';
+                            // For members, show all predictions if contest closed
+                            if (isContestClosed()) {
+                                document.getElementById('allPredictionsSection').style.display = 'block';
+                                await loadAllPredictionsForMembers();
+                            }
                         }
                     }
                 } catch (e) {
@@ -633,12 +711,12 @@ const activeTeams = [
                 }
             });
 
+            // Form submit (only when open)
             document.getElementById('predictionForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 
-                const isExpired = new Date() > new Date(contestSettings.lastDate);
-                if (isExpired && contestSettings.lastDate) {
-                    return alert('❌ Sorry! Prediction entry time has closed.');
+                if (isContestClosed()) {
+                    return alert('❌ Contest is closed. No more submissions allowed.');
                 }
 
                 showSpinner(true, 'Saving your prediction...');
@@ -670,7 +748,12 @@ const activeTeams = [
                 }
             });
 
+            // Edit trigger (only if contest open)
             document.getElementById('editTriggerBtn').addEventListener('click', () => {
+                if (isContestClosed()) {
+                    alert('Contest is closed. You cannot edit now.');
+                    return;
+                }
                 document.getElementById('thanksMessage').style.display = 'none';
                 document.getElementById('predictionForm').style.display = 'block';
                 document.getElementById('predictionStatusBadge').style.display = 'block';
@@ -678,12 +761,12 @@ const activeTeams = [
                 document.getElementById('predictionStatusBadge').className = 'badge-info-custom bg-warning text-dark';
                 document.getElementById('submitPredictionBtn').textContent = '✏️ Update Prediction';
                 
-                if (window.existingData) {
-                    document.getElementById('winnerTeam').value = window.existingData.winner || "";
-                    document.getElementById('runnerUpTeam').value = window.existingData.runnerUp || "";
-                    document.getElementById('semi3Team').value = window.existingData.semi3 || "";
-                    document.getElementById('semi4Team').value = window.existingData.semi4 || "";
-                    document.getElementById('goldenBootPlayer').value = window.existingData.goldenBoot || "";
+                if (existingData) {
+                    document.getElementById('winnerTeam').value = existingData.winner || "";
+                    document.getElementById('runnerUpTeam').value = existingData.runnerUp || "";
+                    document.getElementById('semi3Team').value = existingData.semi3 || "";
+                    document.getElementById('semi4Team').value = existingData.semi4 || "";
+                    document.getElementById('goldenBootPlayer').value = existingData.goldenBoot || "";
                 }
                 
                 document.querySelectorAll('#predictionForm .form-select, #predictionForm .form-control').forEach(el => {
@@ -691,6 +774,7 @@ const activeTeams = [
                 });
             });
 
+            // Admin save config
             document.getElementById('saveConfigBtn').addEventListener('click', async () => {
                 const lDate = document.getElementById('configLastDate').value;
                 const msgText = document.getElementById('configMessage').value;
@@ -710,6 +794,7 @@ const activeTeams = [
                 }
             });
 
+            // PDF download (admin only)
             document.getElementById('downloadPdfBtn').addEventListener('click', downloadPredictionsPDF);
 
             const themeToggle = document.getElementById('themeToggle');
@@ -729,21 +814,53 @@ const activeTeams = [
             if(!mNo) return;
             try {
                 const entryDoc = await firestoreDb.collection('prediction_entries').doc(mNo).get();
+                const closed = isContestClosed();
+                
                 if (entryDoc.exists) {
-                    window.existingData = entryDoc.data();
-                    document.getElementById('thanksMessage').style.display = 'block';
-                    document.getElementById('predictionForm').style.display = 'none';
-                    document.getElementById('predictionStatusBadge').style.display = 'none';
+                    existingData = entryDoc.data();
+                    if (closed) {
+                        // Show read-only version
+                        document.getElementById('thanksMessage').style.display = 'none';
+                        document.getElementById('predictionForm').style.display = 'none';
+                        document.getElementById('predictionStatusBadge').style.display = 'none';
+                        document.getElementById('readonlyPrediction').style.display = 'block';
+                        // Fill readonly fields
+                        document.getElementById('roWinner').textContent = existingData.winner || '-';
+                        document.getElementById('roRunner').textContent = existingData.runnerUp || '-';
+                        document.getElementById('roSemi3').textContent = existingData.semi3 || '-';
+                        document.getElementById('roSemi4').textContent = existingData.semi4 || '-';
+                        document.getElementById('roGoldenBoot').textContent = existingData.goldenBoot || '-';
+                    } else {
+                        // Show thanks + edit (if open)
+                        document.getElementById('readonlyPrediction').style.display = 'none';
+                        document.getElementById('thanksMessage').style.display = 'block';
+                        document.getElementById('predictionForm').style.display = 'none';
+                        document.getElementById('predictionStatusBadge').style.display = 'none';
+                        // Enable edit button
+                        document.getElementById('editTriggerBtn').style.display = 'block';
+                    }
                 } else {
-                    document.getElementById('thanksMessage').style.display = 'none';
-                    document.getElementById('predictionForm').style.display = 'block';
-                    document.getElementById('predictionStatusBadge').style.display = 'block';
-                    document.getElementById('predictionStatusBadge').textContent = '📝 Submit your prediction now!';
-                    document.getElementById('predictionStatusBadge').className = 'badge-info-custom';
-                    
-                    document.querySelectorAll('#predictionForm .form-select, #predictionForm .form-control').forEach(el => {
-                        el.disabled = false;
-                    });
+                    // No prediction
+                    if (closed) {
+                        // Contest closed, no submission allowed
+                        document.getElementById('thanksMessage').style.display = 'none';
+                        document.getElementById('predictionForm').style.display = 'none';
+                        document.getElementById('readonlyPrediction').style.display = 'none';
+                        document.getElementById('predictionStatusBadge').style.display = 'block';
+                        document.getElementById('predictionStatusBadge').textContent = '⛔ Contest is closed. No more submissions allowed.';
+                        document.getElementById('predictionStatusBadge').className = 'badge-info-custom bg-danger text-white';
+                    } else {
+                        // Show form for new submission
+                        document.getElementById('thanksMessage').style.display = 'none';
+                        document.getElementById('readonlyPrediction').style.display = 'none';
+                        document.getElementById('predictionForm').style.display = 'block';
+                        document.getElementById('predictionStatusBadge').style.display = 'block';
+                        document.getElementById('predictionStatusBadge').textContent = '📝 Submit your prediction now!';
+                        document.getElementById('predictionStatusBadge').className = 'badge-info-custom';
+                        document.querySelectorAll('#predictionForm .form-select, #predictionForm .form-control').forEach(el => {
+                            el.disabled = false;
+                        });
+                    }
                 }
             } catch (error) {
                 console.error("Error checking prediction:", error);
@@ -767,6 +884,9 @@ const activeTeams = [
                     clearInterval(timer);
                     document.getElementById('countdownDisplay').innerHTML = 
                         '⚠️ <span style="color:#ffd700;">Entries Closed!</span>';
+                    // Also refresh UI to reflect closed state
+                    // We can re-run checkExistingPrediction if needed, but simpler: reload page or just show message
+                    // We'll rely on the page reload for changes, but we can also update UI on the fly
                     return;
                 }
                 
@@ -788,7 +908,7 @@ const activeTeams = [
                 adminTableRowsData = [];
 
                 if(snap.empty) {
-                    tableBody.innerHTML = '<tr><td colspan="7">No entries found</td></tr>';
+                    tableBody.innerHTML = '<tr><td colspan="8">No entries found</td></tr>';
                     return;
                 }
 
@@ -804,12 +924,44 @@ const activeTeams = [
                             <td>${d.semi3 || '-'}</td>
                             <td>${d.semi4 || '-'}</td>
                             <td class="text-primary">${d.goldenBoot || '-'}</td>
+                            <td style="font-size: 0.6rem;">${formatDateTime(d.timestamp)}</td>
                         </tr>
                     `;
                 });
             } catch (err) {
                 console.error("Error loading predictions:", err);
-                tableBody.innerHTML = '<tr><td colspan="7">Error loading</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="8">Error loading</td></tr>';
+            }
+        }
+
+        // For members: show all predictions in a read-only table
+        async function loadAllPredictionsForMembers() {
+            const tableBody = document.getElementById('allPredictionsTableBody');
+            try {
+                const snap = await firestoreDb.collection('prediction_entries').get();
+                tableBody.innerHTML = "";
+                if(snap.empty) {
+                    tableBody.innerHTML = '<tr><td colspan="8">No predictions yet.</td></tr>';
+                    return;
+                }
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    tableBody.innerHTML += `
+                        <tr>
+                            <td><strong>${d.memberNumber || 'N/A'}</strong></td>
+                            <td>${d.memberName || 'Unknown'}</td>
+                            <td class="text-success fw-bold">${d.winner || '-'}</td>
+                            <td>${d.runnerUp || '-'}</td>
+                            <td>${d.semi3 || '-'}</td>
+                            <td>${d.semi4 || '-'}</td>
+                            <td class="text-primary">${d.goldenBoot || '-'}</td>
+                            <td style="font-size: 0.6rem;">${formatDateTime(d.timestamp)}</td>
+                        </tr>
+                    `;
+                });
+            } catch (err) {
+                console.error("Error loading all predictions:", err);
+                tableBody.innerHTML = '<tr><td colspan="8">Error loading</td></tr>';
             }
         }
 
@@ -839,13 +991,19 @@ const activeTeams = [
             doc.text('FIFA World Cup 2026 - Prediction Contest Log', pageWidth / 2, 20, { align: 'center' });
             
             const now = new Date();
-            const day = String(now.getDate()).padStart(2, '0');
-            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            const dateStr = `${day}-${months[now.getMonth()]}-${now.getFullYear()}`;
+            const dateTimeStr = now.toLocaleString('en-IN', {
+                day: '2-digit', 
+                month: 'short', 
+                year: 'numeric',
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit',
+                hour12: true
+            });
             
             doc.setFontSize(9);
             doc.setTextColor(100, 100, 100);
-            doc.text(`Report Generated: ${dateStr}`, pageWidth / 2, 26, { align: 'center' });
+            doc.text(`Report Generated: ${dateTimeStr}`, pageWidth / 2, 26, { align: 'center' });
 
             const mappedBody = adminTableRowsData.map((d, i) => [
                 (i+1).toString(), 
@@ -854,21 +1012,25 @@ const activeTeams = [
                 d.runnerUp || '-', 
                 d.semi3 || '-', 
                 d.semi4 || '-', 
-                d.goldenBoot || '-'
+                d.goldenBoot || '-',
+                formatDateTime(d.timestamp)
             ]);
 
             doc.autoTable({
-                head: [['No.', 'Name', 'Winner (1st)', 'Runner Up (2nd)', 'Semi 4', 'Golden Boot']],
+                head: [['No.', 'Name', 'Winner (1st)', 'Runner Up (2nd)', '3rd', '4th', 'Golden Boot', 'Submitted']],
                 body: mappedBody,
                 startY: 30,
-                styles: { font: 'times', fontSize: 9, halign: 'center' },
-                headStyles: { fillColor: [173, 216, 230], textColor: 0, fontStyle: 'bold' }
+                styles: { font: 'times', fontSize: 8, halign: 'center' },
+                headStyles: { fillColor: [173, 216, 230], textColor: 0, fontStyle: 'bold' },
+                columnStyles: {
+                    7: { fontSize: 7 }
+                }
             });
 
             const finalY = doc.lastAutoTable.finalY + 8;
             doc.setFontSize(8);
             doc.setTextColor(100, 100, 100);
-            doc.text(`First Prize: First Entry | Generated: ${dateStr}`, pageWidth / 2, finalY, { align: 'center' });
+            doc.text(`First Prize: First Entry | Generated: ${dateTimeStr}`, pageWidth / 2, finalY, { align: 'center' });
 
             doc.save(`FIFA_2026_Predictions_${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}.pdf`);
         }
