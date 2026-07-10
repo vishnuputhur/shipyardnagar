@@ -1,4 +1,4 @@
-const CACHE_NAME = 'shipyard-nagar-v8'; // അടുത്ത അപ്ഡേറ്റിൽ ഇത് v7 ആക്കുക
+const CACHE_NAME = 'shipyard-nagar-v9'; // അടുത്ത അപ്ഡേറ്റിൽ ഇത് v10 ആക്കുക
 const assets = [
   './',
   './index.html',
