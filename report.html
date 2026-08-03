@@ -368,7 +368,7 @@
                             <li>Report will include all transactions for the selected year</li>
                             <li>Monthly subscriptions will be grouped together</li>
                             <li>Other income and expenses will be listed separately with narration</li>
-                            <li>Annual summary with total income, expenses, and net balance</li>
+                            <li>Annual summary with opening balance, total income, expenses, and closing balance</li>
                         </ul>
                     </div>
                 </div>
@@ -382,7 +382,7 @@
             <p>Powered by VTSoft 2026</p>
         </div>
         <button id="themeToggle" class="theme-toggle-btn">🌞</button>
-</footer>
+    </footer>
 
     <!-- Loading Spinner -->
     <div id="loadingSpinner">
@@ -424,7 +424,6 @@
             if (!dateString) return null;
             
             try {
-                // If it's a Firebase Timestamp
                 if (dateString.toDate && typeof dateString.toDate === 'function') {
                     const date = dateString.toDate();
                     return {
@@ -433,7 +432,6 @@
                     };
                 }
                 
-                // If it's already in YYYY-MM-DD format
                 if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
                     const date = new Date(dateString);
                     return {
@@ -442,7 +440,6 @@
                     };
                 }
                 
-                // If it's in ISO format
                 if (dateString.includes('T')) {
                     const date = new Date(dateString);
                     return {
@@ -451,7 +448,6 @@
                     };
                 }
                 
-                // Try to parse as date
                 const date = new Date(dateString);
                 if (!isNaN(date.getTime())) {
                     return {
@@ -460,10 +456,8 @@
                     };
                 }
                 
-                console.error("Could not parse date:", dateString);
                 return null;
             } catch (error) {
-                console.error("Error normalizing date:", dateString, error);
                 return null;
             }
         }
@@ -475,7 +469,6 @@
             
             yearSelect.innerHTML = '';
             
-            // Add available years from transactions
             const years = new Set();
             allTransactions.forEach(transaction => {
                 if (transaction && transaction.date) {
@@ -487,18 +480,14 @@
                                 years.add(year);
                             }
                         }
-                    } catch (error) {
-                        console.error("Error getting year from date:", transaction.date, error);
-                    }
+                    } catch (error) {}
                 }
             });
             
-            // Add current year if no transactions exist
             if (years.size === 0) {
                 years.add(currentYear);
             }
             
-            // Add years in descending order
             const sortedYears = Array.from(years).sort((a, b) => b - a);
             sortedYears.forEach(year => {
                 const option = document.createElement('option');
@@ -510,7 +499,6 @@
                 yearSelect.appendChild(option);
             });
             
-            // If no options, add current year
             if (sortedYears.length === 0) {
                 const option = document.createElement('option');
                 option.value = currentYear;
@@ -523,44 +511,28 @@
         // Load all transactions
         async function loadTransactions() {
             try {
-                console.log("Loading transactions from Firestore...");
-                
                 const transactionsSnapshot = await db.collection('transactions').get();
-                
-                console.log("Total transactions found:", transactionsSnapshot.size);
-                
                 allTransactions = [];
                 transactionsSnapshot.forEach(doc => {
                     const transaction = doc.data();
                     transaction.id = doc.id;
-                    
-                    // Ensure amount is a number
                     transaction.amount = parseFloat(transaction.amount) || 0;
-                    
-                    // Store original date for debugging
                     transaction.originalDate = transaction.date;
                     
-                    // Normalize date
                     const normalizedDate = normalizeDate(transaction.date);
                     if (normalizedDate) {
                         transaction.date = normalizedDate.dateString;
                         transaction.dateObj = normalizedDate.dateObj;
                     }
-                    
                     allTransactions.push(transaction);
                 });
-                
-                console.log("Total transactions loaded:", allTransactions.length);
-                
                 return true;
             } catch (error) {
-                console.error('Error loading transactions:', error);
                 showError('Error loading transactions: ' + error.message);
                 return false;
             }
         }
 
-        // Show success message
         function showSuccess() {
             const successMessage = document.getElementById('successMessage');
             successMessage.style.display = 'block';
@@ -569,7 +541,6 @@
             }, 5000);
         }
 
-        // Show error message
         function showError(message) {
             const errorMessage = document.getElementById('errorMessage');
             const errorText = document.getElementById('errorText');
@@ -580,98 +551,90 @@
             }, 5000);
         }
 
-        // Hide all messages
         function hideMessages() {
             document.getElementById('successMessage').style.display = 'none';
             document.getElementById('errorMessage').style.display = 'none';
         }
 
-        // Generate Annual Report PDF - CORRECTED VERSION
+        // Generate Annual Report PDF - UPDATED VERSION WITH OPENING & CLOSING BALANCE
         async function generateAnnualReport() {
             if (!selectedYear) {
                 showError('Please select a year');
                 return;
             }
             
-            // Hide any existing messages
             hideMessages();
             
-            // Show loading spinner
             const loadingSpinner = document.getElementById('loadingSpinner');
             loadingSpinner.style.display = 'block';
             
             try {
-                console.log(`=== GENERATING REPORT FOR YEAR ${selectedYear} ===`);
+                // 1. CALCULATE OPENING BALANCE (Sum of all previous years)
+                const previousTransactions = allTransactions.filter(t => {
+                    if (!t || !t.dateObj) return false;
+                    try {
+                        return t.dateObj.getFullYear() < parseInt(selectedYear);
+                    } catch (error) {
+                        return false;
+                    }
+                });
+
+                let openingBalance = 0;
+                previousTransactions.forEach(t => {
+                    if (t.type === 'income') {
+                        openingBalance += t.amount;
+                    } else if (t.type === 'expense') {
+                        openingBalance -= t.amount;
+                    }
+                });
                 
-                // Filter transactions for selected year
+                // 2. FILTER TRANSACTIONS FOR SELECTED YEAR
                 const yearTransactions = allTransactions.filter(transaction => {
                     if (!transaction || !transaction.dateObj) return false;
-                    
                     try {
                         const year = transaction.dateObj.getFullYear();
                         return year === parseInt(selectedYear);
                     } catch (error) {
-                        console.error("Error filtering transaction:", error);
                         return false;
                     }
                 });
                 
-                console.log(`Year ${selectedYear} transactions:`, yearTransactions.length);
-                
-                if (yearTransactions.length === 0) {
-                    throw new Error(`No transactions found for year ${selectedYear}`);
+                if (yearTransactions.length === 0 && openingBalance === 0) {
+                    throw new Error(`No transactions or balance found for year ${selectedYear}`);
                 }
                 
-                // Separate income and expense transactions
                 const allIncomeTransactions = yearTransactions.filter(t => t.type === 'income');
                 const expenseTransactions = yearTransactions.filter(t => t.type === 'expense');
                 
-                // CORRECTED: Subscription = income WITHOUT narration (empty or null)
                 const subscriptionTransactions = allIncomeTransactions.filter(t => 
                     !t.narration || t.narration.toString().trim() === ''
                 );
                 
-                // CORRECTED: Other income = income WITH narration (non-empty)
                 const incomeWithNarration = allIncomeTransactions.filter(t => 
                     t.narration && t.narration.toString().trim() !== ''
                 );
                 
-                console.log("All income transactions:", allIncomeTransactions.length);
-                console.log("Subscription transactions:", subscriptionTransactions.length);
-                console.log("Other income transactions:", incomeWithNarration.length);
-                console.log("Expense transactions:", expenseTransactions.length);
-                
-                // Group subscription income by month
                 const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
                                    'July', 'August', 'September', 'October', 'November', 'December'];
                 
                 const monthlyIncome = {};
                 for (let i = 0; i < 12; i++) {
-                    monthlyIncome[i] = {
-                        monthName: monthNames[i],
-                        total: 0
-                    };
+                    monthlyIncome[i] = { monthName: monthNames[i], total: 0 };
                 }
                 
                 subscriptionTransactions.forEach(transaction => {
                     try {
                         if (!transaction.dateObj) return;
-                        
                         const month = transaction.dateObj.getMonth();
-                        
                         if (month >= 0 && month < 12) {
                             monthlyIncome[month].total += transaction.amount;
                         }
-                    } catch (error) {
-                        console.error("Error processing income date:", transaction.date, error);
-                    }
+                    } catch (error) {}
                 });
                 
-                // Filter expense transactions with narration for detailed listing
                 const expenseWithNarration = expenseTransactions.filter(t => 
                     t.narration && t.narration.toString().trim() !== '');
                 
-                // Calculate totals
                 let totalSubscriptionIncome = 0;
                 subscriptionTransactions.forEach(t => totalSubscriptionIncome += t.amount);
                 
@@ -685,14 +648,25 @@
                 
                 const netBalance = totalIncome - totalExpense;
                 
-                console.log("Monthly income data:", monthlyIncome);
-                console.log("Total Subscription Income:", totalSubscriptionIncome);
-                console.log("Total Other Income:", totalOtherIncome);
-                console.log("Total Income:", totalIncome);
-                console.log("Total Expense:", totalExpense);
-                console.log("Net balance:", netBalance);
+                // 3. CALCULATE CLOSING BALANCE
+                const closingBalance = openingBalance + netBalance;
                 
-                // Create PDF
+                // 4. SAVE TO FIREBASE
+                try {
+                    await db.collection('yearly_balances').doc(selectedYear.toString()).set({
+                        year: parseInt(selectedYear),
+                        openingBalance: openingBalance,
+                        totalIncome: totalIncome,
+                        totalExpense: totalExpense,
+                        netBalance: netBalance,
+                        closingBalance: closingBalance,
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    }, { merge: true });
+                } catch (dbError) {
+                    console.error("Error saving to yearly_balances:", dbError);
+                }
+                
+                // 5. CREATE PDF
                 const doc = new jsPDF();
                 const pageWidth = doc.internal.pageSize.width;
                 
@@ -702,12 +676,10 @@
                 doc.setFont('helvetica', 'bold');
                 doc.text('SHIPYARD NAGAR RESIDENCE ASSOCIATION', pageWidth / 2, 20, { align: 'center' });
                 
-                // Year Report
                 doc.setFontSize(16);
                 doc.setTextColor(0, 0, 0);
                 doc.text(`ANNUAL REPORT - ${selectedYear}`, pageWidth / 2, 30, { align: 'center' });
                 
-                // Line
                 doc.setDrawColor(0, 102, 204);
                 doc.setLineWidth(0.5);
                 doc.line(20, 35, pageWidth - 20, 35);
@@ -721,7 +693,6 @@
                 doc.text('MONTHLY SUBSCRIPTION COLLECTION', 20, currentY);
                 currentY += 10;
                 
-                // Display monthly subscription totals
                 doc.setFontSize(10);
                 doc.setTextColor(0, 0, 0);
                 doc.setFont('helvetica', 'bold');
@@ -739,7 +710,6 @@
                         doc.text(monthData.total.toFixed(2), 150, currentY);
                         currentY += 6;
                         
-                        // Check page break
                         if (currentY > 250) {
                             doc.addPage();
                             currentY = 20;
@@ -752,7 +722,6 @@
                     currentY += 6;
                 }
                 
-                // Subscription Total
                 currentY += 5;
                 doc.setDrawColor(150, 150, 150);
                 doc.setLineWidth(0.2);
@@ -764,7 +733,7 @@
                 doc.text(totalSubscriptionIncome.toFixed(2), 150, currentY);
                 currentY += 10;
                 
-                // ========== OTHER INCOME TRANSACTIONS (with narration only) ==========
+                // ========== OTHER INCOME TRANSACTIONS ==========
                 if (incomeWithNarration.length > 0) {
                     if (currentY > 200) {
                         doc.addPage();
@@ -786,33 +755,24 @@
                     currentY += 8;
                     
                     doc.setFont('helvetica', 'normal');
-                    // Sort by date descending
                     incomeWithNarration.sort((a, b) => {
-                        try {
-                            return b.dateObj - a.dateObj;
-                        } catch {
-                            return 0;
-                        }
+                        try { return b.dateObj - a.dateObj; } catch { return 0; }
                     });
                     
                     incomeWithNarration.forEach(transaction => {
                         doc.text(transaction.date || 'N/A', 25, currentY);
-                        
-                        // Truncate long narration
                         const narration = transaction.narration && transaction.narration.length > 40 ? 
                             transaction.narration.substring(0, 37) + '...' : transaction.narration || 'N/A';
                         doc.text(narration, 55, currentY);
                         doc.text(transaction.amount.toFixed(2), 160, currentY);
                         currentY += 6;
                         
-                        // Check page break
                         if (currentY > 250) {
                             doc.addPage();
                             currentY = 20;
                         }
                     });
                     
-                    // Other Income Total
                     currentY += 5;
                     doc.setDrawColor(150, 150, 150);
                     doc.setLineWidth(0.2);
@@ -825,7 +785,7 @@
                     currentY += 10;
                 }
                 
-                // ========== EXPENSE DETAILS (with narration only) ==========
+                // ========== EXPENSE DETAILS ==========
                 if (expenseWithNarration.length > 0) {
                     if (currentY > 200) {
                         doc.addPage();
@@ -847,26 +807,18 @@
                     currentY += 8;
                     
                     doc.setFont('helvetica', 'normal');
-                    // Sort by date descending
                     expenseWithNarration.sort((a, b) => {
-                        try {
-                            return b.dateObj - a.dateObj;
-                        } catch {
-                            return 0;
-                        }
+                        try { return b.dateObj - a.dateObj; } catch { return 0; }
                     });
                     
                     expenseWithNarration.forEach(transaction => {
                         doc.text(transaction.date || 'N/A', 25, currentY);
-                        
-                        // Truncate long narration
                         const narration = transaction.narration && transaction.narration.length > 40 ? 
                             transaction.narration.substring(0, 37) + '...' : transaction.narration || 'N/A';
                         doc.text(narration, 55, currentY);
                         doc.text(transaction.amount.toFixed(2), 160, currentY);
                         currentY += 6;
                         
-                        // Check page break
                         if (currentY > 250) {
                             doc.addPage();
                             currentY = 20;
@@ -875,7 +827,7 @@
                 }
                 
                 // ========== ANNUAL SUMMARY ==========
-                if (currentY > 200) {
+                if (currentY > 180) {
                     doc.addPage();
                     currentY = 20;
                 }
@@ -891,10 +843,14 @@
                 doc.text('ANNUAL SUMMARY', 20, currentY);
                 currentY += 10;
                 
+                // Opening Balance
                 doc.setFontSize(12);
-                doc.setFont('helvetica', 'normal');
+                doc.setFont('helvetica', 'bold');
+                doc.text(`Opening Balance:`, 25, currentY);
+                doc.text(`${openingBalance.toFixed(2)}`, 140, currentY);
+                currentY += 10;
                 
-                // Income Summary - Separated
+                doc.setFont('helvetica', 'normal');
                 doc.text(`Subscription Income:`, 25, currentY);
                 doc.text(`${totalSubscriptionIncome.toFixed(2)}`, 140, currentY);
                 currentY += 8;
@@ -923,17 +879,21 @@
                 doc.line(20, currentY, pageWidth - 20, currentY);
                 currentY += 10;
                 
+                doc.setFontSize(12);
+                doc.text(`Net Balance (Current Year): ${netBalance >= 0 ? '+' : ''}${netBalance.toFixed(2)}`, 25, currentY);
+                currentY += 10;
+
+                // Closing Balance
                 doc.setFontSize(16);
                 doc.setFont('helvetica', 'bold');
-                if (netBalance >= 0) {
-                    doc.setTextColor(0, 128, 0); // Green for positive
+                if (closingBalance >= 0) {
+                    doc.setTextColor(0, 128, 0); // Green
                 } else {
-                    doc.setTextColor(255, 0, 0); // Red for negative
+                    doc.setTextColor(255, 0, 0); // Red
                 }
-                doc.text(`NET BALANCE: ${netBalance.toFixed(2)}`, 25, currentY);
+                doc.text(`CLOSING BALANCE: ${closingBalance.toFixed(2)}`, 25, currentY);
                 currentY += 15;
                 
-                // Reset text color
                 doc.setTextColor(0, 0, 0);
                 
                 // Treasurer signature
@@ -953,14 +913,12 @@
                 const fileName = `Annual_Report_${selectedYear}.pdf`;
                 doc.save(fileName);
                 
-                // Show success message
                 showSuccess();
                 
             } catch (error) {
                 console.error('Error generating report:', error);
                 showError(error.message);
             } finally {
-                // Hide loading spinner
                 loadingSpinner.style.display = 'none';
             }
         }
