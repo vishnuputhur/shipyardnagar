@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shipyard Nagar - Backup & Restore</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-orange: #FF6B35;
+            --orange-light: #FF8C42;
+            --orange-dark: #E55A2B;
+            --gradient: linear-gradient(135deg, #FF6B35 0%, #FF8C42 50%, #FFA726 100%);
+            --shadow: 0 8px 25px rgba(255, 107, 53, 0.15);
+            --shadow-hover: 0 12px 35px rgba(255, 107, 53, 0.25);
+            --card-bg: rgba(255, 255, 255, 0.95);
+        }
+
+        [data-theme="dark"] {
+            --card-bg: rgba(45, 45, 45, 0.95);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding-bottom: 50px;
+            position: relative;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><polygon fill="%23ffffff10" points="0,1000 1000,0 1000,1000"/></svg>');
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .header-image {
+            width: 100%; height: auto; max-height: 150px;
+            object-fit: cover; display: block; position: fixed;
+            top: 3mm; left: 0; z-index: 999;
+        }
+
+        .main-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 50px;
+            position: relative;
+            margin-top: 120px;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e3a8a;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        [data-theme="dark"] .page-title { color: #60a5fa; }
+
+        .section-box {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--primary-orange);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        [data-theme="dark"] .section-box {
+            background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+            color: #fff;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-desc {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-bottom: 15px;
+        }
+
+        [data-theme="dark"] .section-desc { color: #cbd5e1; }
+
+        .btn-custom {
+            border: none;
+            border-radius: 12px;
+            padding: 10px 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .btn-backup {
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            color: white;
+        }
+
+        .btn-restore {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+        }
+
+        .btn-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+            color: white;
+        }
+
+        .log-box {
+            background: #1e293b;
+            color: #38bdf8;
+            border-radius: 12px;
+            padding: 12px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.75rem;
+            max-height: 180px;
+            overflow-y: auto;
+            display: none;
+            margin-top: 15px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .nav-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+            color: #1e3a8a;
+            text-decoration: none;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+        [data-theme="dark"] .nav-back { color: #60a5fa; }
+
+        footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background: rgba(248, 248, 248, 0.9);
+            backdrop-filter: blur(10px);
+            color: #666;
+            font-size: 0.7rem;
+            z-index: 1000;
+            border-top: 1px solid rgba(255, 107, 53, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 3px 15px;
+            height: 30px;
+        }
+
+        [data-theme="dark"] footer {
+            background: rgba(45, 45, 45, 0.9);
+            color: #ccc;
+        }
+
+        .footer-text { flex: 1; text-align: center; }
+
+        .theme-toggle-btn {
+            background: transparent;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            padding: 4px 8px;
+            color: #666;
+            font-size: 0.75rem;
+            cursor: pointer;
+            height: 24px;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 576px) {
+            .header-image { max-height: 120px; }
+            .main-card { padding: 16px; margin: 100px 10px 50px 10px; }
+            .page-title { font-size: 1.3rem; }
+            .btn-custom { width: 100%; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+    <img src="assets/head.png" alt="Header" class="header-image" onerror="this.style.display='none'">
+    
+    <main class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-10 col-lg-8">
+                <div class="main-card">
+                    <a href="dashboard.html" class="nav-back"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+                    
+                    <div class="page-title">
+                        <i class="fas fa-database me-2"></i> Database Backup & Restore
+                    </div>
+
+                    <!-- 1. BACKUP SECTION -->
+                    <div class="section-box">
+                        <div class="section-title text-success">
+                            <i class="fas fa-cloud-download-alt"></i> Complete Backup
+                        </div>
+                        <div class="section-desc">
+                            Exports Users, Monthly Subscriptions, Transactions, Fixed Deposits, Settings, and metadata into a dated JSON file.
+                        </div>
+                        <button id="backupBtn" class="btn-custom btn-backup">
+                            <i class="fas fa-download"></i> Download Full Backup
+                        </button>
+                    </div>
+
+                    <!-- 2. RESTORE SECTION -->
+                    <div class="section-box" style="border-left-color: #ef4444;">
+                        <div class="section-title text-danger">
+                            <i class="fas fa-cloud-upload-alt"></i> Restore from JSON
+                        </div>
+                        <div class="section-desc">
+                            Upload a previously generated backup JSON file to restore all collections and records to Firebase.
+                        </div>
+                        <input type="file" id="restoreFileInput" accept=".json" style="display: none;">
+                        <button id="restoreBtn" class="btn-custom btn-restore">
+                            <i class="fas fa-upload"></i> Choose File & Restore
+                        </button>
+                    </div>
+
+                    <!-- PROGRESS & LOGS -->
+                    <div id="statusLog" class="log-box"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-text"><p>Powered by VTSoft 2026</p></div>
+        <button id="themeToggle" class="theme-toggle-btn">🌞</button>
+    </footer>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBWswawf9tpxNwVU0BaJ6FCwCvgcjUQXlA",
+            authDomain: "shipyard-nagar.firebaseapp.com",
+            projectId: "shipyard-nagar",
+            storageBucket: "shipyard-nagar.firebasestorage.app",
+            messagingSenderId: "552855824221",
+            appId: "1:552855824221:web:f709da953077475be9eab4"
+        };
+
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        const logBox = document.getElementById('statusLog');
+        const backupBtn = document.getElementById('backupBtn');
+        const restoreBtn = document.getElementById('restoreBtn');
+        const restoreFileInput = document.getElementById('restoreFileInput');
+
+        function appendLog(msg) {
+            logBox.style.display = 'block';
+            logBox.textContent += `[${new Date().toLocaleTimeString()}] ${msg}\n`;
+            logBox.scrollTop = logBox.scrollHeight;
+        }
+
+        // Serializer to safely preserve Firestore Timestamps
+        function serializeData(data) {
+            if (data === null || data === undefined) return data;
+            if (typeof data.toDate === 'function') {
+                return { __type: 'FirestoreTimestamp', seconds: data.seconds, nanoseconds: data.nanoseconds };
+            }
+            if (Array.isArray(data)) {
+                return data.map(item => serializeData(item));
+            }
+            if (typeof data === 'object') {
+                const res = {};
+                for (const key of Object.keys(data)) {
+                    res[key] = serializeData(data[key]);
+                }
+                return res;
+            }
+            return data;
+        }
+
+        // Deserializer to restore Firestore Timestamps
+        function deserializeData(data) {
+            if (data === null || data === undefined) return data;
+            if (typeof data === 'object' && data.__type === 'FirestoreTimestamp') {
+                return new firebase.firestore.Timestamp(data.seconds, data.nanoseconds);
+            }
+            if (Array.isArray(data)) {
+                return data.map(item => deserializeData(item));
+            }
+            if (typeof data === 'object') {
+                const res = {};
+                for (const key of Object.keys(data)) {
+                    res[key] = deserializeData(data[key]);
+                }
+                return res;
+            }
+            return data;
+        }
+
+        // Admin Auth Check
+        auth.onAuthStateChanged(async (user) => {
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+            try {
+                const userDoc = await db.collection('users').doc(user.uid).get();
+                if (!userDoc.exists || userDoc.data().role !== 'admin') {
+                    alert('Access denied: Admin privileges required.');
+                    window.location.href = 'dashboard.html';
+                }
+            } catch (err) {
+                console.error('Auth verification error:', err);
+            }
+        });
+
+        // ==========================================
+        // 1. BACKUP LOGIC (ALL COLLECTIONS)
+        // ==========================================
+        backupBtn.addEventListener('click', async () => {
+            try {
+                backupBtn.disabled = true;
+                logBox.textContent = '';
+                appendLog('Starting complete database backup...');
+
+                const backupData = {
+                    version: '1.0',
+                    appName: 'Shipyard Nagar PWA',
+                    exportedAt: new Date().toISOString(),
+                    collections: {
+                        users: {},
+                        transactions: {},
+                        fd: {},
+                        settings: {},
+                        contributions: {}
+                    }
+                };
+
+                // A. Users Collection
+                appendLog('Fetching Users collection...');
+                const usersSnap = await db.collection('users').get();
+                usersSnap.forEach(doc => {
+                    backupData.collections.users[doc.id] = serializeData(doc.data());
+                });
+                appendLog(`✓ Users backed up: ${usersSnap.size} records.`);
+
+                // B. Transactions Collection
+                appendLog('Fetching Transactions collection...');
+                const transSnap = await db.collection('transactions').get();
+                transSnap.forEach(doc => {
+                    backupData.collections.transactions[doc.id] = serializeData(doc.data());
+                });
+                appendLog(`✓ Transactions backed up: ${transSnap.size} records.`);
+
+                // C. Fixed Deposits Collection
+                appendLog('Fetching Fixed Deposits collection...');
+                const fdSnap = await db.collection('fd').get();
+                fdSnap.forEach(doc => {
+                    backupData.collections.fd[doc.id] = serializeData(doc.data());
+                });
+                appendLog(`✓ Fixed Deposits backed up: ${fdSnap.size} records.`);
+
+                // D. Settings Collection
+                appendLog('Fetching Settings collection...');
+                const settingsSnap = await db.collection('settings').get();
+                settingsSnap.forEach(doc => {
+                    backupData.collections.settings[doc.id] = serializeData(doc.data());
+                });
+                appendLog(`✓ Settings backed up: ${settingsSnap.size} records.`);
+
+                // E. Contributions (Parent + Sub-collection 'months')
+                appendLog('Fetching Contributions and Monthly Subscriptions...');
+                let totalMonthsCount = 0;
+                for (const userDoc of usersSnap.docs) {
+                    const userId = userDoc.id;
+                    const monthsSnap = await db.collection('contributions').doc(userId).collection('months').get();
+                    
+                    if (!monthsSnap.empty) {
+                        backupData.collections.contributions[userId] = {
+                            months: {}
+                        };
+                        monthsSnap.forEach(monthDoc => {
+                            backupData.collections.contributions[userId].months[monthDoc.id] = serializeData(monthDoc.data());
+                            totalMonthsCount++;
+                        });
+                    }
+                }
+                appendLog(`✓ Contributions backed up: ${totalMonthsCount} monthly subscription logs.`);
+
+                // Export to JSON File with Date in Filename
+                appendLog('Packaging and downloading JSON...');
+                const jsonStr = JSON.stringify(backupData, null, 2);
+                const blob = new Blob([jsonStr], { type: 'application/json' });
+                
+                const now = new Date();
+                const pad = n => String(n).padStart(2, '0');
+                const dateStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}`;
+                const fileName = `Shipyard_Nagar_Backup_${dateStr}.json`;
+
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = fileName;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(a.href);
+
+                appendLog(`🎉 Backup completed successfully! Filename: ${fileName}`);
+            } catch (error) {
+                console.error('Backup error:', error);
+                appendLog(`❌ Backup failed: ${error.message}`);
+            } finally {
+                backupBtn.disabled = false;
+            }
+        });
+
+        // ==========================================
+        // 2. RESTORE LOGIC
+        // ==========================================
+        restoreBtn.addEventListener('click', () => {
+            restoreFileInput.click();
+        });
+
+        restoreFileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const confirmRestore = confirm(`Warning: You are about to restore database from "${file.name}". This will merge/overwrite existing records. Do you wish to continue?`);
+            if (!confirmRestore) {
+                restoreFileInput.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                try {
+                    restoreBtn.disabled = true;
+                    logBox.textContent = '';
+                    appendLog(`Reading backup file: ${file.name}...`);
+
+                    const importedData = JSON.parse(event.target.result);
+                    if (!importedData.collections) {
+                        throw new Error('Invalid backup file format: Missing collections root.');
+                    }
+
+                    // Helper to execute batch writes (Firestore limit: 500 ops per batch)
+                    let currentBatch = db.batch();
+                    let opCount = 0;
+
+                    async function checkAndCommitBatch() {
+                        opCount++;
+                        if (opCount >= 450) {
+                            appendLog('Committing batch chunk to Firestore...');
+                            await currentBatch.commit();
+                            currentBatch = db.batch();
+                            opCount = 0;
+                        }
+                    }
+
+                    // A. Restore Users
+                    if (importedData.collections.users) {
+                        appendLog('Restoring Users...');
+                        for (const [docId, data] of Object.entries(importedData.collections.users)) {
+                            const ref = db.collection('users').doc(docId);
+                            currentBatch.set(ref, deserializeData(data), { merge: true });
+                            await checkAndCommitBatch();
+                        }
+                    }
+
+                    // B. Restore Transactions
+                    if (importedData.collections.transactions) {
+                        appendLog('Restoring Transactions...');
+                        for (const [docId, data] of Object.entries(importedData.collections.transactions)) {
+                            const ref = db.collection('transactions').doc(docId);
+                            currentBatch.set(ref, deserializeData(data), { merge: true });
+                            await checkAndCommitBatch();
+                        }
+                    }
+
+                    // C. Restore Fixed Deposits
+                    if (importedData.collections.fd) {
+                        appendLog('Restoring Fixed Deposits...');
+                        for (const [docId, data] of Object.entries(importedData.collections.fd)) {
+                            const ref = db.collection('fd').doc(docId);
+                            currentBatch.set(ref, deserializeData(data), { merge: true });
+                            await checkAndCommitBatch();
+                        }
+                    }
+
+                    // D. Restore Settings
+                    if (importedData.collections.settings) {
+                        appendLog('Restoring Settings...');
+                        for (const [docId, data] of Object.entries(importedData.collections.settings)) {
+                            const ref = db.collection('settings').doc(docId);
+                            currentBatch.set(ref, deserializeData(data), { merge: true });
+                            await checkAndCommitBatch();
+                        }
+                    }
+
+                    // E. Restore Contributions & Months Sub-collections
+                    if (importedData.collections.contributions) {
+                        appendLog('Restoring Monthly Contributions...');
+                        for (const [userId, userContrib] of Object.entries(importedData.collections.contributions)) {
+                            if (userContrib.months) {
+                                for (const [monthDocId, monthData] of Object.entries(userContrib.months)) {
+                                    const ref = db.collection('contributions').doc(userId).collection('months').doc(monthDocId);
+                                    currentBatch.set(ref, deserializeData(monthData), { merge: true });
+                                    await checkAndCommitBatch();
+                                }
+                            }
+                        }
+                    }
+
+                    // Final batch commit
+                    if (opCount > 0) {
+                        appendLog('Committing final records...');
+                        await currentBatch.commit();
+                    }
+
+                    appendLog('🎉 All database collections and records restored successfully!');
+                    alert('Restore completed successfully!');
+                } catch (err) {
+                    console.error('Restore error:', err);
+                    appendLog(`❌ Restore failed: ${err.message}`);
+                    alert('Restore failed: ' + err.message);
+                } finally {
+                    restoreBtn.disabled = false;
+                    restoreFileInput.value = '';
+                }
+            };
+            reader.readAsText(file);
+        });
+
+        // Theme Toggle Logic
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        const themeBtn = document.getElementById('themeToggle');
+        themeBtn.textContent = savedTheme === 'light' ? '🌞' : '🌙';
+        themeBtn.addEventListener('click', () => {
+            const current = document.documentElement.getAttribute('data-theme');
+            const next = current === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('theme', next);
+            themeBtn.textContent = next === 'light' ? '🌞' : '🌙';
+        });
+    </script>
+</body>
+</html>
