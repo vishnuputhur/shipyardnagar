@@ -12,12 +12,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
     <style>
-        /* === EXACT LAYOUT FROM THE EXAMPLE – BUT NOW STRICT 2-COLUMN, 35mm BUTTONS === */
         :root {
             --primary-orange: #FF6B35;
             --orange-light: #FF8C42;
             --orange-dark: #E55A2B;
             --gradient: linear-gradient(135deg, #FF6B35 0%, #FF8C42 50%, #FFA726 100%);
+            --wealth-gradient: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
             --shadow: 0 8px 25px rgba(255, 107, 53, 0.15);
             --shadow-hover: 0 12px 35px rgba(255, 107, 53, 0.25);
             --card-bg: rgba(255, 255, 255, 0.95);
@@ -65,6 +65,7 @@
         .logo-container {
             text-align: center;
             margin: 120px 0 15px 0;
+            animation: fadeInDown 0.8s ease-out;
         }
 
         .logo-container img {
@@ -90,13 +91,14 @@
             border: 1px solid rgba(255, 255, 255, 0.2);
             margin-bottom: 50px;
             position: relative;
+            animation: fadeInUp 0.7s ease-out;
         }
 
         .user-greeting {
             font-size: 1.2rem;
             font-weight: 700;
             color: #1e3a8a;
-            margin-bottom: 8px;
+            margin-bottom: 12px;
             text-align: center;
         }
 
@@ -111,119 +113,51 @@
             text-align: center;
         }
 
-        .wealth-info, .due-info {
+        /* Balance & Wealth Info Cards */
+        .info-card {
             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            padding: 10px 12px;
+            padding: 10px 14px;
             border-radius: 12px;
-            margin: 6px 0;
-            border-left: 3px solid var(--primary-orange);
+            margin: 8px 0;
+            border-left: 3.5px solid var(--primary-orange);
             font-weight: 500;
-            font-size: 0.9rem;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            font-size: 0.88rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
 
-        .wealth-info:hover, .due-info:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        .info-card.wealth-highlight {
+            border-left-color: #2563eb;
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
         }
 
-        [data-theme="dark"] .wealth-info, 
-        [data-theme="dark"] .due-info {
+        .info-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.12);
+        }
+
+        [data-theme="dark"] .info-card {
             background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+            color: #fff;
+        }
+
+        [data-theme="dark"] .info-card.wealth-highlight {
+            background: linear-gradient(135deg, #1e293b 0%, #1e3a8a 100%);
             color: #fff;
         }
 
         .due-status-good { color: #22c55e; font-weight: 600; }
         .due-status-pending { color: #ef4444; font-weight: 600; }
 
-        /* ⚽ === FIFA 2026 PROMOTION CARD STYLES === */
-        .fifa-promo-card {
-            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
-            border-radius: 16px;
-            padding: 15px;
-            margin-top: 15px;
-            color: white;
-            box-shadow: 0 8px 20px rgba(30, 58, 138, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        [data-theme="dark"] .fifa-promo-card {
-            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-        }
-
-        .fifa-promo-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 25px rgba(30, 58, 138, 0.4);
-        }
-
-        .fifa-left {
-            flex: 1;
-        }
-
-        .fifa-title {
-            font-size: 1rem;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-            margin-bottom: 2px;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-            color: #ffd700;
-        }
-
-        .fifa-subtitle {
-            font-size: 0.72rem;
-            opacity: 0.9;
-            margin-bottom: 6px;
-            font-weight: 500;
-            line-height: 1.2;
-        }
-
-        .fifa-deadline {
-            font-size: 0.65rem;
-            color: #ff9d00;
-            font-weight: 600;
-            background: rgba(0, 0, 0, 0.2);
-            padding: 2px 8px;
-            border-radius: 20px;
-            display: inline-block;
-        }
-
-        .fifa-right {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* Football Rotation Animation */
-        .fifa-ball-anim {
-            font-size: 2.2rem;
-            animation: ballRotate 3s linear infinite;
-            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
-            display: inline-block;
-            user-select: none;
-        }
-
-        @keyframes ballRotate {
-            0% { transform: rotate(0deg) scale(1); }
-            50% { transform: rotate(180deg) scale(1.1); }
-            100% { transform: rotate(360deg) scale(1); }
-        }
-
-        /* ===== BUTTON LAYOUT: 2 COLUMNS, EACH BUTTON EXACTLY 35mm WIDTH ===== */
+        /* Button Grid */
         .button-grid {
             display: grid;
-            grid-template-columns: repeat(2, 35mm);  /* each column exactly 35mm */
-            gap: 12px 10px;  /* row-gap 12px, column-gap 10px */
+            grid-template-columns: repeat(2, 35mm);
+            gap: 12px 10px;
             justify-content: center;
             margin-top: 20px;
         }
@@ -237,7 +171,7 @@
             font-weight: 500;
             font-size: 0.8rem;
             box-shadow: var(--shadow);
-            transition: all 0.3s ease;
+            transition: all 0.25s ease;
             position: relative;
             overflow: hidden;
             height: 65px;
@@ -245,7 +179,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            width: 35mm;           /* enforce exact width 35mm */
+            width: 35mm;
             min-width: 35mm;
             max-width: 35mm;
             text-align: center;
@@ -260,12 +194,12 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
             transition: 0.5s;
         }
 
         .app-btn:hover {
-            transform: translateY(-2px);
+            transform: translateY(-2px) scale(1.02);
             box-shadow: var(--shadow-hover);
         }
 
@@ -320,26 +254,26 @@
             border-color: var(--primary-orange);
         }
 
+        /* Subtle Keyframe Animations */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         @media (max-width: 576px) {
             .header-image { max-height: 120px; }
             .logo-container { margin: 90px 0 15px 0; }
             .logo-container img { max-height: 130px; }
             .main-card { padding: 15px; margin: 0 10px 50px 10px; }
-            .button-grid {
-                gap: 10px;
-                justify-content: center;
-            }
-            .app-btn {
-                height: 60px;
-                font-size: 0.75rem;
-                width: 35mm;
-                min-width: 35mm;
-            }
+            .button-grid { gap: 10px; justify-content: center; }
+            .app-btn { height: 60px; font-size: 0.75rem; width: 35mm; min-width: 35mm; }
             .app-btn i { font-size: 1rem; }
             footer { padding: 3px 10px; height: 28px; }
-            .fifa-title { font-size: 0.9rem; }
-            .fifa-subtitle { font-size: 0.68rem; }
-            .fifa-ball-anim { font-size: 1.8rem; }
         }
     </style>
 </head>
@@ -357,66 +291,63 @@
                     <div class="welcome-text">
                         <p class="user-greeting">Hi, <span id="user-name" class="loading-message">Loading..</span> & family! 👋</p>
                         
-                        <div class="wealth-info" id="wealthInfo">
-                            <i class="fas fa-coins me-2"></i>
-                            <span id="totalWealth">Our Bank Balance: ₹...</span>
+                        <!-- 1. Bank Balance -->
+                        <div class="info-card" id="wealthInfo" title="Click to view transactions">
+                            <div>
+                                <i class="fas fa-university me-2 text-warning"></i>
+                                <span id="totalWealth">Our Bank Balance: ₹...</span>
+                            </div>
+                            <i class="fas fa-chevron-right text-muted small"></i>
+                        </div>
+
+                        <!-- 2. Total Wealth (Bank Balance + Active FDs) -->
+                        <div class="info-card wealth-highlight" id="totalWealthInfo" title="Bank Balance + FDs">
+                            <div>
+                                <i class="fas fa-coins me-2 text-primary"></i>
+                                <span id="actualTotalWealth">Total Wealth: ₹...</span>
+                            </div>
+                            <i class="fas fa-chevron-right text-muted small"></i>
                         </div>
                         
-                        <div class="due-info" id="dueInfo">
-                            <i class="fas fa-calendar-alt me-2"></i>
-                            <span id="monthlyDue">Your Monthly Due: Checking...</span>
+                        <!-- 3. Monthly Due -->
+                        <div class="info-card" id="dueInfo" title="Click to view subscription">
+                            <div>
+                                <i class="fas fa-calendar-alt me-2 text-info"></i>
+                                <span id="monthlyDue">Your Monthly Due: Checking...</span>
+                            </div>
+                            <i class="fas fa-chevron-right text-muted small"></i>
                         </div>
                     </div>
                     
-                  
-                    <!-- BUTTON GRID – STRICT 2 PER ROW, EACH 35mm WIDTH, ORIGINAL ORDER -->
+                    <!-- BUTTON GRID -->
                     <div class="button-grid">
-                        <!-- 1. Subscription -->
                         <button id="subscriptionBtn" class="app-btn">
                             <i class="fas fa-credit-card"></i> Subscription
                         </button>
-                        
-                        <!-- 2. Expenses -->
                         <button id="expensesBtn" class="app-btn">
                             <i class="fas fa-receipt"></i> Expense
                         </button>
-                        
-                        <!-- 3. Fixed Deposit -->
                         <button id="fdBtn" class="app-btn">
                             <i class="fas fa-piggy-bank"></i> Fixed Deposit
                         </button>
-                        
-                        <!-- 4. Members -->
                         <button id="memberListBtn" class="app-btn">
                             <i class="fas fa-users"></i> Members
                         </button>
-                        
-                        <!-- 5. Profile -->
                         <button id="profileBtn" class="app-btn">
                             <i class="fas fa-user-circle"></i> Profile
                         </button>
-                        
-                        <!-- 6. Recreation Club -->
                         <button id="clubBtn" class="app-btn">
                             <i class="fas fa-gamepad"></i> Recreation Club
                         </button>
-                        
-                        <!-- 7. Chitty -->
                         <button id="chittiBtn" class="app-btn">
                             <i class="fas fa-hand-holding-usd"></i> Chitty
                         </button>
-                        
-                        <!-- 8. Loan -->
                         <button id="loanBtn" class="app-btn">
                             <i class="fas fa-university"></i> Loan
                         </button>
-                        
-                        <!-- 9. Change Password -->
                         <button id="passwordBtn" class="app-btn">
                             <i class="fas fa-key"></i> Change Password
                         </button>
-                        
-                        <!-- 10. Admin Dashboard -->
                         <button id="adminBtn" class="app-btn admin-btn" style="display: none;">
                             <i class="fas fa-cog"></i> Admin Dashboard
                         </button>
@@ -438,7 +369,8 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const cachedName = localStorage.getItem('cached_userName');
-            const cachedWealth = localStorage.getItem('cached_totalWealth');
+            const cachedBank = localStorage.getItem('cached_bankBalance');
+            const cachedWealth = localStorage.getItem('cached_actualWealth');
             const cachedDue = localStorage.getItem('cached_monthlyDue');
             const cachedRole = localStorage.getItem('cached_userRole');
 
@@ -447,7 +379,8 @@
                 el.textContent = cachedName;
                 el.classList.remove('loading-message');
             }
-            if(cachedWealth) document.getElementById('totalWealth').textContent = cachedWealth;
+            if(cachedBank) document.getElementById('totalWealth').textContent = cachedBank;
+            if(cachedWealth) document.getElementById('actualTotalWealth').textContent = cachedWealth;
             if(cachedDue) document.getElementById('monthlyDue').innerHTML = cachedDue;
             
             const adminBtn = document.getElementById('adminBtn');
@@ -465,13 +398,11 @@
             document.getElementById('wealthInfo').addEventListener('click', () => {
                 window.location.href = 'wealth-user.html';
             });
+            document.getElementById('totalWealthInfo').addEventListener('click', () => {
+                window.location.href = 'fd.html';
+            });
             document.getElementById('dueInfo').addEventListener('click', () => {
                 window.location.href = 'subscription.html';
-            });
-
-            // ✅ Redirect to FIFA contest on card click
-            document.getElementById('fifaPromoCard').addEventListener('click', () => {
-                window.location.href = 'fifa.html';
             });
         });
 
@@ -498,6 +429,7 @@
 
             const userNameEl = document.getElementById('user-name');
             const totalWealth = document.getElementById('totalWealth');
+            const actualTotalWealth = document.getElementById('actualTotalWealth');
             const monthlyDue = document.getElementById('monthlyDue');
             const adminBtn = document.getElementById('adminBtn');
 
@@ -521,7 +453,7 @@
                                     if (adminBtn) adminBtn.style.display = 'none';
                                 }
 
-                                calculateTotalWealth();
+                                calculateBalancesAndWealth();
                                 calculateMonthlyDue(user.uid);
                             }
                         })
@@ -531,7 +463,7 @@
                 }
             });
 
-            async function calculateTotalWealth() {
+            async function calculateBalancesAndWealth() {
                 try {
                     let totalIncome = 0, totalExpense = 0;
                     const transactionsSnapshot = await db.collection('transactions').get();
@@ -540,12 +472,28 @@
                         if (t.type === 'income') totalIncome += t.amount || 0;
                         if (t.type === 'expense') totalExpense += t.amount || 0;
                     });
-                    const wealth = totalIncome - totalExpense;
-                    const wealthFormatted = wealth.toFixed(2);
-                    const wealthText = `Our Total Wealth: ₹${wealthFormatted}`;
+                    const bankBalance = totalIncome - totalExpense;
+                    const bankText = `Bank Balance: ₹${bankBalance.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
                     
-                    totalWealth.textContent = wealthText;
-                    localStorage.setItem('cached_totalWealth', wealthText);
+                    totalWealth.textContent = bankText;
+                    localStorage.setItem('cached_bankBalance', bankText);
+
+                    // Fetch active FDs to compute Total Wealth
+                    let activeFdAmount = 0;
+                    const fdSnapshot = await db.collection('fd').get();
+                    fdSnapshot.forEach(doc => {
+                        const fd = doc.data();
+                        if (fd.status !== 'closed') {
+                            activeFdAmount += fd.amount || 0;
+                        }
+                    });
+
+                    const grandTotalWealth = bankBalance + activeFdAmount;
+                    const wealthText = `Total Wealth: ₹${grandTotalWealth.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                    
+                    actualTotalWealth.textContent = wealthText;
+                    localStorage.setItem('cached_actualWealth', wealthText);
+
                 } catch (error) {
                     console.error('Wealth Calculation Error:', error);
                 }
