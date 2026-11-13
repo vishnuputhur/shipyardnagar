@@ -1,38 +1,48 @@
+/* Lock Root Font Size & Disable Mobile Text Auto-Inflation */
+html {
+    font-size: 16px !important;
+    -webkit-text-size-adjust: none !important;
+    -moz-text-size-adjust: none !important;
+    -ms-text-size-adjust: none !important;
+    text-size-adjust: none !important;
+}
+
 /* Reset default styles */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Poppins', sans-serif; /* Modern font */
+    font-family: 'Poppins', sans-serif;
 }
 
 /* Theme Variables */
 :root {
-    --bg-color: #e3f2fd; /* Softer light blue */
-    --text-color: #1a237e; /* Deep navy */
+    --bg-color: #e3f2fd;
+    --text-color: #1a237e;
     --card-bg: #ffffff;
-    --primary-color: #0288d1; /* Vibrant blue */
-    --header-bg: #01579b; /* Darker blue */
+    --primary-color: #0288d1;
+    --header-bg: #01579b;
     --header-text: #ffffff;
     --shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
     --transition: all 0.4s ease-in-out;
-    --accent-color: #ffca28; /* Yellow accent for buttons */
+    --accent-color: #ffca28;
 }
 
 [data-theme="dark"] {
-    --bg-color: #121212; /* Dark grey */
-    --text-color: #e0e0e0; /* Light grey */
-    --card-bg: #1e1e1e; /* Dark card */
-    --primary-color: #4fc3f7; /* Lighter blue */
-    --header-bg: #0d47a1; /* Dark blue */
+    --bg-color: #121212;
+    --text-color: #e0e0e0;
+    --card-bg: #1e1e1e;
+    --primary-color: #4fc3f7;
+    --header-bg: #0d47a1;
     --shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
-    --accent-color: #ffb300; /* Amber accent */
+    --accent-color: #ffb300;
 }
 
 /* Body */
 body {
     background-color: var(--bg-color);
     color: var(--text-color);
+    font-size: 14px !important;
     min-height: 100vh;
     transition: var(--transition);
     margin: 0;
@@ -55,7 +65,7 @@ header {
 }
 
 header h1 {
-    display: none; /* Hide heading text completely */
+    display: none;
 }
 
 /* Theme Toggle */
@@ -118,7 +128,7 @@ main {
 }
 
 .form-label {
-    font-size: 0.9rem;
+    font-size: 14px !important;
     margin-bottom: 5px;
 }
 
@@ -132,7 +142,7 @@ form {
     border-radius: 8px;
     border: 1px solid #ddd;
     padding: 8px;
-    font-size: 0.9rem;
+    font-size: 14px !important;
     max-width: 100%;
 }
 
@@ -146,7 +156,7 @@ form {
     border-radius: 25px;
     padding: 8px 15px;
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: 14px !important;
     transition: var(--transition);
     transform: translateY(0);
     background: var(--primary-color);
@@ -187,7 +197,7 @@ form {
 .table th, .table td {
     padding: 12px;
     text-align: center;
-    font-size: 0.9rem;
+    font-size: 13.5px !important;
 }
 
 /* Login Page Logo */
@@ -235,17 +245,17 @@ form {
     }
 
     .form-control {
-        font-size: 0.85rem;
+        font-size: 13px !important;
         padding: 6px;
     }
 
     .btn {
         padding: 6px 12px;
-        font-size: 0.85rem;
+        font-size: 13px !important;
     }
 
     .table th, .table td {
-        font-size: 0.8rem;
+        font-size: 12.5px !important;
         padding: 8px;
     }
 
@@ -258,7 +268,7 @@ form {
 /* Theme Toggle Animation */
 .theme-toggle button::before {
     content: '🌞';
-    font-size: 20px;
+    font-size: 20px !important;
 }
 
 [data-theme="dark"] .theme-toggle button::before {
@@ -276,7 +286,7 @@ form {
 .button-grid .btn {
     text-align: center;
     padding: 12px;
-    font-size: 0.9rem;
+    font-size: 14px !important;
     border-radius: 15px;
     transition: var(--transition);
 }
